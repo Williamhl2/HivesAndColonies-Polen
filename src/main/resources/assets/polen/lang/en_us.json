@@ -4,11 +4,15 @@
   "item.polen.princess_letter": "Princess Letter",
   "item.polen.polen_journal": "Polen's Journal",
   "tooltip.polen.princess_seal.line1": "The rightful seal of Princess Polen.",
-"tooltip.polen.princess_seal.line2": "It still carries the scent of royal honey.",
+  "tooltip.polen.princess_seal.line2": "It still carries the scent of royal honey.",
   "tooltip.polen.princess_letter.line1": "A letter written in shaky handwriting.",
   "tooltip.polen.princess_letter.line2": "The Queen has disappeared.",
   "tooltip.polen.princess_letter.line3": "Polen needs help.",
   "tooltip.polen.polen_journal.line1": "The private journal of Princess Polen.",
   "tooltip.polen.polen_journal.line2": "Some pages are stained with honey.",
-  "tooltip.polen.polen_journal.line3": "Right-click to read."
-}
+  "tooltip.polen.polen_journal.line3": "Right-click to read.",
+  "entity.polen.polen": "Princess Polen",
+"dialogue.polen.chapter1.line1": "Polen: H-hi... have you seen my mother?",
+"dialogue.polen.chapter1.line2": "Polen: I am not queen yet. I am just... well, the princess.",
+"dialogue.polen.chapter1.line3": "Polen: The bees keep looking at me like they expect something important.",
+"dialogue.polen.chapter1.line4": "Polen: If we are going to rebuild the kingdom, maybe we should start with somewhere safe."}

@@ -1,24 +1,22 @@
-# Polen
+## Current Features
 
-Polen is a small narrative mod for Hives & Colonies.
+### Narrative Items
 
-It introduces Princess Polen, the rightful heir of the Bee Kingdom.  
-The Queen has disappeared, the kingdom is fragmented, and Polen must eventually decide whether she is ready to become queen.
-
-## Current Version
-
-v0.0.1
-
-## Features
-
-- Creative tab: Polen
 - Princess Seal
 - Princess Letter
-- Polen's Journal
-- English and Spanish translations
-- Narrative tooltips
+- Polen Journal
 
-## Minecraft Version
+### NPC
 
-Minecraft 1.21.1  
-NeoForge
+- Princess Polen entity
+- Spawn Egg
+- Custom skin
+- Basic AI
+- Chapter dialogue system
+
+### Progression Framework
+
+- Chapter Manager
+- Affinity Manager
+
+Status: Early Development (v0.0.2)

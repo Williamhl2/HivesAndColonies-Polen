@@ -10,5 +10,9 @@
   "tooltip.polen.princess_letter.line3": "Polen necesita ayuda.",
   "tooltip.polen.polen_journal.line1": "El diario privado de la Princesa Polen.",
   "tooltip.polen.polen_journal.line2": "Algunas páginas están manchadas de miel.",
-  "tooltip.polen.polen_journal.line3": "Click derecho para leer."
-}
+  "tooltip.polen.polen_journal.line3": "Click derecho para leer.",
+  "entity.polen.polen": "Princesa Polen",
+"dialogue.polen.chapter1.line1": "Polen: H-hola... ¿has visto a mi madre?",
+"dialogue.polen.chapter1.line2": "Polen: No soy reina todavía. Solo soy... bueno, la princesa.",
+"dialogue.polen.chapter1.line3": "Polen: Las abejas siguen mirándome como si esperaran algo importante.",
+"dialogue.polen.chapter1.line4": "Polen: Si vamos a reconstruir el reino, quizá deberíamos empezar por un lugar seguro."}
