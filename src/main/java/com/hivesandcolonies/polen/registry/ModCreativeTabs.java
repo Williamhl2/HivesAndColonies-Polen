@@ -21,6 +21,8 @@ public class ModCreativeTabs {
                         output.accept(ModItems.PRINCESS_SEAL.get());
                         output.accept(ModItems.PRINCESS_LETTER.get());
                         output.accept(ModItems.POLEN_JOURNAL.get());
+                        output.accept(ModItems.POLEN_SPAWN_EGG.get());
+
                     })
                     .build());
 }

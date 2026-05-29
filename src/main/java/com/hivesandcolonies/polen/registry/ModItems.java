@@ -4,7 +4,10 @@ import com.hivesandcolonies.polen.Polen;
 import com.hivesandcolonies.polen.item.PrincessLetterItem;
 import com.hivesandcolonies.polen.item.PolenJournalItem;
 import com.hivesandcolonies.polen.item.PrincessSealItem;
+
 import net.minecraft.world.item.Item;
+import net.neoforged.neoforge.common.DeferredSpawnEggItem;
+
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -28,4 +31,15 @@ public class ModItems {
             PolenJournalItem::new,
             new Item.Properties()
     );
+
+    public static final DeferredItem<DeferredSpawnEggItem> POLEN_SPAWN_EGG =
+        ITEMS.registerItem(
+                "polen_spawn_egg",
+                properties -> new DeferredSpawnEggItem(
+                        ModEntities.POLEN,
+                        0xF4C430,
+                        0x7B3F98,
+                        properties
+                )
+        );
 }

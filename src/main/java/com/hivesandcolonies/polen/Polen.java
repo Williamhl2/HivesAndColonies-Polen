@@ -2,6 +2,8 @@ package com.hivesandcolonies.polen;
 
 import org.slf4j.Logger;
 
+import com.hivesandcolonies.polen.registry.ModEntities;
+
 import com.hivesandcolonies.polen.registry.ModCreativeTabs;
 import com.hivesandcolonies.polen.registry.ModItems;
 import com.mojang.logging.LogUtils;
@@ -18,7 +20,8 @@ public class Polen {
     public Polen(IEventBus modEventBus, ModContainer modContainer) {
         ModItems.ITEMS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
-
+        ModEntities.ENTITY_TYPES.register(modEventBus);
         LOGGER.info("Polen mod loaded.");
+        
     }
 }
