@@ -1,0 +1,14 @@
+{
+  "itemGroup.polen": "Polen",
+  "item.polen.princess_seal": "Sello de la Princesa",
+  "item.polen.princess_letter": "Carta de la Princesa",
+  "item.polen.polen_journal": "Diario de Polen",
+  "tooltip.polen.princess_seal.line1": "El sello legítimo de la Princesa Polen.",
+  "tooltip.polen.princess_seal.line2": "Aún conserva el aroma de la miel real.",
+  "tooltip.polen.princess_letter.line1": "Una carta escrita con letra temblorosa.",
+  "tooltip.polen.princess_letter.line2": "La Reina ha desaparecido.",
+  "tooltip.polen.princess_letter.line3": "Polen necesita ayuda.",
+  "tooltip.polen.polen_journal.line1": "El diario privado de la Princesa Polen.",
+  "tooltip.polen.polen_journal.line2": "Algunas páginas están manchadas de miel.",
+  "tooltip.polen.polen_journal.line3": "Click derecho para leer."
+}

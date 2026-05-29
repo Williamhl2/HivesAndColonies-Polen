@@ -1,0 +1,14 @@
+{
+  "itemGroup.polen": "Polen",
+  "item.polen.princess_seal": "Princess Seal",
+  "item.polen.princess_letter": "Princess Letter",
+  "item.polen.polen_journal": "Polen's Journal",
+  "tooltip.polen.princess_seal.line1": "The rightful seal of Princess Polen.",
+"tooltip.polen.princess_seal.line2": "It still carries the scent of royal honey.",
+  "tooltip.polen.princess_letter.line1": "A letter written in shaky handwriting.",
+  "tooltip.polen.princess_letter.line2": "The Queen has disappeared.",
+  "tooltip.polen.princess_letter.line3": "Polen needs help.",
+  "tooltip.polen.polen_journal.line1": "The private journal of Princess Polen.",
+  "tooltip.polen.polen_journal.line2": "Some pages are stained with honey.",
+  "tooltip.polen.polen_journal.line3": "Right-click to read."
+}
