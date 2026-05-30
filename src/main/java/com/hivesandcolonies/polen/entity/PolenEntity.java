@@ -15,10 +15,12 @@ import com.hivesandcolonies.polen.progression.PolenChapterManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
 import com.hivesandcolonies.polen.progression.player.PolenPlayerRelationshipManager;
+import com.hivesandcolonies.polen.story.PolenMemoryManager;
+import com.hivesandcolonies.polen.story.PolenMemoryType;
 import com.hivesandcolonies.polen.story.PolenStoryEventManager;
 
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -38,7 +40,6 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
@@ -318,26 +319,46 @@ public class PolenEntity extends PathfinderMob {
     }
 
     public void rememberInterestingSpot(BlockPos pos) {
-        if (pos == null) {
-            return;
-        }
-
-        if (this.level().getBlockState(pos).is(net.minecraft.tags.BlockTags.FLOWERS)) {
-            this.favoriteFlowerPos = pos.immutable();
-            return;
-        }
-
-        if (this.level().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.BEE_NEST)
-                || this.level().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.BEEHIVE)) {
-            this.favoriteHivePos = pos.immutable();
-        }
+    if (pos == null || !(this.level() instanceof ServerLevel serverLevel)) {
+        return;
     }
+
+    if (this.level().getBlockState(pos).is(net.minecraft.tags.BlockTags.FLOWERS)) {
+        this.favoriteFlowerPos = pos.immutable();
+        PolenStoryFlagsManager.setFlag(serverLevel, PolenStoryFlag.POLEN_FOUND_FLOWER_SPOT);
+        PolenMemoryManager.unlockMemory(
+                serverLevel,
+                PolenMemoryType.FIRST_FLOWER,
+                pos.getX() + 0.5D,
+                pos.getY() + 0.5D,
+                pos.getZ() + 0.5D
+        );
+        return;
+    }
+
+    if (this.level().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.BEE_NEST)
+            || this.level().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.BEEHIVE)) {
+        this.favoriteHivePos = pos.immutable();
+        PolenStoryFlagsManager.setFlag(serverLevel, PolenStoryFlag.POLEN_FOUND_HIVE_SPOT);
+        PolenMemoryManager.unlockMemory(
+                serverLevel,
+                PolenMemoryType.FIRST_HIVE,
+                pos.getX() + 0.5D,
+                pos.getY() + 0.5D,
+                pos.getZ() + 0.5D
+        );
+    }
+}
 
     public void rememberRestingSpot(BlockPos pos) {
-        if (pos != null && isSafeStandingSpot(pos) && !isDangerousMemorySpot(pos)) {
-            this.restingPos = pos.immutable();
+    if (pos != null && isSafeStandingSpot(pos) && !isDangerousMemorySpot(pos)) {
+        this.restingPos = pos.immutable();
+
+        if (this.level() instanceof ServerLevel serverLevel) {
+            PolenStoryFlagsManager.setFlag(serverLevel, PolenStoryFlag.POLEN_FOUND_RESTING_SPOT);
         }
     }
+}
 
     public boolean isInUnsafeArea() {
         boolean unsafe = !isSafeStandingSpot(this.blockPosition());
@@ -451,13 +472,20 @@ public class PolenEntity extends PathfinderMob {
 
     public int pickQuietActivity() {
         PolenMood mood = getMood();
-        if (mood == PolenMood.INSPIRED || mood == PolenMood.CURIOUS) {
-            return this.getRandom().nextInt(3) == 0
+        
+        if (mood == PolenMood.JOYFUL) {
+            return this.getRandom().nextInt(4) == 0
+                    ? QUIET_ACTIVITY_DRAWING
+                    : QUIET_ACTIVITY_SINGING;
+        }
+    
+        if (mood == PolenMood.CONFIDENT || mood == PolenMood.INSPIRED || mood == PolenMood.CURIOUS) {
+            return this.getRandom().nextBoolean()
                     ? QUIET_ACTIVITY_SINGING
                     : QUIET_ACTIVITY_DRAWING;
         }
-
-        return this.getRandom().nextBoolean()
+    
+        return this.getRandom().nextInt(3) == 0
                 ? QUIET_ACTIVITY_SINGING
                 : QUIET_ACTIVITY_DRAWING;
     }
@@ -513,15 +541,22 @@ public class PolenEntity extends PathfinderMob {
         PolenMood nextMood;
 
         Player nearbyPlayer = this.level().getNearestPlayer(this, 2.5D);
+
         if (nearbyPlayer != null && !isComfortableWith(nearbyPlayer)) {
             nextMood = PolenMood.TIMID;
         } else if (this.level().isThundering()
                 || this.level().isRaining() && this.level().canSeeSky(this.blockPosition())) {
             nextMood = PolenMood.UNSETTLED;
+        } else if (nearbyPlayer != null
+                && PolenAffinityManager.getAffinity(nearbyPlayer) >= PolenAffinityLevels.FRIEND) {
+            nextMood = PolenMood.JOYFUL;
         } else if (isDoingQuietActivity()) {
             nextMood = PolenMood.INSPIRED;
         } else if (isNearRememberedInterest()) {
             nextMood = PolenMood.CURIOUS;
+        } else if (this.level() instanceof ServerLevel serverLevel
+            && PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.PLAYER_HAS_SHELTER)) {
+        nextMood = PolenMood.CONFIDENT;
         } else {
             nextMood = PolenMood.CALM;
         }

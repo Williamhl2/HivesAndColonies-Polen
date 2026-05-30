@@ -5,7 +5,9 @@ public enum PolenMood {
     TIMID(1),
     CURIOUS(2),
     INSPIRED(3),
-    UNSETTLED(4);
+    UNSETTLED(4),
+    CONFIDENT(5),
+    JOYFUL(6);
 
     private final int id;
 

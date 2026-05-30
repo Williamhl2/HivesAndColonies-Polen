@@ -9,6 +9,10 @@ import com.hivesandcolonies.polen.progression.player.PolenPlayerRelationshipData
 import com.hivesandcolonies.polen.progression.player.PolenPlayerRelationshipManager;
 import com.hivesandcolonies.polen.progression.world.PolenWorldStoryData;
 import com.hivesandcolonies.polen.progression.world.PolenWorldStorySavedData;
+
+import com.hivesandcolonies.polen.story.PolenMemoryManager;
+import com.hivesandcolonies.polen.story.PolenMemoryType;
+
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
@@ -27,11 +31,13 @@ public final class PolenDebugCommands {
 
     public static void register(RegisterCommandsEvent event) {
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("polen")
-                .requires(source -> source.hasPermission(2))
-                .then(registerAffinityCommands())
-                .then(registerChapterCommands())
-                .then(registerFlagCommands())
-                .then(Commands.literal("ai")
+                        .requires(source -> source.hasPermission(2))
+                        .then(registerAffinityCommands())
+                        .then(registerChapterCommands())
+                        .then(registerFlagCommands())
+                        .then(registerMemoryCommands())
+                        .then(registerMoodCommands())
+                        .then(Commands.literal("ai")
                         .then(Commands.literal("get")
                                 .executes(context -> {
                                     ServerPlayer player = context.getSource().getPlayerOrException();
@@ -286,6 +292,66 @@ public final class PolenDebugCommands {
         return root.then(set).then(clear);
     }
 
+    private static LiteralArgumentBuilder<CommandSourceStack> registerMemoryCommands() {
+            LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("memory");
+
+            for (PolenMemoryType memory : PolenMemoryType.values()) {
+                String memoryName = memory.name().toLowerCase();
+
+                root.then(Commands.literal(memoryName)
+                        .executes(context -> {
+                            ServerPlayer player = context.getSource().getPlayerOrException();
+
+                            PolenMemoryManager.unlockMemory(
+                                    player.serverLevel(),
+                                    memory,
+                                    player.getX(),
+                                    player.getY(),
+                                    player.getZ()
+                            );
+
+                            context.getSource().sendSuccess(
+                                    () -> Component.literal("Unlocked Polen memory: " + memory.name()),
+                                    false
+                            );
+
+                            return 1;
+                        }));
+            }
+
+            return root;
+        }
+
+        private static LiteralArgumentBuilder<CommandSourceStack> registerMoodCommands() {
+            return Commands.literal("mood")
+                    .then(Commands.literal("get")
+                            .executes(context -> {
+                                ServerPlayer player = context.getSource().getPlayerOrException();
+                        
+                                PolenEntity polen = player.serverLevel()
+                                        .getEntitiesOfClass(
+                                                PolenEntity.class,
+                                                player.getBoundingBox().inflate(64.0D)
+                                        )
+                                        .stream()
+                                        .findFirst()
+                                        .orElse(null);
+                                
+                                if (polen == null) {
+                                    context.getSource().sendFailure(
+                                            Component.literal("No nearby Polen entity found.")
+                                    );
+                                    return 0;
+                                }
+                        
+                                context.getSource().sendSuccess(
+                                        () -> Component.literal("Polen mood: " + polen.getMood().name()),
+                                        false
+                                );
+                        
+                                return 1;
+                            }));
+        }
     private static String formatPos(BlockPos pos) {
         if (pos == null) {
             return "null";

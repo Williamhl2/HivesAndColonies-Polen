@@ -242,3 +242,132 @@ Heurística actual de seguridad:
 - rutas más claras dentro de la colonia
 - lugares favoritos persistentes asociados a estructuras narrativas reales
 - animaciones dedicadas para dibujo, observación y canto
+
+---
+
+## Evolución de Personalidad por Progreso Narrativo
+
+La IA actual representa la personalidad inicial de Polen, pero no debe limitar su arco completo.
+
+Polen empieza tímida, reservada y sensible a la cercanía, pero puede evolucionar hacia una personalidad más segura, alegre y expresiva cuando la historia y la afinidad lo justifican.
+
+Documento relacionado:
+
+- [POLEN_CHARACTER_ARC.md](POLEN_CHARACTER_ARC.md)
+
+### Principio
+
+El progreso global de la historia no reemplaza la afinidad individual.
+
+Una Polen de capítulos tardíos puede ser segura y alegre con sus personas cercanas, pero seguir siendo reservada con jugadores desconocidos o de baja afinidad.
+
+### Capítulos 0-1
+
+Personalidad predominante:
+
+- tímida
+- cautelosa
+- reservada
+
+Comportamiento esperado:
+
+- mantener distancia
+- usar `TIMID` con facilidad
+- priorizar seguridad
+- cantar o dibujar solo en contextos muy seguros
+
+### Capítulos 2-3
+
+Personalidad predominante:
+
+- tranquila
+- curiosa
+- observadora
+
+Comportamiento esperado:
+
+- visitar lugares seguros de la colonia
+- observar construcción y Source
+- usar más `CURIOUS` e `INSPIRED`
+
+### Capítulos 4-7
+
+Personalidad predominante:
+
+- compañera
+- curiosa activa
+- más cálida con alta afinidad
+
+Comportamiento esperado:
+
+- recordar flores y colmenas importantes
+- usar lugares favoritos
+- mover `restingPos` hacia espacios seguros de la colonia
+- asociar la Residencia de Polen como centro emocional al final de la etapa
+
+### Capítulos 8-11
+
+Personalidad predominante:
+
+- buscadora
+- inspirada
+- vulnerable ante recuerdos
+
+Comportamiento esperado:
+
+- reaccionar a ruinas, símbolos y registros
+- alternar entre `INSPIRED` y `UNSETTLED`
+- volver a lugares seguros tras eventos narrativos fuertes
+
+### Capítulos 12-13
+
+Personalidad predominante:
+
+- introspectiva
+- honesta
+- en proceso de aceptación
+
+Comportamiento esperado:
+
+- reducir evasión narrativa
+- sostener conversaciones más directas
+- usar `CALM` después de eventos de aceptación
+
+### Capítulos 14-15 y postgame
+
+Personalidad predominante:
+
+- segura
+- alegre
+- expresiva con cercanos
+- protectora
+
+Comportamiento esperado:
+
+- iniciar más interacciones contextuales
+- cantar o dibujar con menos vergüenza
+- usar la residencia y espacios comunitarios con naturalidad
+- conservar distancia con jugadores de baja afinidad
+
+## Posibles moods futuros
+
+Los moods actuales son suficientes para la primera etapa, pero capítulos tardíos podrían justificar nuevos estados.
+
+Opciones futuras:
+
+- `CONFIDENT`
+- `JOYFUL`
+- `PROTECTIVE`
+
+No añadirlos hasta que exista comportamiento real que los use.
+
+## Regla de Afinidad
+
+La afinidad debe seguir afectando tono y comportamiento incluso cuando la historia avance.
+
+Ejemplo:
+
+- Capítulo 15 + baja afinidad: Polen es segura, pero formal.
+- Capítulo 15 + alta afinidad: Polen es segura, alegre y cercana.
+
+Esto evita que el progreso global borre la relación individual con cada jugador.

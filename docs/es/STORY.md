@@ -20,6 +20,8 @@ La historia avanza desde lo íntimo hacia lo colectivo.
 
 Primero importa una conversación junto a una fogata. Más tarde importa una comunidad entera. Solo al final importa el peso histórico de aquello que se perdió.
 
+La épica no reemplaza la intimidad. Nace de ella.
+
 ---
 
 # Premisa
@@ -56,6 +58,7 @@ Representa:
 - memoria
 - confianza
 - vínculo humano
+- evolución personal
 
 Toda la historia comienza con ella y no debe perderla de centro.
 
@@ -104,6 +107,8 @@ La pregunta inicial es simple:
 
 La respuesta completa no aparece de una vez.
 
+Al principio, la respuesta ni siquiera importa tanto como aprender a verla como persona.
+
 ## Pertenencia
 
 Polen comienza como visitante.
@@ -129,6 +134,14 @@ Recuperarlo exige cuidado, no solo acumulación de información.
 La meta final no es repetir exactamente lo antiguo.
 
 La meta final es decidir qué merece conservarse y qué no debe volver.
+
+## Transformación
+
+Polen no debe mantenerse igual durante toda la campaña.
+
+Su personalidad evoluciona con la confianza, la seguridad, la colonia y el descubrimiento de su pasado.
+
+La chica tímida del claro no desaparece por completo, pero aprende a vivir sin esconderse siempre.
 
 ---
 
@@ -162,6 +175,12 @@ La colonia debe sentirse como hogar antes de sentirse como potencia.
 
 El final debe tratar sobre responsabilidad y futuro, no sobre nostalgia vacía.
 
+## Regla 8
+
+La personalidad de Polen debe cambiar de forma visible, pero no instantánea.
+
+Su evolución debe sentirse ganada.
+
 ---
 
 # La Civilización Antigua
@@ -181,6 +200,20 @@ Esto permite ajustar:
 sin romper la continuidad principal.
 
 Lo importante no es fijar temprano todos los detalles, sino sostener la idea de que existió una cultura compleja donde abejas, magia, conocimiento y organización social estaban profundamente conectados.
+
+## Nombre Temporal
+
+Cualquier nombre usado durante desarrollo para esta civilización debe considerarse provisional hasta que sea confirmado como canon final.
+
+Los documentos narrativos deben favorecer términos como:
+
+- civilización antigua
+- legado antiguo
+- pueblo antiguo
+- reino perdido
+- cultura perdida
+
+Cuando el nombre definitivo exista, podrá reemplazar estos términos sin reescribir la estructura emocional de la historia.
 
 ---
 
@@ -211,6 +244,79 @@ Polen no es una mascota narrativa.
 Polen es el eje emocional del proyecto.
 
 La historia ocurre junto a ella.
+
+## Personalidad Inicial
+
+Al inicio, Polen es:
+
+- tímida
+- reservada
+- observadora
+- curiosa en silencio
+- sensible al peligro
+- incómoda ante la cercanía repentina
+
+Tiene intereses propios antes de convertirse en parte de cualquier gran revelación:
+
+- flores
+- abejas
+- lugares tranquilos
+- dibujo
+- canto
+- pequeños detalles del entorno
+
+Estas conductas no son relleno. Son la base emocional de la historia.
+
+## Evolución Personal
+
+Polen debe cambiar con el tiempo.
+
+Su arco general es:
+
+```text
+Desconfianza
+↓
+Seguridad
+↓
+Curiosidad compartida
+↓
+Pertenencia
+↓
+Alegría
+↓
+Confianza activa
+↓
+Responsabilidad
+↓
+Presencia plena
+```
+
+En los primeros capítulos, Polen puede alejarse cuando alguien invade su espacio.
+
+En capítulos medios, puede acercarse por voluntad propia, visitar lugares favoritos y mostrar entusiasmo.
+
+En capítulos finales, puede mostrarse segura, alegre e incluso extrovertida, pero no con todo el mundo.
+
+Su extroversión debe ser selectiva.
+
+Polen puede ser cálida, bromista y expresiva con sus personas cercanas sin convertirse en una NPC genéricamente sociable.
+
+## Círculo de Confianza
+
+La personalidad pública y la personalidad íntima de Polen no son iguales.
+
+Ante desconocidos o jugadores con baja afinidad, puede conservar distancia, formalidad y cautela.
+
+Ante jugadores cercanos, puede mostrarse:
+
+- alegre
+- expresiva
+- juguetona
+- confiada
+- conversadora
+- protectora
+
+Esto permite que su crecimiento emocional conviva con el sistema de afinidad por jugador.
 
 ## Revelación Gradual
 
@@ -253,6 +359,8 @@ Su construcción marca el momento en que Polen deja de tratar la colonia como un
 No es simplemente una casa.
 
 Representa pertenencia.
+
+La residencia debe aparecer cuando ya exista una colonia capaz de sostenerla emocional y materialmente.
 
 ---
 
@@ -306,6 +414,7 @@ Aquí todos los sistemas convergen y el conflicto final pasa por decidir qué fu
 
 La progresión principal debe sentirse así:
 
+```text
 Persona
 ↓
 Confianza
@@ -323,6 +432,27 @@ Legado
 Elección
 ↓
 Nuevo comienzo
+```
+
+La progresión emocional de Polen debe sentirse así:
+
+```text
+Tímida
+↓
+Tranquila
+↓
+Curiosa
+↓
+Inspirada
+↓
+Perteneciente
+↓
+Segura
+↓
+Alegre
+↓
+Abierta con sus cercanos
+```
 
 ---
 
@@ -336,6 +466,7 @@ Lo estable es:
 - la estructura de 4 actos y 16 capítulos
 - las tres progresiones paralelas
 - el paso de intimidad a legado
+- la evolución emocional de Polen
 - la idea final de construir algo mejor, no copiar el pasado
 
 Lo flexible es:

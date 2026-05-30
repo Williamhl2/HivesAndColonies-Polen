@@ -16,6 +16,11 @@
   "entity.polen.unknown_girl": "???",
   "entity.polen.polen": "Polen",
 
+  "dialogue.polen.memory.first_flower": "Estas flores... no sé por qué, pero me hacen sentir un poco más tranquila.",
+  "dialogue.polen.memory.first_hive": "Las abejas siempre encuentran el camino de vuelta. Me gusta pensar que yo también podré hacerlo.",
+  "dialogue.polen.memory.first_source": "Esa energía... siento que debería reconocerla.",
+  "dialogue.polen.memory.first_colony": "No estás construyendo solo para pasar la noche, ¿verdad?",
+
   "dialogue.polen.chapter0.line1": "Oh...",
   "dialogue.polen.chapter0.line2": "No esperaba encontrar a nadie aquí.",
   "dialogue.polen.chapter0.line3": "Lo siento... no suelo hablar con desconocidos.",

@@ -14,6 +14,7 @@
 - [CODEBASE_MAP.md](dev/CODEBASE_MAP.md)
 - [PROGRESSION_SYSTEM.md](dev/PROGRESSION_SYSTEM.md)
 - [POLEN_AI.md](dev/POLEN_AI.md)
+- [POLEN_CHARACTER_ARC.md](dev/POLEN_CHARACTER_ARC.md)
 - [CONTENT_PIPELINE.md](dev/CONTENT_PIPELINE.md)
 
 ## Orden recomendado para nuevos desarrolladores
@@ -22,4 +23,5 @@
 2. Revisar [CODEBASE_MAP.md](dev/CODEBASE_MAP.md).
 3. Leer [PROGRESSION_SYSTEM.md](dev/PROGRESSION_SYSTEM.md).
 4. Si vas a tocar comportamiento de Polen, leer [POLEN_AI.md](dev/POLEN_AI.md).
-5. Si vas a tocar narrativa, volver a [STORY.md](es/STORY.md).
+5. Si vas a tocar evolución de personalidad, leer [POLEN_CHARACTER_ARC.md](dev/POLEN_CHARACTER_ARC.md).
+6. Si vas a tocar narrativa, volver a [STORY.md](es/STORY.md).

@@ -16,6 +16,11 @@
   "entity.polen.unknown_girl": "???",
   "entity.polen.polen": "Polen",
 
+  "dialogue.polen.memory.first_flower": "These flowers... I don't know why, but they make me feel a little calmer.",
+  "dialogue.polen.memory.first_hive": "Bees always find their way back. I like to think I might, too.",
+  "dialogue.polen.memory.first_source": "That energy... I feel like I should recognize it.",
+  "dialogue.polen.memory.first_colony": "You're not building just to spend the night, are you?",
+
   "dialogue.polen.chapter0.line1": "Oh...",
   "dialogue.polen.chapter0.line2": "I wasn't expecting anyone here.",
   "dialogue.polen.chapter0.line3": "Sorry... I don't usually talk to strangers.",

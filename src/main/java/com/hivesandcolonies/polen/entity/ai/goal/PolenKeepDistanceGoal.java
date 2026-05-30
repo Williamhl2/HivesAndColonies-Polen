@@ -10,7 +10,7 @@ import net.minecraft.world.phys.Vec3;
 import java.util.EnumSet;
 
 public class PolenKeepDistanceGoal extends Goal {
-    private static final double TOO_CLOSE_DISTANCE = 2.5D;
+    private static final double TOO_CLOSE_DISTANCE = 2.25D;
     private static final double MOVE_SPEED = 1.0D;
 
     private final PolenEntity polen;
@@ -27,6 +27,11 @@ public class PolenKeepDistanceGoal extends Goal {
     public boolean canUse() {
         Player player = this.polen.level().getNearestPlayer(this.polen, TOO_CLOSE_DISTANCE);
         if (player == null || this.polen.isComfortableWith(player)) {
+            return false;
+        }
+
+        if (this.polen.getMood() == com.hivesandcolonies.polen.entity.ai.PolenMood.CONFIDENT
+                || this.polen.getMood() == com.hivesandcolonies.polen.entity.ai.PolenMood.JOYFUL) {
             return false;
         }
 

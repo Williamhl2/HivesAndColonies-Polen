@@ -6,6 +6,7 @@ import com.hivesandcolonies.polen.progression.PolenChapterManager;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
+import com.hivesandcolonies.polen.story.PolenMemoryType;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
@@ -77,6 +78,12 @@ public final class PolenDialogueManager {
         return Component.translatable(getSpeakerKey(player))
                 .append(Component.literal(": "))
                 .append(Component.translatable(key));
+    }
+
+    public static Component getMemoryDialogue(Player player, PolenMemoryType memory) {
+        return Component.translatable(getSpeakerKey(player))
+                .append(Component.literal(": "))
+                .append(Component.translatable(memory.getDialogueKey()));
     }
 
     private static String getSpeakerKey(Player player) {
