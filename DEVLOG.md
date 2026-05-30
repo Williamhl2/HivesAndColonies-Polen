@@ -1,5 +1,61 @@
 # Development Log
 
+## 2026-05-30 (Entity Refactor)
+
+### Goal
+
+Continue reducing `PolenEntity` before it turns into a single oversized AI file.
+
+### Refactor Progress
+
+Extracted or consolidated responsibilities:
+
+- `PolenSafetyEvaluator`
+  - safe spots
+  - dangerous spots
+  - shelter-aware standing checks
+- `PolenMemoryHandler`
+  - remembered flower, hive and resting spots
+  - nearby environment seeding
+  - first-interest memory unlock flow
+- `PolenMoodController`
+  - contextual mood calculation
+- `PolenRoutinePlanner`
+  - contextual routine target selection
+  - remembered spot validation
+- `PolenSafetyNavigator`
+  - escape decisions
+  - reachable safe spot search
+  - path replanning when the first escape route fails
+- `PolenQuietActivityController`
+  - quiet activity selection
+  - synchronized hobby timers
+  - client particle feedback
+- `PolenNbtHelper`
+  - reusable `BlockPos` save/load logic
+
+### Result
+
+`PolenEntity` remains the coordinator of:
+
+- synced entity state
+- interaction flow
+- routine target selection
+- ambient dialogue dispatch
+- dangerous spot memory ownership
+
+This keeps behavior split by concern instead of growing one monolithic AI file.
+
+### Safety Behavior Revision
+
+The escape logic was tightened to avoid false-positive cave dialogue outdoors.
+
+Current behavior:
+
+- ordinary outside exposure no longer triggers cave-like ambient escape dialogue by itself
+- cave-like dark enclosed spaces can still trigger discomfort and escape
+- escape now searches for reachable safer spots and can replan when Polen gets stuck below a ledge or small climb
+
 ## 2026-05-30 (Narrative Direction)
 
 ### Architecture Revision

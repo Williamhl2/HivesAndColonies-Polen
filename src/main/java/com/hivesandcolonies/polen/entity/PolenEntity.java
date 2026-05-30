@@ -2,12 +2,18 @@ package com.hivesandcolonies.polen.entity;
 
 import com.hivesandcolonies.polen.dialogue.PolenDialogueManager;
 import com.hivesandcolonies.polen.entity.ai.PolenMood;
+import com.hivesandcolonies.polen.entity.ai.activity.PolenQuietActivityController;
+import com.hivesandcolonies.polen.entity.ai.routine.PolenRoutinePlanner;
+import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyEvaluator;
+import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.polen.entity.ai.goal.PolenCuriousInterestGoal;
 import com.hivesandcolonies.polen.entity.ai.goal.PolenIdleHobbyGoal;
 import com.hivesandcolonies.polen.entity.ai.goal.PolenKeepDistanceGoal;
 import com.hivesandcolonies.polen.entity.ai.goal.PolenRoutineGoal;
 import com.hivesandcolonies.polen.entity.ai.goal.PolenSafeStrollGoal;
 import com.hivesandcolonies.polen.entity.ai.goal.PolenSeekSafetyGoal;
+import com.hivesandcolonies.polen.entity.ai.memory.PolenMemoryHandler;
+import com.hivesandcolonies.polen.entity.ai.mood.PolenMoodController;
 import com.hivesandcolonies.polen.progression.PolenAdvancementManager;
 import com.hivesandcolonies.polen.progression.PolenAffinityLevels;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
@@ -15,12 +21,9 @@ import com.hivesandcolonies.polen.progression.PolenChapterManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
 import com.hivesandcolonies.polen.progression.player.PolenPlayerRelationshipManager;
-import com.hivesandcolonies.polen.story.PolenMemoryManager;
-import com.hivesandcolonies.polen.story.PolenMemoryType;
 import com.hivesandcolonies.polen.story.PolenStoryEventManager;
-
+import com.hivesandcolonies.polen.util.PolenNbtHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -40,7 +43,6 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 
 public class PolenEntity extends PathfinderMob {
@@ -58,9 +60,6 @@ public class PolenEntity extends PathfinderMob {
     private static final EntityDataAccessor<Integer> CURRENT_MOOD =
             SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
 
-    public static final int QUIET_ACTIVITY_NONE = 0;
-    public static final int QUIET_ACTIVITY_SINGING = 1;
-    public static final int QUIET_ACTIVITY_DRAWING = 2;
     private static final long AMBIENT_DIALOGUE_COOLDOWN = 160L;
     private static final double AMBIENT_DIALOGUE_RANGE = 8.0D;
     private static final double DANGEROUS_SPOT_AVOID_RADIUS = 5.0D;
@@ -90,7 +89,7 @@ public class PolenEntity extends PathfinderMob {
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(QUIET_ACTIVITY, QUIET_ACTIVITY_NONE);
+        builder.define(QUIET_ACTIVITY, PolenQuietActivityController.QUIET_ACTIVITY_NONE);
         builder.define(QUIET_ACTIVITY_TICKS, 0);
         builder.define(CURRENT_MOOD, PolenMood.CALM.getId());
     }
@@ -121,7 +120,7 @@ public class PolenEntity extends PathfinderMob {
         super.tick();
 
         if (this.level().isClientSide) {
-            tickQuietActivityParticles();
+            PolenQuietActivityController.tickClientParticles(this);
             return;
         }
 
@@ -131,16 +130,10 @@ public class PolenEntity extends PathfinderMob {
         }
 
         if (this.tickCount % 100 == 0) {
-            seedMemoriesFromNearbyEnvironment();
+            PolenMemoryHandler.seedMemoriesFromNearbyEnvironment(this);
         }
 
-        int quietActivityTicks = this.entityData.get(QUIET_ACTIVITY_TICKS);
-        if (quietActivityTicks > 0) {
-            this.entityData.set(QUIET_ACTIVITY_TICKS, quietActivityTicks - 1);
-            if (quietActivityTicks == 1) {
-                stopQuietActivity();
-            }
-        }
+        PolenQuietActivityController.tickServer(this);
     }
 
     @Override
@@ -159,20 +152,20 @@ public class PolenEntity extends PathfinderMob {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        saveBlockPos(tag, TAG_FAVORITE_FLOWER_POS, this.favoriteFlowerPos);
-        saveBlockPos(tag, TAG_FAVORITE_HIVE_POS, this.favoriteHivePos);
-        saveBlockPos(tag, TAG_RESTING_POS, this.restingPos);
-        saveBlockPos(tag, TAG_DANGEROUS_SPOT_POS, this.dangerousSpotPos);
+        PolenNbtHelper.saveBlockPos(tag, TAG_FAVORITE_FLOWER_POS, this.favoriteFlowerPos);
+        PolenNbtHelper.saveBlockPos(tag, TAG_FAVORITE_HIVE_POS, this.favoriteHivePos);
+        PolenNbtHelper.saveBlockPos(tag, TAG_RESTING_POS, this.restingPos);
+        PolenNbtHelper.saveBlockPos(tag, TAG_DANGEROUS_SPOT_POS, this.dangerousSpotPos);
         tag.putLong(TAG_DANGEROUS_SPOT_UNTIL, this.dangerousSpotUntilGameTime);
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        this.favoriteFlowerPos = loadBlockPos(tag, TAG_FAVORITE_FLOWER_POS);
-        this.favoriteHivePos = loadBlockPos(tag, TAG_FAVORITE_HIVE_POS);
-        this.restingPos = loadBlockPos(tag, TAG_RESTING_POS);
-        this.dangerousSpotPos = loadBlockPos(tag, TAG_DANGEROUS_SPOT_POS);
+        this.favoriteFlowerPos = PolenNbtHelper.loadBlockPos(tag, TAG_FAVORITE_FLOWER_POS);
+        this.favoriteHivePos = PolenNbtHelper.loadBlockPos(tag, TAG_FAVORITE_HIVE_POS);
+        this.restingPos = PolenNbtHelper.loadBlockPos(tag, TAG_RESTING_POS);
+        this.dangerousSpotPos = PolenNbtHelper.loadBlockPos(tag, TAG_DANGEROUS_SPOT_POS);
         this.dangerousSpotUntilGameTime = Math.max(0L, tag.getLong(TAG_DANGEROUS_SPOT_UNTIL));
     }
 
@@ -246,20 +239,15 @@ public class PolenEntity extends PathfinderMob {
     }
 
     public boolean isDoingQuietActivity() {
-        return this.entityData.get(QUIET_ACTIVITY) != QUIET_ACTIVITY_NONE;
+        return PolenQuietActivityController.isDoingQuietActivity(this);
     }
 
     public void startQuietActivity(int activityType, int ticks) {
-        this.entityData.set(QUIET_ACTIVITY, activityType);
-        this.entityData.set(QUIET_ACTIVITY_TICKS, ticks);
+        PolenQuietActivityController.startQuietActivity(this, activityType, ticks);
     }
 
     public void stopQuietActivity() {
-        if (this.entityData.get(QUIET_ACTIVITY) != QUIET_ACTIVITY_NONE
-                || this.entityData.get(QUIET_ACTIVITY_TICKS) != 0) {
-            this.entityData.set(QUIET_ACTIVITY, QUIET_ACTIVITY_NONE);
-            this.entityData.set(QUIET_ACTIVITY_TICKS, 0);
-        }
+        PolenQuietActivityController.stopQuietActivity(this);
     }
 
     public boolean hasNearbyPlayer(double range) {
@@ -275,170 +263,39 @@ public class PolenEntity extends PathfinderMob {
     }
 
     public BlockPos getRoutineTarget() {
-        if (this.level().isRaining() || this.level().isThundering() || this.level().isNight()) {
-            if (isRememberedSpotStillValid(this.restingPos) && isSafeStandingSpot(this.restingPos)) {
-                return this.restingPos;
-            }
-
-            BlockPos safeSpot = findNearbySafeSurfaceSpot(10);
-            return safeSpot != null ? safeSpot : null;
-        }
-
-        long dayTime = this.level().getDayTime() % 24000L;
-        if (dayTime < 6000L && isRememberedSpotStillValid(this.favoriteFlowerPos) && isSafeInterestSpot(this.favoriteFlowerPos)) {
-            return this.favoriteFlowerPos;
-        }
-
-        if (dayTime < 12000L && isRememberedSpotStillValid(this.favoriteHivePos) && isSafeInterestSpot(this.favoriteHivePos)) {
-            return this.favoriteHivePos;
-        }
-
-        if (isRememberedSpotStillValid(this.favoriteFlowerPos) && isSafeInterestSpot(this.favoriteFlowerPos)) {
-            return this.favoriteFlowerPos;
-        }
-
-        if (isRememberedSpotStillValid(this.favoriteHivePos) && isSafeInterestSpot(this.favoriteHivePos)) {
-            return this.favoriteHivePos;
-        }
-
-        if (isRememberedSpotStillValid(this.restingPos) && isSafeStandingSpot(this.restingPos)) {
-            return this.restingPos;
-        }
-
-        BlockPos safeSpot = findNearbySafeSurfaceSpot(10);
-        return safeSpot != null ? safeSpot : null;
+        return PolenRoutinePlanner.getRoutineTarget(this);
     }
 
     public boolean isRememberedSpotStillValid(BlockPos pos) {
-        if (pos == null) {
-            return false;
-        }
-
-        return (!this.level().getBlockState(pos).isAir() || pos.closerToCenterThan(this.position(), 2.0D))
-                && !isDangerousMemorySpot(pos);
+        return PolenRoutinePlanner.isRememberedSpotStillValid(this, pos);
     }
-
-    public void rememberInterestingSpot(BlockPos pos) {
-    if (pos == null || !(this.level() instanceof ServerLevel serverLevel)) {
-        return;
-    }
-
-    if (this.level().getBlockState(pos).is(net.minecraft.tags.BlockTags.FLOWERS)) {
-        this.favoriteFlowerPos = pos.immutable();
-        PolenStoryFlagsManager.setFlag(serverLevel, PolenStoryFlag.POLEN_FOUND_FLOWER_SPOT);
-        PolenMemoryManager.unlockMemory(
-                serverLevel,
-                PolenMemoryType.FIRST_FLOWER,
-                pos.getX() + 0.5D,
-                pos.getY() + 0.5D,
-                pos.getZ() + 0.5D
-        );
-        return;
-    }
-
-    if (this.level().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.BEE_NEST)
-            || this.level().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.BEEHIVE)) {
-        this.favoriteHivePos = pos.immutable();
-        PolenStoryFlagsManager.setFlag(serverLevel, PolenStoryFlag.POLEN_FOUND_HIVE_SPOT);
-        PolenMemoryManager.unlockMemory(
-                serverLevel,
-                PolenMemoryType.FIRST_HIVE,
-                pos.getX() + 0.5D,
-                pos.getY() + 0.5D,
-                pos.getZ() + 0.5D
-        );
-    }
-}
-
-    public void rememberRestingSpot(BlockPos pos) {
-    if (pos != null && isSafeStandingSpot(pos) && !isDangerousMemorySpot(pos)) {
-        this.restingPos = pos.immutable();
-
-        if (this.level() instanceof ServerLevel serverLevel) {
-            PolenStoryFlagsManager.setFlag(serverLevel, PolenStoryFlag.POLEN_FOUND_RESTING_SPOT);
-        }
-    }
-}
 
     public boolean isInUnsafeArea() {
-        boolean unsafe = !isSafeStandingSpot(this.blockPosition());
-        if (unsafe) {
-            rememberDangerousSpot(this.blockPosition());
-        }
-        return unsafe;
+        return PolenSafetyNavigator.isInUnsafeArea(this);
+    }
+
+    public boolean shouldSeekSafety() {
+        return PolenSafetyNavigator.shouldSeekSafety(this);
+    }
+
+    public boolean shouldUseUnsafeDialogue() {
+        return PolenSafetyNavigator.shouldUseUnsafeDialogue(this);
     }
 
     public boolean isSafeStandingSpot(BlockPos pos) {
-        if (pos == null) {
-            return false;
-        }
-
-        if (!this.level().getFluidState(pos).isEmpty() || !this.level().getFluidState(pos.above()).isEmpty()) {
-            return false;
-        }
-
-        if (!this.level().getBlockState(pos).canBeReplaced() || !this.level().getBlockState(pos.above()).canBeReplaced()) {
-            return false;
-        }
-
-        if (!this.level().getBlockState(pos.below()).isFaceSturdy(this.level(), pos.below(), net.minecraft.core.Direction.UP)) {
-            return false;
-        }
-
-        int surfaceY = this.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
-        boolean nearSurface = pos.getY() >= surfaceY - 2;
-        boolean brightEnough = this.level().getMaxLocalRawBrightness(pos) >= 8;
-
-        return nearSurface && brightEnough;
+        return PolenSafetyEvaluator.isSafeStandingSpot(this, pos);
     }
 
     public boolean isSafeInterestSpot(BlockPos pos) {
-        if (pos == null) {
-            return false;
-        }
-
-        int surfaceY = this.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
-        boolean nearSurface = pos.getY() >= surfaceY - 2;
-        boolean brightEnough = this.level().getMaxLocalRawBrightness(pos.above()) >= 8;
-
-        return nearSurface && brightEnough && !isDangerousMemorySpot(pos);
+        return PolenRoutinePlanner.isSafeInterestSpot(this, pos);
     }
 
     public BlockPos findNearbySafeSurfaceSpot(int radius) {
-        BlockPos origin = this.blockPosition();
-        BlockPos bestPos = null;
-        double bestDistanceSqr = Double.MAX_VALUE;
-
-        for (int searchRadius : new int[] {radius, radius * 2}) {
-            for (int dx = -searchRadius; dx <= searchRadius; dx++) {
-                for (int dz = -searchRadius; dz <= searchRadius; dz++) {
-                    BlockPos columnPos = new BlockPos(origin.getX() + dx, origin.getY(), origin.getZ() + dz);
-                    int surfaceY = this.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, columnPos.getX(), columnPos.getZ());
-                    BlockPos candidate = new BlockPos(columnPos.getX(), surfaceY, columnPos.getZ());
-
-                    if (!isSafeStandingSpot(candidate) || isDangerousMemorySpot(candidate)) {
-                        continue;
-                    }
-
-                    double distanceSqr = candidate.distSqr(origin);
-                    if (distanceSqr < bestDistanceSqr) {
-                        bestDistanceSqr = distanceSqr;
-                        bestPos = candidate.immutable();
-                    }
-                }
-            }
-
-            if (bestPos != null) {
-                return bestPos;
-            }
-        }
-
-        return bestPos;
+        return PolenSafetyNavigator.findNearbySafeSurfaceSpot(this, radius);
     }
 
     public Vec3 getNearestSafeSpotCenter(int radius) {
-        BlockPos pos = findNearbySafeSurfaceSpot(radius);
-        return pos == null ? null : Vec3.atCenterOf(pos);
+        return PolenSafetyNavigator.getNearestSafeSpotCenter(this, radius);
     }
 
     public void rememberDangerousSpot(BlockPos pos) {
@@ -457,13 +314,11 @@ public class PolenEntity extends PathfinderMob {
     }
 
     public boolean isDangerousMemorySpot(BlockPos pos) {
-        if (pos == null || !hasDangerousSpotMemory()) {
-            return false;
-        }
-
-        double dx = (this.dangerousSpotPos.getX() + 0.5D) - (pos.getX() + 0.5D);
-        double dz = (this.dangerousSpotPos.getZ() + 0.5D) - (pos.getZ() + 0.5D);
-        return (dx * dx + dz * dz) <= (DANGEROUS_SPOT_AVOID_RADIUS * DANGEROUS_SPOT_AVOID_RADIUS);
+        return PolenSafetyEvaluator.isDangerousMemorySpot(
+                this.dangerousSpotPos,
+                pos,
+                DANGEROUS_SPOT_AVOID_RADIUS
+        );
     }
 
     public BlockPos getDangerousSpotPos() {
@@ -471,23 +326,7 @@ public class PolenEntity extends PathfinderMob {
     }
 
     public int pickQuietActivity() {
-        PolenMood mood = getMood();
-        
-        if (mood == PolenMood.JOYFUL) {
-            return this.getRandom().nextInt(4) == 0
-                    ? QUIET_ACTIVITY_DRAWING
-                    : QUIET_ACTIVITY_SINGING;
-        }
-    
-        if (mood == PolenMood.CONFIDENT || mood == PolenMood.INSPIRED || mood == PolenMood.CURIOUS) {
-            return this.getRandom().nextBoolean()
-                    ? QUIET_ACTIVITY_SINGING
-                    : QUIET_ACTIVITY_DRAWING;
-        }
-    
-        return this.getRandom().nextInt(3) == 0
-                ? QUIET_ACTIVITY_SINGING
-                : QUIET_ACTIVITY_DRAWING;
+        return PolenQuietActivityController.pickQuietActivity(this);
     }
 
     public BlockPos getFavoriteFlowerPos() {
@@ -503,11 +342,7 @@ public class PolenEntity extends PathfinderMob {
     }
 
     public String getQuietActivityName() {
-        return switch (this.entityData.get(QUIET_ACTIVITY)) {
-            case QUIET_ACTIVITY_SINGING -> "singing";
-            case QUIET_ACTIVITY_DRAWING -> "drawing";
-            default -> "none";
-        };
+        return PolenQuietActivityController.getQuietActivityName(this);
     }
 
     public void tryAmbientDialogue(String situation) {
@@ -538,128 +373,41 @@ public class PolenEntity extends PathfinderMob {
     }
 
     private void updateMood() {
-        PolenMood nextMood;
-
-        Player nearbyPlayer = this.level().getNearestPlayer(this, 2.5D);
-
-        if (nearbyPlayer != null && !isComfortableWith(nearbyPlayer)) {
-            nextMood = PolenMood.TIMID;
-        } else if (this.level().isThundering()
-                || this.level().isRaining() && this.level().canSeeSky(this.blockPosition())) {
-            nextMood = PolenMood.UNSETTLED;
-        } else if (nearbyPlayer != null
-                && PolenAffinityManager.getAffinity(nearbyPlayer) >= PolenAffinityLevels.FRIEND) {
-            nextMood = PolenMood.JOYFUL;
-        } else if (isDoingQuietActivity()) {
-            nextMood = PolenMood.INSPIRED;
-        } else if (isNearRememberedInterest()) {
-            nextMood = PolenMood.CURIOUS;
-        } else if (this.level() instanceof ServerLevel serverLevel
-            && PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.PLAYER_HAS_SHELTER)) {
-        nextMood = PolenMood.CONFIDENT;
-        } else {
-            nextMood = PolenMood.CALM;
-        }
-
-        this.entityData.set(CURRENT_MOOD, nextMood.getId());
+        this.entityData.set(CURRENT_MOOD, PolenMoodController.calculateMood(this).getId());
     }
 
-    private boolean isNearRememberedInterest() {
-        return this.favoriteFlowerPos != null && this.favoriteFlowerPos.closerToCenterThan(this.position(), 3.5D)
-                || this.favoriteHivePos != null && this.favoriteHivePos.closerToCenterThan(this.position(), 3.5D);
+    public void setFavoriteFlowerPos(BlockPos pos) {
+        this.favoriteFlowerPos = pos;
     }
 
-    private void seedMemoriesFromNearbyEnvironment() {
-        if (this.level() instanceof ServerLevel serverLevel
-                && this.dangerousSpotPos != null
-                && serverLevel.getGameTime() >= this.dangerousSpotUntilGameTime) {
-            this.dangerousSpotPos = null;
-            this.dangerousSpotUntilGameTime = 0L;
-        }
-
-        if (this.restingPos == null) {
-            this.restingPos = this.blockPosition().immutable();
-        }
-
-        if (this.favoriteFlowerPos != null && this.favoriteHivePos != null) {
-            return;
-        }
-
-        BlockPos origin = this.blockPosition();
-        for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-6, -2, -6), origin.offset(6, 2, 6))) {
-            if (this.favoriteFlowerPos == null
-                    && this.level().getBlockState(pos).is(net.minecraft.tags.BlockTags.FLOWERS)) {
-                this.favoriteFlowerPos = pos.immutable();
-            }
-
-            if (this.favoriteHivePos == null
-                    && (this.level().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.BEE_NEST)
-                    || this.level().getBlockState(pos).is(net.minecraft.world.level.block.Blocks.BEEHIVE))) {
-                this.favoriteHivePos = pos.immutable();
-            }
-
-            if (this.favoriteFlowerPos != null && this.favoriteHivePos != null) {
-                return;
-            }
-        }
+    public void setFavoriteHivePos(BlockPos pos) {
+        this.favoriteHivePos = pos;
     }
 
-    private static void saveBlockPos(CompoundTag tag, String key, BlockPos pos) {
-        if (pos == null) {
-            return;
-        }
-
-        CompoundTag posTag = new CompoundTag();
-        posTag.putInt("x", pos.getX());
-        posTag.putInt("y", pos.getY());
-        posTag.putInt("z", pos.getZ());
-        tag.put(key, posTag);
+    public void setRestingPos(BlockPos pos) {
+        this.restingPos = pos;
     }
 
-    private static BlockPos loadBlockPos(CompoundTag tag, String key) {
-        if (!tag.contains(key, CompoundTag.TAG_COMPOUND)) {
-            return null;
-        }
-
-        CompoundTag posTag = tag.getCompound(key);
-        return new BlockPos(posTag.getInt("x"), posTag.getInt("y"), posTag.getInt("z"));
+    public int getQuietActivityType() {
+        return this.entityData.get(QUIET_ACTIVITY);
     }
 
-    private void tickQuietActivityParticles() {
-        int quietActivity = this.entityData.get(QUIET_ACTIVITY);
-        if (quietActivity == QUIET_ACTIVITY_NONE || this.tickCount % 12 != 0) {
-            return;
-        }
-
-        double x = this.getX();
-        double y = this.getEyeY() + 0.2D;
-        double z = this.getZ();
-
-        if (quietActivity == QUIET_ACTIVITY_SINGING) {
-            this.level().addParticle(
-                    ParticleTypes.NOTE,
-                    x,
-                    y + 0.2D,
-                    z,
-                    this.getRandom().nextDouble(),
-                    0.0D,
-                    0.0D
-            );
-            return;
-        }
-
-        if (quietActivity == QUIET_ACTIVITY_DRAWING) {
-            double offsetX = (this.getRandom().nextDouble() - 0.5D) * 0.4D;
-            double offsetZ = (this.getRandom().nextDouble() - 0.5D) * 0.4D;
-            this.level().addParticle(
-                    ParticleTypes.ENCHANT,
-                    x + offsetX,
-                    y - 0.5D,
-                    z + offsetZ,
-                    0.0D,
-                    0.02D,
-                    0.0D
-            );
-        }
+    public int getQuietActivityTicks() {
+        return this.entityData.get(QUIET_ACTIVITY_TICKS);
     }
+
+    // The controller owns quiet activity behavior, but synced state still lives on the entity.
+    public void setQuietActivityState(int activityType, int ticks) {
+        this.entityData.set(QUIET_ACTIVITY, activityType);
+        this.entityData.set(QUIET_ACTIVITY_TICKS, ticks);
+    }
+
+    public void rememberInterestingSpot(BlockPos pos) {
+        PolenMemoryHandler.rememberInterestingSpot(this, pos);
+    }
+
+    public void rememberRestingSpot(BlockPos pos) {
+        PolenMemoryHandler.rememberRestingSpot(this, pos);
+    }
+
 }

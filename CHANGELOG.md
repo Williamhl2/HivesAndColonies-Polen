@@ -2,6 +2,47 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+- Continued the Polen entity refactor to keep AI responsibilities split by concern.
+- Moved quiet activity logic out of `PolenEntity` into `PolenQuietActivityController`.
+- Moved reusable `BlockPos` NBT serialization into `PolenNbtHelper`.
+- Moved routine target selection out of `PolenEntity` into `PolenRoutinePlanner`.
+- Moved safety escape planning out of `PolenEntity` into `PolenSafetyNavigator`.
+- Tightened unsafe dialogue rules so cave-escape lines are no longer used for normal outdoor positions.
+- Improved safety escape replanning so Polen can recover better when the first route is blocked or awkward.
+
+### Technical
+
+- `PolenEntity` now delegates passive hobby timing and client particle feedback to a dedicated controller.
+- Entity NBT persistence is prepared for reuse by future extracted systems.
+- Escape search now prefers reachable safe spots and gives extra weight to upward/open destinations when leaving enclosed unsafe areas.
+
+## v0.0.8 - Entity Refactor Update
+
+### Added
+
+- `PolenSafetyEvaluator` for evaluating safe and dangerous positions in the environment.
+- `PolenSafetyNavigator` for handling escape route planning and replanning when stuck.
+- `PolenRoutinePlanner` for selecting routine targets based on mood and memory.
+- `PolenMoodController` for calculating Polen's mood based on context.
+- `PolenMemoryHandler` for managing Polen's memories of flowers, hives, resting spots and nearby environment.
+- `PolenQuietActivityController` for managing quiet activity selection and synchronized hobby timers.
+- `PolenNbtHelper` for reusable NBT serialization logic.
+
+### Changed
+
+- Refactored `PolenEntity` to delegate specific responsibilities to the new classes, keeping it focused on coordinating entity state, interaction flow and routine target selection.
+- Improved safety behavior to avoid false-positive cave dialogue outdoors and to allow escape replanning when the first route is blocked.
+- Adjusted AI behavior to better reflect mood and memory states through the new controllers.
+
+### Fixed
+
+- Prevented false-positive cave escape dialogue when Polen is exposed outdoors.
+- Improved escape behavior to avoid getting stuck when the initial escape route is blocked.
+
 ## v0.0.7 - Living Polen Update
 
 ### Added

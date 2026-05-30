@@ -1,5 +1,24 @@
 # Codebase Map
 
+## Refactor actual de Polen
+
+La IA ya no vive solo en `PolenEntity`.
+
+Extracciones activas:
+
+- `entity/ai/activity/PolenQuietActivityController`
+- `entity/ai/memory/PolenMemoryHandler`
+- `entity/ai/mood/PolenMoodController`
+- `entity/ai/routine/PolenRoutinePlanner`
+- `entity/ai/safety/PolenSafetyEvaluator`
+- `entity/ai/safety/PolenSafetyNavigator`
+- `util/PolenNbtHelper`
+
+Objetivo:
+
+- mantener `PolenEntity` como coordinadora
+- evitar que hobbies, mood, memoria y serializacion terminen mezclados en un solo archivo
+
 ## Paquetes principales
 
 ### `com.hivesandcolonies.polen`

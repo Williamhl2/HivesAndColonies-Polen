@@ -1,5 +1,59 @@
 # Polen AI
 
+## Estado actual del refactor
+
+`PolenEntity` sigue siendo la coordinadora principal, pero ya no debe crecer como archivo unico.
+
+Responsabilidades ya extraidas:
+
+- `PolenMoodController`
+  - calculo de moods segun entorno, afinidad y actividad
+- `PolenMemoryHandler`
+  - descubrimiento de intereses, resting spot y semillas de memoria local
+- `PolenSafetyEvaluator`
+  - spots seguros, spots peligrosos y validacion de refugio/superficie
+- `PolenQuietActivityController`
+  - hobbies pasivos, temporizador sincronizado y particulas cliente
+- `PolenNbtHelper`
+  - guardado y carga reutilizable de `BlockPos` en NBT
+- `PolenRoutinePlanner`
+  - seleccion de destinos contextuales para rutina
+  - validacion de spots recordados
+  - filtro de intereses seguros
+- `PolenSafetyNavigator`
+  - decision de huida
+  - busqueda de spots seguros alcanzables
+  - replanteo de ruta cuando Polen se atasca o no logra salir
+
+Responsabilidades que aun conserva `PolenEntity`:
+
+- estado sincronizado de la entidad
+- flujo de interaccion con jugador
+- seleccion de rutina y destinos
+- memoria temporal de zonas peligrosas
+- dialogos ambientales
+
+Regla de mantenimiento actual:
+
+- si una responsabilidad puede probarse o evolucionar sin conocer toda la entidad, debe vivir fuera de `PolenEntity`
+
+## Ajuste reciente de escape y peligro
+
+La logica de peligro ahora separa tres conceptos:
+
+- `unsafe`
+  - lugar poco comodo para hobbies o rutina pasiva
+- `shouldSeekSafety`
+  - lugar que justifica salir activamente
+- `unsafe dialogue`
+  - dialogo reservado para contextos tipo cueva o encierro, no para exterior normal
+
+Efectos practicos:
+
+- Polen ya no deberia quejarse de "salir de aqui" solo por estar al aire libre en un contexto no cavernoso
+- la huida reintenta una nueva ruta si la anterior termina mal
+- la busqueda de escape ahora prioriza spots alcanzables y con ganancia vertical cuando conviene subir
+
 ## Objetivo
 
 La IA de Polen no debe sentirse como la de un aldeano genérico.

@@ -1,6 +1,7 @@
 package com.hivesandcolonies.polen.entity.ai.goal;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.ai.activity.PolenQuietActivityController;
 
 import net.minecraft.world.entity.ai.goal.Goal;
 
@@ -16,7 +17,7 @@ public class PolenIdleHobbyGoal extends Goal {
 
     private int activityTicks;
     private int cooldownTicks = MIN_COOLDOWN;
-    private int activityType = PolenEntity.QUIET_ACTIVITY_NONE;
+    private int activityType = PolenQuietActivityController.QUIET_ACTIVITY_NONE;
 
     public PolenIdleHobbyGoal(PolenEntity polen) {
         this.polen = polen;
@@ -57,7 +58,7 @@ public class PolenIdleHobbyGoal extends Goal {
         this.polen.startQuietActivity(this.activityType, this.activityTicks);
         this.polen.getNavigation().stop();
         this.polen.tryAmbientDialogue(
-                this.activityType == PolenEntity.QUIET_ACTIVITY_SINGING
+                this.activityType == PolenQuietActivityController.QUIET_ACTIVITY_SINGING
                         ? com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_SINGING
                         : com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_DRAWING
         );
@@ -78,7 +79,7 @@ public class PolenIdleHobbyGoal extends Goal {
     public void stop() {
         this.polen.stopQuietActivity();
         this.activityTicks = 0;
-        this.activityType = PolenEntity.QUIET_ACTIVITY_NONE;
+        this.activityType = PolenQuietActivityController.QUIET_ACTIVITY_NONE;
         this.cooldownTicks = MIN_COOLDOWN + this.polen.getRandom().nextInt(MAX_COOLDOWN - MIN_COOLDOWN + 1);
     }
 }
