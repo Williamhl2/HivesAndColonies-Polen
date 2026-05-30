@@ -1,7 +1,9 @@
 package com.hivesandcolonies.polen.dialogue;
 
 import com.hivesandcolonies.polen.Polen;
+import com.hivesandcolonies.polen.progression.PolenAffinityLevels;
 import com.hivesandcolonies.polen.progression.PolenChapterManager;
+import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
 
@@ -36,6 +38,12 @@ public final class PolenDialogueManager {
             PolenChapterManager.FOUNDATION, CHAPTER_1_DIALOGUES
     );
 
+    public static final String AMBIENT_SINGING = "ambient_singing";
+    public static final String AMBIENT_DRAWING = "ambient_drawing";
+    public static final String AMBIENT_CURIOSITY = "ambient_curiosity";
+    public static final String AMBIENT_TIMID = "ambient_timid";
+    public static final String AMBIENT_UNSAFE = "ambient_unsafe";
+
     private PolenDialogueManager() {}
 
     public static Component getDialogue(
@@ -56,11 +64,38 @@ public final class PolenDialogueManager {
                 .append(Component.translatable(key));
     }
 
+    public static Component getAmbientDialogue(
+            Player player,
+            String situation,
+            RandomSource random
+    ) {
+        int affinity = PolenAffinityManager.getAffinity(player);
+        String tone = getAmbientTone(affinity);
+        int variation = 1 + random.nextInt(3);
+        String key = "dialogue.polen." + situation + "." + tone + ".line" + variation;
+
+        return Component.translatable(getSpeakerKey(player))
+                .append(Component.literal(": "))
+                .append(Component.translatable(key));
+    }
+
     private static String getSpeakerKey(Player player) {
         if (PolenStoryFlagsManager.hasFlag(player, PolenStoryFlag.NAME_REVEALED)) {
             return POLEN_KEY;
         }
 
         return UNKNOWN_GIRL_KEY;
+    }
+
+    private static String getAmbientTone(int affinity) {
+        if (affinity >= PolenAffinityLevels.FRIEND) {
+            return "warm";
+        }
+
+        if (affinity >= PolenAffinityLevels.NAME_REVEAL) {
+            return "soft";
+        }
+
+        return "guarded";
     }
 }

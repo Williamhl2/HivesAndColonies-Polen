@@ -1,1134 +1,617 @@
-# Hives & Colonies - Especificación Narrativa por Capítulos
+# Hives And Colonies: Polen
 
-## Objetivo del documento
+## Estructura Narrativa por Capítulos
 
-Este documento expande la historia principal de `Hives & Colonies` en una estructura apta para implementación.
+La campaña principal se divide en 16 capítulos organizados en 4 actos.
 
-Cada capítulo incluye:
+La historia avanza mediante tres progresiones paralelas:
 
-- Propósito narrativo.
-- Estado emocional de Polen.
-- Cadena de quests.
-- Progresión de diálogo.
-- Hitos de afinidad.
-- Revelaciones de historia.
-- Reglas de implementación para no romper la narrativa.
+1. La relación entre el jugador y Polen.
+2. El crecimiento de la colonia.
+3. El descubrimiento del legado de la civilización antigua.
 
-## Principios no negociables
+La coherencia del proyecto depende de que esas tres líneas siempre avancen juntas. Ningún sistema debe crecer por encima del arco emocional que lo sostiene.
+
+## Principios de Coherencia
 
 - La historia es personal antes que épica.
-- El reino importa porque Polen importa.
-- Polen no debe sentirse como una dispensadora de quests.
-- Polen siempre debe sonar humana, vulnerable y concreta.
-- La progresión emocional debe acompañar la progresión mecánica.
-- El jugador ayuda a reconstruir una comunidad, no solo una fábrica.
+- La colonia importa porque protege personas, no porque produce más.
+- Polen nunca debe sentirse como una dispensadora de quests.
+- Las abejas, la magia y la colonia deben revelar el pasado de forma gradual, no mediante exposición directa.
+- El objetivo final no es restaurar exactamente el mundo antiguo, sino decidir qué merece continuar.
+- El final no exige una coronación. Exige una elección consciente sobre el legado hallado.
 
-## Regla crítica del prólogo
+## Regla Crítica del Prólogo
 
-Antes del cierre del Capítulo 0, el jugador nunca puede conocer el nombre de Polen.
+Antes del cierre del Capítulo 0, el jugador no puede conocer el nombre de Polen.
 
 Durante ese período:
 
-- El nombre visible del NPC debe ser `???`.
-- Cualquier texto de quest debe decir `la chica del claro`, `la joven del cerezo`, `la desconocida` o equivalente.
-- Ningún ítem, avance, estructura, subtítulo, tooltip, libro, voice line o nombre de archivo mostrado al jugador puede usar `Polen`.
-- Si el sistema requiere identificadores internos, deben permanecer internos y no ser visibles en UI.
+- El NPC debe mostrarse como `???`.
+- Los textos visibles deben usar `la desconocida`, `la joven del claro` o equivalentes.
+- Ningún quest, tooltip, estructura o diálogo visible puede mostrar `Polen`.
+- Los identificadores internos pueden existir, pero no deben filtrarse a la interfaz.
 
-La primera vez que el nombre aparece en pantalla debe ser parte de una escena o diálogo intencional de confianza:
+La primera vez que el nombre aparece en pantalla debe ser una escena deliberada de confianza:
 
 `"Mi nombre es Polen."`
 
-## Curva emocional general
+## Matriz de Revelaciones
 
-### Inicio
+Orden recomendado de revelación:
 
-Una chica desconocida vive sola en un claro. Está agotada, nerviosa y evita cualquier pregunta personal.
+1. Existe una chica viviendo sola en un claro.
+2. El jugador se gana su confianza básica.
+3. Polen revela su nombre.
+4. La colonia empieza a convertirse en un lugar seguro para ambos.
+5. Polen reconoce símbolos y técnicas que no debería conocer.
+6. Abejas y magia comparten un vínculo antiguo.
+7. Existió una civilización avanzada organizada alrededor de ese conocimiento.
+8. La caída de esa civilización no fue natural.
+9. Polen posee una conexión directa con ese legado.
+10. El jugador y Polen deciden qué parte de ese legado merece sobrevivir.
 
-### Mitad
+---
 
-Polen se convierte en una amiga cercana. Empieza a ayudar a otros, propone ideas y se involucra en la colonia.
+# ACTO I - LA DESCONOCIDA
 
-### Final
+Tema central:
 
-Polen acepta su herencia, comprende el peso de la ausencia de la Reina y elige liderar sin dejar de ser ella misma.
+¿Quién es Polen?
 
-## Afinidad global
+La historia es íntima, pequeña y concreta. La colonia todavía no es importante por sí misma; solo importa como promesa de refugio.
 
-La afinidad no debe sentirse como una barra de romance ni como un medidor abstracto. Debe representar confianza, cercanía y responsabilidad compartida.
+## Capítulo 0 - Primer Encuentro
 
-### Rangos sugeridos
+### Estado Narrativo
 
-- `0-9`: Desconfianza cautelosa.
-- `10-24`: Reconocimiento.
-- `25-39`: Confianza inicial.
-- `40-54`: Amistad estable.
-- `55-69`: Confianza profunda.
-- `70-84`: Lealtad y propósito compartido.
-- `85-100`: Vínculo fundacional para la coronación.
+Polen es una completa desconocida.
 
-### Formas de subir afinidad
+No confía en el jugador.
 
-- Completar encargos personales de Polen.
-- Mejorar refugios, caminos y espacios comunitarios.
-- Proteger abejas y restaurar naturaleza.
-- Recuperar registros del Reino Apícola.
-- Resolver problemas de la colonia que afectan a otras personas.
+No habla sobre su pasado.
 
-### Formas de expresar afinidad
+### Objetivo
 
-- Nuevas líneas de diálogo.
-- Polen aparece con más frecuencia en la colonia.
-- Polen deja de retroceder o disculparse tanto.
-- Polen hace preguntas al jugador.
-- Polen propone tareas por iniciativa propia.
+Establecer el primer vínculo sin forzar intimidad.
 
-## Matriz de revelaciones
+### Sistemas
 
-### Lo que el jugador no sabe al inicio
+- Exploración inicial
+- Primer diálogo
+- Afinidad básica
 
-- El nombre de Polen.
-- Su relación con la realeza.
-- La existencia formal del Reino Apícola.
-- La identidad de la Reina.
-- La razón de su exilio.
-- La magnitud de lo perdido.
+### Progresión
 
-### Orden recomendado de revelación
+- Rumores sobre una joven en un claro.
+- Descubrimiento del campamento.
+- Primeras ayudas pequeñas.
+- Conversaciones breves y cautelosas.
 
-1. Existe una chica sola en un claro.
-2. La chica confía lo suficiente para decir su nombre.
-3. Tiene una conexión inusual con las abejas.
-4. Conoce símbolos, costumbres y técnicas que no debería conocer una aldeana cualquiera.
-5. Existió un Reino Apícola organizado.
-6. La Reina desapareció.
-7. Polen es hija de la Reina.
-8. Polen es la heredera legítima.
-9. Polen decide aceptar la sucesión.
+### Revelación
 
-## Capítulo 0 - Prólogo
+Polen revela su nombre.
 
-## La Chica del Claro
+### Resultado
 
-### Propósito
+- `NAME_REVEALED`
+- `CHAPTER_0_COMPLETE`
 
-Introducir misterio, ternura y fragilidad.
+## Capítulo 1 - Un Lugar Seguro
 
-El jugador no debe sentir que encontró a una autoridad, sino a una persona aislada que necesita tiempo para confiar.
+### Estado Narrativo
 
-### Estado emocional de Polen
+Polen ha decidido permanecer cerca.
 
-- Nerviosa.
-- Cansada.
-- Educada pero evasiva.
-- A la defensiva sin agresividad.
-- Muy sola.
+Todavía no confía completamente.
 
-### Condiciones de entrada
+### Objetivo
 
-- Mundo nuevo.
-- Primer contacto con el diario o nota inicial.
+Demostrar que el jugador puede ofrecer seguridad sin invadir.
 
-### Cadena de quests
+### Sistemas
 
-#### Q0.1 - Rumores entre los Cerezos
+- Construcción básica
+- Refugio
+- Supervivencia
 
-**Resumen:** El jugador recibe una nota con rumores sobre una joven que vive en una arboleda de cerezos.
+### Progresión
 
-**Objetivos sugeridos:**
+- Cama
+- Refugio
+- Iluminación
+- Seguridad
+- Primer sendero entre el claro y la base
 
-- Leer la nota inicial.
-- Localizar un bioma o zona con cerezos.
-- Seguir pistas vagas de viajeros.
+### Revelación
 
-**Función narrativa:**
+Polen admite que se siente más tranquila cerca del jugador.
 
-- Sembrar curiosidad.
-- Evitar cualquier mención al Reino Apícola.
-- Presentar a la joven como un rumor, no como una heroína.
+### Resultado
 
-**Recompensa narrativa:**
+- `PLAYER_HAS_SHELTER`
 
-- Desbloquea la investigación del claro.
+## Capítulo 2 - Los Primeros Colonos
 
-#### Q0.2 - Flores y Silencio
+### Estado Narrativo
 
-**Resumen:** El jugador reúne materiales del entorno para entender por qué alguien viviría allí.
+Polen comienza a observar al jugador con curiosidad.
 
-**Objetivos sugeridos:**
+La idea de comunidad deja de parecerle imposible.
 
-- Recolectar flores de cerezo.
-- Encontrar una colmena silvestre.
-- Observar señales de presencia humana discreta.
+### Objetivo
 
-**Función narrativa:**
+Transformar un refugio en el inicio de una comunidad.
 
-- Vincular el espacio con belleza, calma y melancolía.
-- Preparar el contraste entre naturaleza viva y vida humana precaria.
+### Sistemas
 
-#### Q0.3 - El Claro Oculto
+- MineColonies
 
-**Resumen:** El jugador encuentra el campamento.
+### Progresión
 
-**Elementos ambientales obligatorios:**
+- Build Tool
+- Town Hall
+- Builder Hut
+- Primer colono
 
-- Fogata.
-- Cama.
-- Flores dispersas.
-- Colmena cercana.
-- Sensación de refugio temporal, no de hogar estable.
+### Revelación
 
-**Función narrativa:**
+Polen observa que el jugador construye pensando en el futuro, no solo en la urgencia del presente.
 
-- Mostrar que la joven sobrevive, no que vive plenamente.
+### Resultado
 
-#### Q0.4 - La Desconocida
+- `COLONY_FOUNDED`
 
-**Resumen:** Primer encuentro directo con `???`.
+## Capítulo 3 - El Source
 
-**Objetivos sugeridos:**
+### Estado Narrativo
 
-- Hablar con `???`.
-- Retirarse y volver luego, respetando su espacio.
-- Entregar una pequeña ayuda simple: comida, flores, carbón o lana.
+La confianza comienza a crecer.
 
-**Función narrativa:**
+Polen ya no solo recibe ayuda; empieza a participar en lo que ocurre.
 
-- Enseñar que el vínculo no se compra; se cuida.
-- Marcar que Polen aprecia la consideración más que el valor material.
+### Objetivo
 
-#### Q0.5 - Un Nombre Compartido
+Introducir Ars Nouveau como herramienta de cuidado, curiosidad y memoria.
 
-**Resumen:** Tras varias ayudas pequeñas, `???` revela su nombre.
+### Sistemas
 
-**Condición emocional:**
+- Source
+- Magia básica
 
-- El jugador fue constante, no invasivo.
+### Progresión
 
-**Momento clave:**
+- Primer Source
+- Primeros experimentos
+- Primer uso práctico para la colonia
 
-- Polen mira al jugador, duda y decide presentarse.
+### Revelación
 
-**Línea ancla:**
+Polen reconoce símbolos familiares.
 
-`"Has sido amable conmigo. No quiero seguir escondiéndome de ti. Mi nombre es Polen."`
+Por primera vez parece recordar algo real, no solo sentir nostalgia.
 
-**Función narrativa:**
+### Resultado
 
-- Cerrar el prólogo.
-- Convertir el misterio en relación.
+- `POLEN_FIRST_MEMORY`
 
-### Progresión de diálogo
+---
 
-#### Primer contacto
+# ACTO II - LOS CIMIENTOS
 
-- `"Oh..."`
-- `"No esperaba visitas."`
-- `"Lo siento. No quiero hablar de mí."`
-- `"¿Podrías dejarme sola un rato?"`
+Tema central:
 
-#### Tras la primera ayuda
+Construir algo que merezca durar.
 
-- `"No tenías que hacer eso."`
-- `"Gracias... de verdad."`
-- `"Hace tiempo que nadie se detenía aquí."`
+La historia deja de ser solo refugio y empieza a convertirse en proyecto compartido.
 
-#### Antes de la revelación
+## Capítulo 4 - Ecos del Pasado
 
-- `"No eres como los demás viajeros."`
-- `"Pensé que si alguien me encontraba, solo haría preguntas."`
-- `"Contigo... el silencio no se siente tan pesado."`
+### Estado Narrativo
 
-#### Revelación del nombre
+Polen comienza a recordar fragmentos aislados.
 
-- `"Mi nombre es Polen."`
-- `"No estoy lista para contar más. Pero quería que lo supieras."`
+La colonia ya no es provisional.
 
-### Hitos de afinidad
+### Objetivo
 
-- `Afinidad 5`: Polen deja de pedir al jugador que se vaya de inmediato.
-- `Afinidad 10`: Acepta un regalo práctico.
-- `Afinidad 15`: Dice su nombre y termina el prólogo.
+Expandir la colonia mientras aparecen los primeros patrones del pasado.
 
-### Revelaciones de historia
+### Sistemas
 
-- Hay una chica viviendo sola.
-- Tiene una relación evidente con las abejas y el claro.
-- Se oculta por razones importantes, pero todavía no las comparte.
+- MineColonies
+- Infraestructura temprana
 
-### Reglas de implementación
+### Progresión
 
-- No usar retratos con nombre antes de Q0.5.
-- Si existe journal o questbook, todas las entradas previas deben usar `???`.
-- No introducir todavía símbolos de corona, títulos reales ni lenguaje ceremonial.
+- Builder funcional
+- Primera expansión
+- Caminos y zonas comunes
 
-## Capítulo 1 - Fundación
+### Revelación
 
-## Un Lugar Seguro
+Los símbolos encontrados no son casuales. Se repiten en estructuras, herramientas y recuerdos.
 
-### Propósito
+## Capítulo 5 - Industria Apícola
 
-Transformar la relación de extraños en una primera amistad.
+### Estado Narrativo
 
-El jugador deja de ser visitante y empieza a convertirse en alguien confiable.
+Polen muestra un interés inusual por ciertas abejas.
 
-### Estado emocional de Polen
+Su vínculo con ellas ya no puede leerse como una simple afinidad personal.
 
-- Sigue siendo tímida.
-- Se siente menos amenazada.
-- Empieza a expresar preocupación por otros, no solo por sí misma.
+### Objetivo
 
-### Tesis del capítulo
+Introducir Productive Bees como herencia viva y no solo como producción.
 
-Antes de reconstruir un reino, alguien necesita un lugar donde no tenga miedo.
+### Sistemas
 
-### Cadena de quests
+- Apiarios
+- Producción de miel
+- Primeras especies especiales
 
-#### Q1.1 - Un Techo Mejor
+### Progresión
 
-**Resumen:** El jugador mejora el refugio del claro o construye un pequeño hogar seguro.
+- Primer apiario
+- Derivados básicos
+- Crianza inicial
 
-**Objetivos sugeridos:**
+### Revelación
 
-- Construir paredes y techo.
-- Añadir almacenamiento.
-- Asegurar luz y calor.
+Las abejas parecen haber tenido una importancia histórica, técnica y cultural.
 
-**Función narrativa:**
+## Capítulo 6 - Voces del Pasado
 
-- El gesto dice: `puedes dejar de sobrevivir por un momento`.
+### Estado Narrativo
 
-#### Q1.2 - Cosas Pequeñas
+Los recuerdos de Polen se vuelven más frecuentes.
 
-**Resumen:** Polen pide ayuda con necesidades cotidianas.
+La curiosidad del jugador pasa de intuición a investigación.
 
-**Objetivos sugeridos:**
+### Objetivo
 
-- Conseguir comida sencilla.
-- Llevar mantas o lana.
-- Preparar un espacio ordenado.
+Conectar magia y abejas como partes de una misma tradición perdida.
 
-**Función narrativa:**
+### Sistemas
 
-- Humanizarla.
-- Mostrar hábitos, torpeza y gratitud.
+- Productive Bees
+- Ars Nouveau
+- Primeros registros fragmentados
 
-#### Q1.3 - Un Camino de Regreso
+### Progresión
 
-**Resumen:** El jugador conecta el claro con la futura colonia.
+- Experimentos híbridos
+- Símbolos compatibles
+- Hallazgos en ruinas o documentos
 
-**Objetivos sugeridos:**
+### Revelación
 
-- Marcar un sendero.
-- Colocar antorchas o faroles.
-- Crear un trayecto seguro.
+Ambos sistemas estuvieron relacionados anteriormente dentro de una cultura más compleja.
 
-**Función narrativa:**
+## Capítulo 7 - Un Lugar Propio
 
-- El vínculo físico refleja el vínculo emocional.
+### Estado Narrativo
 
-#### Q1.4 - Primera Visita
+Polen ya no es una visitante.
 
-**Resumen:** Polen acepta visitar la colonia del jugador.
+La colonia la reconoce como parte de su vida cotidiana.
 
-**Objetivos sugeridos:**
+### Objetivo
 
-- Preparar un pequeño jardín o banco.
-- Mostrarle el asentamiento.
-- Interactuar con un espacio comunitario simple.
+Establecer la Residencia de Polen como hito de pertenencia, no como simple vivienda.
 
-**Función narrativa:**
+### Sistemas
 
-- Primer momento en el que Polen imagina un futuro compartido.
+- MineColonies
+- Polen Residence
 
-#### Q1.5 - Un Lugar Seguro
+### Progresión
 
-**Resumen:** Polen admite que se siente más tranquila cerca del jugador.
+- Diseño del espacio
+- Construcción de la residencia
+- Reconocimiento narrativo dentro de la colonia
 
-**Línea ancla:**
+### Revelación
 
-`"No pensé que volvería a sentirme segura en un lugar construido por alguien más."`
+Polen acepta que pertenece a ese lugar y deja de tratar su presencia como algo temporal.
 
-**Función narrativa:**
+### Resultado
 
-- Cierre emocional del capítulo.
+- `POLEN_RESIDENCE_ESTABLISHED`
 
-### Momentos de personaje
+---
 
-- Polen intenta ayudar y derrama algo o se equivoca; se avergüenza y luego se ríe un poco.
-- Se sorprende de que el jugador prepare espacio para ella sin hacer preguntas.
-- Empieza a dejar pequeños detalles personales en la colonia: flores, miel, notas cortas.
+# ACTO III - LOS SECRETOS PERDIDOS
 
-### Progresión de diálogo
+Tema central:
 
-- `"No estoy acostumbrada a que alguien piense en estas cosas por mí."`
-- `"Este lugar... se siente distinto cuando estás aquí."`
-- `"Puedo intentar ayudar, aunque no prometo no tropezarme."`
-- `"Gracias por no presionarme."`
+¿Qué ocurrió antes?
 
-### Hitos de afinidad
+La colonia ya existe. Ahora el pasado empieza a exigir interpretación.
 
-- `Afinidad 20`: Polen empieza a aparecer fuera del claro.
-- `Afinidad 25`: Polen visita la colonia.
-- `Afinidad 30`: Polen expresa confianza explícita.
+## Capítulo 8 - Caminos Lejanos
 
-### Revelaciones de historia
+### Estado Narrativo
 
-- Polen lleva tiempo huyendo o escondiéndose.
-- Sabe cómo observar espacios seguros y rutas discretas.
-- Todavía no habla de su familia ni de su origen.
+La búsqueda del pasado comienza activamente.
 
-## Capítulo 2 - La Fuente
+Polen ya no quiere solo recordar; quiere entender.
 
-## Descubrimientos Arcanos
+### Objetivo
 
-### Propósito
+Abrir el mundo mediante exploración dirigida.
 
-Introducir `Ars Nouveau` como una vía de curiosidad y servicio, no de dominación.
+### Sistemas
 
-### Estado emocional de Polen
+- Exploración
+- Estructuras antiguas
+- Biomas y rutas lejanas
 
-- Más abierta.
-- Fascinada por lo nuevo.
-- Todavía insegura de su propio valor.
+### Progresión
 
-### Tesis del capítulo
+- Viajes
+- Ruinas
+- Santuarios o archivos olvidados
 
-La magia le interesa a Polen porque puede reparar, cultivar y proteger.
+### Revelación
 
-### Cadena de quests
+Existió una civilización avanzada con presencia territorial amplia.
 
-#### Q2.1 - Trazos en el Polvo
+## Capítulo 9 - Buscando Respuestas
 
-**Resumen:** Polen encuentra símbolos o residuos arcanos y siente curiosidad.
+### Estado Narrativo
 
-**Objetivos sugeridos:**
+La investigación se vuelve más metódica.
 
-- Recolectar materiales básicos de magia.
-- Crear el primer aparato o tomo arcano.
-- Compartir el hallazgo con Polen.
+El jugador y Polen ya trabajan como una sola línea narrativa.
 
-#### Q2.2 - Lo Invisible También Crece
+### Objetivo
 
-**Resumen:** Primeros experimentos con hechizos de utilidad.
+Recopilar información dispersa y empezar a reconstruir una cronología.
 
-**Objetivos sugeridos:**
+### Sistemas
 
-- Usar magia para iluminar.
-- Usar magia para cultivar.
-- Usar magia para reparar un pequeño problema de la colonia.
+- Documentos
+- Fragmentos
+- Reliquias
 
-**Función narrativa:**
+### Progresión
 
-- Enfatizar utilidad cotidiana.
+- Recuperar registros
+- Comparar símbolos
+- Ordenar hipótesis
 
-#### Q2.3 - Preguntas que Polen Sí Quiere Hacer
+### Revelación
 
-**Resumen:** Polen comienza a hacer preguntas concretas sobre cómo funciona la magia.
+La caída de aquella civilización no fue natural ni accidental.
 
-**Objetivos sugeridos:**
+## Capítulo 10 - Industria Arcana
 
-- Reunir componentes para investigación.
-- Desbloquear una estación o ritual inicial.
-- Presenciar una reacción de asombro de Polen.
+### Estado Narrativo
 
-#### Q2.4 - Un Hechizo para Ayudar
+La colonia alcanza una escala suficiente para sostener magia avanzada.
 
-**Resumen:** La magia resuelve una necesidad comunitaria específica.
+El progreso ya exige decisiones éticas y prácticas.
 
-**Objetivos sugeridos:**
+### Objetivo
 
-- Automatizar una tarea pequeña.
-- Mejorar cosechas o iluminación.
-- Salvar recursos o tiempo para otros.
+Dominar sistemas avanzados sin perder el foco humano de la narrativa.
 
-#### Q2.5 - Maravilla Compartida
+### Sistemas
 
-**Resumen:** Polen articula que la magia no le atrae por poder, sino por posibilidad.
+- Ars Nouveau avanzado
+- Integración con infraestructura de colonia
 
-**Línea ancla:**
+### Progresión
 
-`"Si algo así puede hacer la vida más amable para los demás... entonces vale la pena aprenderlo."`
+- Redes arcanas mayores
+- Automatización útil
+- Soluciones para sostener comunidad y exploración
 
-### Momentos de personaje
+### Revelación
 
-- Polen toca una superficie encantada con cautela infantil.
-- Se disculpa por hacer demasiadas preguntas y el jugador valida su curiosidad.
-- Empieza a imaginar cómo combinar naturaleza, abejas y magia.
+La magia antigua dependía de recursos, conocimiento y equilibrio que ya no existen fácilmente.
 
-### Progresión de diálogo
+## Capítulo 11 - El Consejo Perdido
 
-- `"Nunca había visto algo así tan de cerca."`
-- `"No da miedo cuando lo usas así."`
-- `"¿Crees que esto podría servir para cuidar un jardín? ¿O una colmena?"`
-- `"Quisiera entenderlo, no para tener más, sino para perder menos."`
+### Estado Narrativo
 
-### Hitos de afinidad
+El pasado deja de parecer un mito difuso y empieza a mostrar estructura política y social.
 
-- `Afinidad 35`: Polen hace preguntas activamente.
-- `Afinidad 40`: Polen empieza a proponer aplicaciones.
-- `Afinidad 45`: Polen comparte ideas para ayudar a la comunidad.
+### Objetivo
 
-### Revelaciones de historia
+Descubrir cómo se organizaba la civilización antigua y qué voces la guiaban.
 
-- Polen fue criada en un entorno donde conocimiento y deber estaban conectados.
-- Tiene facilidad para comprender sistemas complejos, aunque dude de sí misma.
-- Empieza a insinuarse que recibió educación poco común.
+### Sistemas
 
-## Capítulo 3 - Industria Apícola
+- Archivos
+- Reliquias ceremoniales
+- Espacios históricos
 
-## Herencia Olvidada
+### Progresión
 
-### Propósito
+- Nombres relevantes
+- Cargos o roles
+- Registro de decisiones antiguas
 
-Introducir `Productive Bees` y volver imposible ignorar la conexión de Polen con las abejas.
+### Revelación
 
-### Estado emocional de Polen
+Existía una estructura social compleja.
 
-- Emocionada.
-- Nostálgica sin saber cuánto revelar.
-- Internamente dividida entre alegría y dolor.
+Polen reconoce nombres importantes antes de poder explicar por qué.
 
-### Tesis del capítulo
+---
 
-Las abejas no son solo producción. Son memoria, cultura y pertenencia.
+# ACTO IV - EL DESPERTAR
 
-### Cadena de quests
+Tema central:
 
-#### Q3.1 - El Zumbido Familiar
+¿Qué hacer con el legado encontrado?
 
-**Resumen:** Polen reacciona de forma íntima al trabajo con abejas.
+El conflicto final no es vencer a alguien, sino decidir qué reconstruir y qué dejar atrás.
 
-**Objetivos sugeridos:**
+## Capítulo 12 - El Reino Perdido
 
-- Conseguir primeras abejas manejables.
-- Construir un apiario básico.
-- Observar el comportamiento de distintas especies.
+### Estado Narrativo
 
-#### Q3.2 - Miel, Cera y Recuerdos
+El jugador y Polen tienen ya suficiente información para reconstruir una historia amplia.
 
-**Resumen:** Polen recuerda técnicas o costumbres sin explicar cómo las conoce.
+### Objetivo
 
-**Objetivos sugeridos:**
+Ordenar el pasado completo y separar memoria, mito y propaganda.
 
-- Procesar miel y cera.
-- Crear productos útiles con derivados.
-- Mejorar el cuidado de colmenas.
+### Sistemas
 
-#### Q3.3 - Lenguaje de Colmena
+- Investigación final
+- Integración de registros
+- Espacios de preservación en la colonia
 
-**Resumen:** Polen identifica patrones que sorprenden al jugador.
+### Progresión
 
-**Objetivos sugeridos:**
+- Completar la cronología
+- Unificar hallazgos
+- Exponer la verdad dentro de la colonia
 
-- Criar o combinar especies.
-- Resolver un problema ambiental para estabilizar producción.
-- Documentar observaciones.
+### Revelación
 
-**Función narrativa:**
+La civilización antigua fue real.
 
-- Polen empieza a sonar como alguien formada dentro de una tradición perdida.
+Sus logros superaban lo imaginado, pero también cargaban contradicciones internas.
 
-#### Q3.4 - Símbolos Antiguos
+## Capítulo 13 - La Heredera
 
-**Resumen:** Aparecen emblemas, sellos o diseños apícolas asociados a una cultura anterior.
+### Estado Narrativo
 
-**Objetivos sugeridos:**
+Polen enfrenta finalmente su pasado.
 
-- Recuperar un sello, placa o fragmento decorativo.
-- Compararlo con conocimiento de Polen.
-- Conservarlo en la colonia.
+Ya no puede tratar sus recuerdos como simples fragmentos aislados.
 
-#### Q3.5 - Herencia Olvidada
+### Objetivo
 
-**Resumen:** Polen admite que algunas cosas de las abejas le resultan demasiado familiares.
+Aceptar quién es realmente sin reducirla a un título.
 
-**Línea ancla:**
+### Sistemas
 
-`"Hay cosas que recuerdo sin querer recordarlas. Como si una parte de mí nunca hubiera dejado ese lugar."`
+- Afinidad alta
+- Escenas de memoria
+- Hallazgos de linaje o pertenencia
 
-### Momentos de personaje
+### Progresión
 
-- Polen se calma al lado de colmenas activas.
-- Corrige una técnica de manejo casi por reflejo y luego se queda callada.
-- Se emociona al ver una colonia sana y le cuesta explicar por qué.
+- Recuerdos personales
+- Confirmación de vínculo
+- Conversación de aceptación
 
-### Progresión de diálogo
+### Revelación
 
-- `"No las molestes demasiado... se ponen nerviosas si sienten apuro."`
-- `"La cera guarda más de lo que parece."`
-- `"Perdón. Hablé como si ya hubiera hecho esto antes."`
-- `"A veces siento que las abejas recuerdan algo que yo intento olvidar."`
+Polen posee una conexión directa con el legado descubierto.
 
-### Hitos de afinidad
+La naturaleza exacta de dicha conexión depende del canon definitivo: heredera, descendiente, última guardiana o figura equivalente.
 
-- `Afinidad 50`: Polen comparte conocimiento técnico espontáneo.
-- `Afinidad 55`: Polen reconoce que su pasado está ligado a las abejas.
-- `Afinidad 58`: Se habilitan quests con símbolos antiguos.
+### Resultado
 
-### Revelaciones de historia
+- `POLEN_LEGACY_ACCEPTED`
 
-- Polen posee conocimiento heredado, no improvisado.
-- Existe una tradición apícola refinada desaparecida o fragmentada.
-- El jugador empieza a sospechar que Polen viene de algo mucho mayor que un simple hogar rural.
+## Capítulo 14 - La Elección
 
-## Capítulo 4 - Logística
+### Estado Narrativo
 
-## Construyendo un Reino
+La verdad ya fue encontrada.
 
-### Propósito
+Ahora toca decidir cómo vivir con ella.
 
-Hacer que la colonia deje de ser una suma de máquinas y pase a sentirse como un asentamiento organizado.
+### Objetivo
 
-### Estado emocional de Polen
+Definir qué hacer con el conocimiento recuperado.
 
-- Más presente.
-- Más responsable.
-- Todavía teme ocupar demasiado espacio.
+### Sistemas
 
-### Tesis del capítulo
+- MineColonies
+- Productive Bees
+- Ars Nouveau
+- Decisiones narrativas finales
 
-El liderazgo empieza en la capacidad de pensar en las necesidades de muchos.
+### Progresión
 
-### Cadena de quests
+- Debates sobre uso del legado
+- Restauración selectiva
+- Renuncia a repetir errores antiguos
 
-#### Q4.1 - Orden Entre Cajas
+### Tema
 
-**Resumen:** El crecimiento del asentamiento exige organización.
+- Legado
+- Responsabilidad
+- Futuro
 
-**Objetivos sugeridos:**
+### Revelación
 
-- Mejorar almacenamiento.
-- Clasificar recursos.
-- Crear rutas o áreas de trabajo.
+Reconstruir no significa repetir.
 
-#### Q4.2 - Rutas Seguras
+## Capítulo 15 - Un Nuevo Comienzo
 
-**Resumen:** Polen propone pensar en cómo se mueve la gente, no solo los ítems.
+### Estado Narrativo
 
-**Objetivos sugeridos:**
+Polen ya no busca respuestas.
 
-- Construir caminos.
-- Conectar zonas clave.
-- Hacer el lugar navegable de noche.
+Ahora busca construir un futuro.
 
-#### Q4.3 - Espacios para Todos
+### Objetivo
 
-**Resumen:** El jugador crea áreas con propósito comunitario.
+Completar la visión de la colonia como primer paso hacia una nueva era.
 
-**Objetivos sugeridos:**
+### Sistemas
 
-- Comedor, plaza, jardín o taller común.
-- Señalética o decoración funcional.
-- Espacios que reduzcan sensación de precariedad.
+- MineColonies
+- Productive Bees
+- Ars Nouveau
 
-#### Q4.4 - Polen Toma la Iniciativa
+### Progresión
 
-**Resumen:** Por primera vez, Polen sugiere un plan estructural completo.
+- Integración plena de sistemas
+- Espacios finales de comunidad
+- Cierre del arco compartido
 
-**Objetivos sugeridos:**
+### Resultado
 
-- Seguir uno de sus planes.
-- Ajustar producción a necesidades humanas.
-- Resolver un cuello de botella.
+La colonia se convierte en el primer paso hacia una nueva etapa histórica.
 
-#### Q4.5 - Construyendo un Reino
+La historia termina donde comienza el futuro.
 
-**Resumen:** Polen comprende que un reino no empieza con una corona, sino con sistemas que cuidan a la gente.
+### Tema Final
 
-**Línea ancla:**
+No se trata de recuperar el pasado.
 
-`"Supongo que un lugar se vuelve hogar cuando empieza a estar pensado para más de una persona."`
+Se trata de construir algo mejor.
 
-### Momentos de personaje
+### Resultado de Campaña
 
-- Polen observa los caminos y corrige distancias pensando en niños, ancianos o cargas pesadas.
-- Pide disculpas antes de dar una instrucción, luego aprende a formularla con más seguridad.
-- Empieza a quedarse en la colonia más tiempo que en el claro.
+- `STORY_MAIN_COMPLETE`
 
-### Progresión de diálogo
+---
 
-- `"Si alguien tuviera que correr hasta aquí de noche, ¿podría hacerlo sin perderse?"`
-- `"Quizá podríamos guardar esto más cerca del taller."`
-- `"No intento mandarte. Solo... creo que podría funcionar mejor."`
-- `"Estoy pensando como si este lugar fuera a durar."`
+## Guías de Implementación
 
-### Hitos de afinidad
+### Polen
 
-- `Afinidad 60`: Polen da sugerencias de organización.
-- `Afinidad 63`: Polen expresa preocupación por habitantes anónimos.
-- `Afinidad 66`: Polen es reconocible como figura de referencia en la colonia.
+- Antes del final del Capítulo 0, usar siempre `???`.
+- Su tono debe ser humano, reservado y observador.
+- No debe hablar como noble, reina o figura ceremonial durante los primeros actos.
+- Sus recuerdos deben aparecer como ecos concretos, no como amnesia total conveniente.
 
-### Revelaciones de historia
+### Colonia
 
-- Polen fue educada para pensar en comunidad y continuidad.
-- Sus ideas de infraestructura reflejan entrenamiento previo, no mera intuición.
-- El lenguaje de `reino` puede aparecer, pero todavía sin confirmar su vínculo directo con él.
+- Debe crecer al ritmo de la relación.
+- Cada expansión importante necesita una función emocional además de mecánica.
+- La Residencia de Polen debe sentirse ganada, no desbloqueada porque sí.
 
-## Capítulo 5 - Exploración
+### Pasado Antiguo
 
-## Buscando Respuestas
+- Debe insinuarse antes de explicarse.
+- No todo debe resolverse con una única revelación.
+- El pasado debe contener logros admirables y errores reales.
 
-### Propósito
+### Cierre
 
-Abrir el mundo y convertir la historia en investigación activa.
-
-### Estado emocional de Polen
-
-- Inquieta.
-- Esperanzada y temerosa al mismo tiempo.
-- Dispuesta a enfrentar recuerdos si eso trae respuestas.
-
-### Tesis del capítulo
-
-Buscar la verdad implica arriesgar la tranquilidad ganada.
-
-### Cadena de quests
-
-#### Q5.1 - Huellas Antiguas
-
-**Resumen:** Se detectan restos o registros de una cultura apícola más antigua.
-
-**Objetivos sugeridos:**
-
-- Explorar ruinas, santuarios o archivos.
-- Recolectar páginas, placas o mapas.
-- Volver con pruebas tangibles.
-
-#### Q5.2 - Registros Fragmentados
-
-**Resumen:** Los documentos son incompletos y necesitan interpretación.
-
-**Objetivos sugeridos:**
-
-- Traducir símbolos.
-- Restaurar páginas dañadas.
-- Relacionar hallazgos con lo que Polen sabe.
-
-#### Q5.3 - La Reina Ausente
-
-**Resumen:** Por primera vez aparece una referencia clara a una Reina desaparecida.
-
-**Objetivos sugeridos:**
-
-- Encontrar una crónica oficial o semioficial.
-- Identificar fechas o lugares clave.
-- Entender que la desaparición no fue un rumor menor.
-
-#### Q5.4 - Lo que Polen Calló
-
-**Resumen:** Polen admite que conocía parte de esa historia, aunque no completa.
-
-**Objetivos sugeridos:**
-
-- Hablar con Polen tras un hallazgo fuerte.
-- Entregarle un registro significativo.
-- Permitir una escena de silencio o duda antes de que responda.
-
-#### Q5.5 - Buscando Respuestas
-
-**Resumen:** Polen y el jugador acuerdan buscar la verdad juntos.
-
-**Línea ancla:**
-
-`"No sé si estoy lista para saberlo todo. Pero sí sé que ya no quiero seguir huyendo de ello."`
-
-### Momentos de personaje
-
-- Polen reconoce un símbolo real y se queda sin palabras.
-- Guarda una página contra el pecho antes de entregársela al jugador para estudiarla.
-- Pide tiempo antes de hablar, y esa pausa debe respetarse.
-
-### Progresión de diálogo
-
-- `"He visto este diseño antes... o algo muy parecido."`
-- `"Pensé que si no buscaba respuestas, tampoco tendría que enfrentar lo que significaban."`
-- `"Mi madre..."`
-- `"Perdón. Todavía me cuesta decirlo en voz alta."`
-
-### Hitos de afinidad
-
-- `Afinidad 68`: Polen comparte recuerdos incompletos.
-- `Afinidad 72`: Se menciona por primera vez a la Reina.
-- `Afinidad 75`: Polen acepta investigar activamente.
-
-### Revelaciones de historia
-
-- Existió una Reina reconocida por registros formales.
-- La desaparición de la Reina tuvo impacto político y social.
-- Polen conocía la existencia de esa historia desde antes, lo que confirma su cercanía personal.
-
-## Capítulo 6 - Industria Arcana
-
-## Poder y Responsabilidad
-
-### Propósito
-
-Escalar la magia y la infraestructura sin abandonar el tono humano.
-
-### Estado emocional de Polen
-
-- Más firme.
-- Más serena bajo presión.
-- Consciente de que sus decisiones empiezan a afectar a muchos.
-
-### Tesis del capítulo
-
-El poder solo tiene valor narrativo si obliga a elegir cómo cuidar mejor a otros.
-
-### Cadena de quests
-
-#### Q6.1 - Sistemas Mayores
-
-**Resumen:** La colonia alcanza una escala que exige coordinación avanzada.
-
-**Objetivos sugeridos:**
-
-- Expandir automatización mágica.
-- Sostener producción compleja.
-- Integrar distintos subsistemas.
-
-#### Q6.2 - Coste y Cuidado
-
-**Resumen:** Polen cuestiona el precio humano o ecológico del progreso.
-
-**Objetivos sugeridos:**
-
-- Reequilibrar una producción excesiva.
-- Restaurar un área afectada.
-- Elegir soluciones eficientes pero no destructivas.
-
-#### Q6.3 - La Voz que Guía
-
-**Resumen:** Polen dirige una decisión importante de infraestructura o defensa pasiva.
-
-**Objetivos sugeridos:**
-
-- Seguir un plan propuesto por ella.
-- Preparar contingencias.
-- Resolver una crisis logística con serenidad.
-
-#### Q6.4 - Lo que Significa Liderar
-
-**Resumen:** Polen deja de pensar que liderar es mandar y entiende que es sostener.
-
-**Objetivos sugeridos:**
-
-- Completar una tarea que beneficie a muchos a largo plazo.
-- Sacrificar comodidad inmediata por estabilidad.
-- Reflejar responsabilidad en la propia base.
-
-#### Q6.5 - Poder y Responsabilidad
-
-**Resumen:** Polen asume que su voz ya tiene peso y decide usarla con cuidado.
-
-**Línea ancla:**
-
-`"Antes pensaba que lo peligroso era tener poder. Ahora creo que lo peligroso es no hacerse responsable de él."`
-
-### Momentos de personaje
-
-- Polen defiende una solución más lenta pero más justa.
-- Corrige al jugador si una expansión pone en riesgo colmenas o ecosistemas.
-- Acepta que otros la escuchan y deja de minimizarse inmediatamente.
-
-### Progresión de diálogo
-
-- `"Podemos hacerlo más rápido. No estoy segura de que debamos."`
-- `"Si este lugar va a crecer, tiene que crecer sin devorarlo todo."`
-- `"No quiero repetir errores que todavía ni entiendo por completo."`
-- `"Si esperan una decisión de mí, entonces debo dar una."`
-
-### Hitos de afinidad
-
-- `Afinidad 78`: Polen asume responsabilidad pública.
-- `Afinidad 80`: Polen toma decisiones difíciles.
-- `Afinidad 82`: La colonia la reconoce como líder moral.
-
-### Revelaciones de historia
-
-- Polen fue criada bajo expectativas de deber, aunque haya intentado huir de ellas.
-- El Reino Apícola probablemente cayó o se fracturó también por decisiones de poder, no solo por una tragedia aislada.
-
-## Capítulo 7 - El Reino Perdido
-
-## Verdades Reveladas
-
-### Propósito
-
-Revelar los secretos centrales de la historia con peso emocional, no como giro vacío.
-
-### Estado emocional de Polen
-
-- Vulnerable.
-- Determinada.
-- Dolida, pero ya no paralizada.
-
-### Tesis del capítulo
-
-La verdad no libera de inmediato; primero obliga a aceptar el dolor que siempre estuvo ahí.
-
-### Cadena de quests
-
-#### Q7.1 - Archivo de la Miel Dorada
-
-**Resumen:** El jugador accede a un archivo, santuario o cámara con registros decisivos.
-
-**Objetivos sugeridos:**
-
-- Localizar la entrada.
-- Superar pruebas de acceso o restauración.
-- Recuperar documentos íntegros.
-
-#### Q7.2 - La Historia del Reino Apícola
-
-**Resumen:** Se reconstruye la historia política y cultural del reino.
-
-**Objetivos sugeridos:**
-
-- Organizar registros.
-- Vincular artefactos, mapas y sellos.
-- Exponer la cronología en la colonia.
-
-#### Q7.3 - La Hija de la Reina
-
-**Resumen:** Se confirma que Polen es la hija de la Reina desaparecida.
-
-**Objetivos sugeridos:**
-
-- Presentar prueba irrefutable.
-- Hablar con Polen en un entorno íntimo.
-- Evitar tono triunfal; la revelación debe doler.
-
-#### Q7.4 - Lo que Sucedió con la Reina
-
-**Resumen:** La verdad sobre la desaparición empieza a emerger, aunque puede seguir incompleta hasta el final.
-
-**Opciones compatibles con la guía:**
-
-- La Reina desapareció intentando proteger el reino.
-- La Reina selló una amenaza o partió en una misión sin retorno.
-- La Reina fue separada del reino por una crisis mayor aún no cerrada.
-
-**Importante:**
-
-- No trivializar la ausencia.
-- No convertirla en simple excusa para coronar a Polen.
-
-#### Q7.5 - Verdades Reveladas
-
-**Resumen:** Polen deja de negar su herencia.
-
-**Línea ancla:**
-
-`"No soy mi madre. Pero tampoco puedo seguir fingiendo que no soy su hija."`
-
-### Momentos de personaje
-
-- Polen llora en privado o en una escena contenida, no melodramática.
-- El jugador no la `convierte` en heredera; solo la acompaña mientras acepta lo que ya era verdad.
-- Polen recuerda una enseñanza de la Reina asociada a abejas, paciencia o cuidado.
-
-### Progresión de diálogo
-
-- `"Siempre supe que si encontraba la verdad, también iba a encontrarme a mí misma dentro de ella."`
-- `"Quise ser nadie porque ser alguien dolía demasiado."`
-- `"Ella no desapareció solo de un reino. Desapareció de mi vida."`
-- `"Tengo miedo. Pero ya no quiero vivir escondiéndome detrás de ese miedo."`
-
-### Hitos de afinidad
-
-- `Afinidad 84`: Polen comparte el núcleo de su pasado.
-- `Afinidad 87`: Se confirma su linaje.
-- `Afinidad 90`: Polen acepta públicamente quién es.
-
-### Revelaciones de historia
-
-- El Reino Apícola fue real, complejo y digno de ser reconstruido.
-- La Reina desaparecida era la madre de Polen.
-- Polen es la heredera legítima.
-- La restauración del reino deja de ser metáfora y se vuelve objetivo explícito.
-
-## Capítulo 8 - Coronación
-
-## La Sucesora de la Reina
-
-### Propósito
-
-Concluir el arco personal de Polen con una aceptación elegida, no impuesta.
-
-### Estado emocional de Polen
-
-- Serena.
-- Emocionada.
-- Consciente del peso del cargo.
-- Esperanzada.
-
-### Tesis del capítulo
-
-La coronación no premia poder acumulado; reconoce crecimiento, comunidad y responsabilidad asumida.
-
-### Cadena de quests
-
-#### Q8.1 - Preparativos del Alba
-
-**Resumen:** La colonia se prepara para un momento fundacional.
-
-**Objetivos sugeridos:**
-
-- Reunir materiales ceremoniales.
-- Embellecer la colonia o el espacio real.
-- Integrar símbolos de abejas, flores, miel y comunidad.
-
-#### Q8.2 - Testigos del Nuevo Reino
-
-**Resumen:** La coronación debe sentirse respaldada por la comunidad reconstruida.
-
-**Objetivos sugeridos:**
-
-- Completar aportes de distintos sectores del asentamiento.
-- Mostrar que la prosperidad ya beneficia a muchos.
-- Activar presencia de aliados o representantes.
-
-#### Q8.3 - La Última Duda
-
-**Resumen:** Polen expresa temor final antes de aceptar.
-
-**Objetivos sugeridos:**
-
-- Hablar con Polen en privado.
-- Recordarle hechos concretos del camino compartido.
-- No convencerla con grandilocuencia, sino con verdad.
-
-#### Q8.4 - La Corona y la Colmena
-
-**Resumen:** Escena de coronación o investidura.
-
-**Elementos emocionales clave:**
-
-- Polen no se siente superior a nadie.
-- Agradece a la comunidad y al jugador.
-- Reconoce a la Reina ausente sin anular el presente.
-
-#### Q8.5 - Un Reino que Vuelve a Florecer
-
-**Resumen:** Cierre jugable y emocional.
-
-**Resultados sugeridos:**
-
-- Desbloqueo de estado final de Polen.
-- Cambios visibles en la colonia.
-- Últimas líneas que miran al futuro en lugar de solo al pasado.
-
-**Línea ancla:**
-
-`"Si voy a llevar esta corona, quiero hacerlo como aprendí aquí: cuidando lo pequeño para que lo grande pueda vivir."`
-
-### Momentos de personaje
-
-- Polen admite que todavía tiene miedo, pero ya no deja que el miedo decida por ella.
-- Menciona el claro de los cerezos como el lugar donde dejó de estar sola.
-- Su coronación debe sentirse íntima incluso si es solemne.
-
-### Progresión de diálogo
-
-- `"Durante mucho tiempo creí que aceptar esto significaba perderme."`
-- `"Ahora creo que también puede significar encontrar el lugar al que pertenezco."`
-- `"No reconstruimos un reino para recordar lo que se perdió. Lo reconstruimos para que vuelva a haber futuro."`
-- `"Gracias por quedarte."`
-
-### Hitos de afinidad
-
-- `Afinidad 92`: Polen enfrenta su última duda.
-- `Afinidad 95`: Polen acepta la sucesión.
-- `Afinidad 100`: Coronación y cierre del arco principal.
-
-### Revelaciones de historia
-
-- Polen elige el rol de Reina; no solo lo hereda.
-- El Reino Apícola renace como comunidad restaurada, no como simple nostalgia.
-- La historia termina con esperanza activa.
-
-## Escenas opcionales de transición
-
-Estas escenas no reemplazan quests, pero ayudan a dar continuidad emocional.
-
-### Entre Capítulo 0 y 1
-
-- Polen deja una flor en el nuevo refugio.
-- Polen pregunta si puede volver a verte mañana.
-
-### Entre Capítulo 2 y 3
-
-- Polen observa abejas mientras el jugador trabaja y murmura una canción o dicho antiguo.
-
-### Entre Capítulo 4 y 5
-
-- Polen mira el horizonte y admite que teme lo que puedan encontrar.
-
-### Entre Capítulo 6 y 7
-
-- Polen guarda silencio ante un símbolo real y tarda en tocarlo.
-
-### Entre Capítulo 7 y 8
-
-- Polen visita el claro de cerezos por última vez antes de la coronación.
-
-## Vocabulario emocional recomendado
-
-### Polen debe sonar como
-
-- Cálida.
-- Reservada.
-- Inteligente.
-- Observadora.
-- Suavemente insegura.
-- Más honesta que elocuente.
-
-### Evitar
-
-- Discursos grandiosos constantes.
-- Órdenes secas.
-- Tono militar.
-- Confianza exagerada antes del Capítulo 6.
-- Sarcasmo cínico dominante.
-
-## Guías de implementación para quests y UI
-
-### Naming
-
-- Antes de la revelación: usar `???`.
-- Después de la revelación: usar `Polen`.
-- Después de Capítulo 7: se puede usar `Polen, heredera del Reino Apícola` en contextos solemnes.
-- Después de Capítulo 8: se puede usar `Reina Polen`, pero no como reemplazo total de su nombre personal en diálogos íntimos.
-
-### Quest text
-
-- Cada quest debe tener objetivo práctico y función emocional.
-- Evitar textos que solo digan `recolecta X`.
-- Incluir siempre por qué ese paso importa para Polen, la colonia o la investigación.
-
-### Recompensas narrativas
-
-- Nuevas líneas de diálogo.
-- Nuevos lugares donde Polen puede aparecer.
-- Cartas, notas o recuerdos.
-- Decoraciones vinculadas a abejas, cerezos, miel o símbolos reales.
-
-### Entornos
-
-- El claro debe conservarse importante incluso cuando la colonia crezca.
-- El asentamiento debe evolucionar visualmente junto al arco emocional.
-- Las ruinas del Reino Apícola deben transmitir pérdida digna, no solo saqueo.
-
-## Resumen ejecutivo
-
-La historia funciona si el jugador siente esta progresión:
-
-1. Encontré a alguien que no quería ser encontrada.
-2. Gané su confianza sin arrancarle su pasado a la fuerza.
-3. Construimos un lugar seguro.
-4. Descubrimos que su historia era mayor de lo que parecía.
-5. La ayudé a enfrentar una herencia dolorosa.
-6. Ella eligió convertirse en la líder que podía ser.
-
-Si en cualquier punto la narrativa convierte a Polen en un simple marcador de progreso, la historia pierde su centro.
+- El final debe dejar claro que Polen no existe para restaurar una jerarquía por nostalgia.
+- Si el canon futuro incorpora realeza de forma explícita, debe funcionar como consecuencia de su arco, no como destino automático.
+- El mensaje final del proyecto es comunidad, responsabilidad y futuro compartido.

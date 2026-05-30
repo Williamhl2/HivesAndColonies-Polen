@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.0.6] - 2026-05-30
+
+### Added
+
+- Initial content pipeline documentation
+  - Item addition process
+  - Dialogue line addition process
+  - Advancement addition process
+  - Entity and renderer addition process
+  - Localization guidelines
+
+- Documentation coverage for content authoring workflow
+  - Registration checklist structure
+  - Asset file placement references
+  - Translation update reminders
+
+### Changed
+
+- Changelog versioning for 2026-05-30 changes is now tracked under v0.0.6
+
+- Documentation structure refined for faster onboarding when adding Polen content
+
+### Technical
+
+- Repository documentation now better reflects the current content pipeline layout
+
 ## [v0.0.5] - 2026-05-29
 
 ### Added

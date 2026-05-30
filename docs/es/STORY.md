@@ -1,224 +1,348 @@
-# Hives & Colonies - Historia de Polen
+# STORY.md
 
-## Premisa
+# Hives And Colonies: Polen
 
-`Hives & Colonies` no es un modpack centrado solo en automatización.
+## Visión General
 
-La historia principal trata sobre ayudar a una joven misteriosa a reconstruir su vida, recuperar la confianza en los demás y, con el tiempo, participar en la restauración de un reino perdido.
+Hives And Colonies no es una historia sobre héroes elegidos, guerras o profecías.
 
-El jugador no debe descubrir toda la verdad de inmediato.
+Es una historia sobre construir algo que merezca perdurar.
 
-La narrativa debe sostenerse sobre:
+La narrativa comienza con una sola persona: una desconocida que vive apartada, protege su silencio y desconfía del mundo.
+
+Al ayudarla, el jugador termina participando en tres procesos que avanzan al mismo tiempo:
+
+1. La construcción de confianza con Polen.
+2. El crecimiento de una colonia capaz de durar.
+3. El descubrimiento del legado de una civilización antigua.
+
+La historia avanza desde lo íntimo hacia lo colectivo.
+
+Primero importa una conversación junto a una fogata. Más tarde importa una comunidad entera. Solo al final importa el peso histórico de aquello que se perdió.
+
+---
+
+# Premisa
+
+Una joven aparece viviendo sola en un claro.
+
+No parece peligrosa.
+
+No parece importante.
+
+Evita hablar de su pasado.
+
+Conserva recuerdos fragmentados, hábitos extraños y un vínculo inusual con las abejas, la naturaleza y ciertos símbolos antiguos.
+
+El jugador no conoce su nombre al inicio. Durante el prólogo debe existir en pantalla como `???`.
+
+Solo cuando la confianza mínima ya fue construida, ella decide decir:
+
+`"Mi nombre es Polen."`
+
+Mientras el jugador levanta un refugio y luego una colonia, Polen empieza a recordar fragmentos de una historia más antigua relacionada con magia, abejas, conocimiento perdido y una civilización desaparecida cuyo legado todavía persiste.
+
+---
+
+# Los Cuatro Pilares
+
+La narrativa se apoya en cuatro sistemas principales.
+
+## Polen
+
+Representa:
+
+- identidad
+- memoria
+- confianza
+- vínculo humano
+
+Toda la historia comienza con ella y no debe perderla de centro.
+
+## MineColonies
+
+Representa:
+
+- comunidad
+- organización
+- permanencia
+- futuro
+
+La colonia es la manifestación física del crecimiento del jugador y de la relación compartida con Polen.
+
+## Productive Bees
+
+Representa:
+
+- naturaleza
+- herencia
+- continuidad
+- cultura material
+
+Las abejas conectan el presente con conocimientos y prácticas de otro tiempo.
+
+## Ars Nouveau
+
+Representa:
 
 - descubrimiento
-- confianza
-- crecimiento
-- responsabilidad
-- comunidad
-- reconstrucción
+- conocimiento
+- curiosidad
+- poder con responsabilidad
 
-## Reglas Narrativas
+La magia permite comprender y reactivar partes del mundo que el tiempo intentó borrar.
 
-- Al inicio, la protagonista no debe ser presentada como reina, princesa ni heredera.
-- Antes de su propia revelación, el jugador no debe conocer su nombre.
-- Durante el prólogo y la primera etapa de confianza, la protagonista debe aparecer como `???`.
-- Antes de la revelación, no usar `Polen`, `Princesa Polen`, `Reino Apícola`, `Reina` ni `heredera` en quests, diálogos, ítems o nombres visibles.
-- Polen debe sentirse como una persona real, no como una dispensadora de misiones.
-- El centro emocional de la historia es la relación entre el jugador, la colonia y la chica del claro.
-- La épica debe llegar después de la intimidad, nunca al revés.
+---
 
-## Estructura por Actos
+# Temas Principales
 
-### Acto I - La Desconocida
+## Identidad
 
-Capítulos 0 al 4.
+La pregunta inicial es simple:
 
-Este acto presenta el claro entre cerezos, la primera relación de confianza y las señales tempranas de un pasado más grande de lo que parece.
+> ¿Quién es Polen?
 
-### Acto II - El Reino Perdido
+La respuesta completa no aparece de una vez.
 
-Capítulos 5 al 10.
+## Pertenencia
 
-La colonia crece, la conexión con las abejas se vuelve más profunda y comienzan a aparecer rastros concretos de una historia olvidada.
+Polen comienza como visitante.
 
-### Acto III - La Nueva Reina
+La colonia comienza como refugio improvisado.
 
-Capítulos 11 al 15.
+Ambos deben encontrar un lugar al que pertenecer.
 
-La verdad completa sale a la luz, Polen acepta su identidad y el reino puede renacer como una comunidad restaurada.
+## Comunidad
 
-## Revelaciones Progresivas
+La historia no trata sobre individuos excepcionales dominando sistemas.
 
-La historia debe revelar información en este orden general:
+Trata sobre personas construyendo algo juntas.
 
-1. Existe una joven desconocida viviendo sola en un claro.
-2. La joven empieza a confiar en el jugador.
-3. Su vínculo con las abejas no es casual.
-4. Tiene conocimientos y recuerdos fuera de lo común.
-5. Existió una historia mayor relacionada con un reino perdido.
-6. Hay figuras y registros ausentes del pasado.
-7. Polen revela su nombre.
-8. El jugador descubre su linaje.
-9. Polen acepta su papel en la restauración del reino.
+## Memoria
 
-## Estructura General
+El pasado existe en fragmentos: ruinas, símbolos, técnicas, nombres y silencios.
 
-### Capítulo 0 - Prólogo
+Recuperarlo exige cuidado, no solo acumulación de información.
 
-**La Chica del Claro**
+## Legado
 
-**Objetivo narrativo:** Introducir el misterio, el entorno del bosque de cerezos y el primer encuentro con una joven que no quiere hablar de sí misma.
+La meta final no es repetir exactamente lo antiguo.
 
-**Tema emocional:** Cautela.
+La meta final es decidir qué merece conservarse y qué no debe volver.
 
-**Revelación principal:** El jugador descubre a una desconocida viviendo sola en un claro con fogata, cama, flores y una colmena cercana.
+---
 
-### Capítulo 1 - Fundación
+# Reglas Narrativas
 
-**Un Lugar Seguro**
+## Regla 1
 
-**Objetivo narrativo:** Establecer los primeros gestos de confianza y construir la idea de refugio.
+Los personajes son más importantes que los sistemas.
 
-**Tema emocional:** Seguridad.
+## Regla 2
 
-**Revelación principal:** La desconocida permanece cerca porque el lugar le transmite calma y empieza a aceptar ayuda.
+Las relaciones son más importantes que las recompensas.
 
-### Capítulo 2 - Primeros Amigos
+## Regla 3
 
-**Primeros Amigos**
+La curiosidad es más importante que la exposición.
 
-**Objetivo narrativo:** Convertir la relación inicial en una amistad incipiente y mostrar que la colonia puede ser un espacio humano, no solo funcional.
+## Regla 4
 
-**Tema emocional:** Cercanía.
+La épica debe llegar después de la intimidad.
 
-**Revelación principal:** Polen empieza a bajar la guardia y a mostrar interés genuino por el jugador y su asentamiento.
+## Regla 5
 
-### Capítulo 3 - El Source
+El jugador debe descubrir el mundo junto a Polen, no por encima de ella.
 
-**El Source**
+## Regla 6
 
-**Objetivo narrativo:** Introducir la curiosidad arcana como una herramienta de ayuda y aprendizaje.
+La colonia debe sentirse como hogar antes de sentirse como potencia.
 
-**Tema emocional:** Asombro.
+## Regla 7
 
-**Revelación principal:** La protagonista se siente atraída por la magia cuando esta sirve para cuidar, cultivar y reparar.
+El final debe tratar sobre responsabilidad y futuro, no sobre nostalgia vacía.
 
-### Capítulo 4 - Ecos del Reino
+---
 
-**Ecos del Reino**
+# La Civilización Antigua
 
-**Objetivo narrativo:** Empezar a sugerir que el pasado de la protagonista está ligado a algo antiguo y organizado.
+La existencia de una civilización antigua es canon.
 
-**Tema emocional:** Nostalgia.
+Su nombre definitivo, su estructura exacta y ciertos cargos históricos todavía pueden cambiar durante el desarrollo.
 
-**Revelación principal:** Aparecen símbolos, costumbres o recuerdos que insinúan una historia mayor aún no explicada.
+Esto permite ajustar:
 
-### Capítulo 5 - Industria Apícola
+- nombres
+- instituciones
+- figuras históricas
+- ubicaciones
+- terminología
 
-**Industria Apícola**
+sin romper la continuidad principal.
 
-**Objetivo narrativo:** Integrar el desarrollo apícola con la historia personal de Polen.
+Lo importante no es fijar temprano todos los detalles, sino sostener la idea de que existió una cultura compleja donde abejas, magia, conocimiento y organización social estaban profundamente conectados.
 
-**Tema emocional:** Herencia.
+---
 
-**Revelación principal:** La conexión entre la protagonista y las abejas deja de parecer casual.
+# Polen
 
-### Capítulo 6 - Voces del Pasado
+## Estado Inicial
 
-**Voces del Pasado**
+Cuando el jugador la encuentra por primera vez:
 
-**Objetivo narrativo:** Introducir registros, rumores o fragmentos que traen de vuelta una memoria casi perdida.
+- vive sola
+- evita preguntas personales
+- posee conocimientos extraños
+- muestra señales de cansancio y cautela
+- todavía no ha decidido confiar
 
-**Tema emocional:** Melancolía.
+Polen no debe sentirse misteriosa porque oculta un giro.
 
-**Revelación principal:** El pasado empieza a hablar a través de objetos, ruinas o documentos.
+Debe sentirse humana porque todavía no está lista para abrirse.
 
-### Capítulo 7 - Logística
+## Rol Narrativo
 
-**Logística**
+Polen no es una recompensa.
 
-**Objetivo narrativo:** Transformar la colonia en un asentamiento organizado donde Polen comienza a pensar en los demás.
+Polen no es una herramienta.
 
-**Tema emocional:** Responsabilidad.
+Polen no es una mascota narrativa.
 
-**Revelación principal:** La protagonista demuestra instintos de organización y cuidado comunitario.
+Polen es el eje emocional del proyecto.
 
-### Capítulo 8 - Caminos Lejanos
+La historia ocurre junto a ella.
 
-**Caminos Lejanos**
+## Revelación Gradual
 
-**Objetivo narrativo:** Expandir el alcance del viaje y abrir nuevas rutas de exploración.
+La historia nunca debe revelar demasiado pronto:
 
-**Tema emocional:** Apertura.
+- su origen real
+- su relación con el pasado
+- el alcance de sus recuerdos
+- la naturaleza exacta de su conexión con el legado antiguo
 
-**Revelación principal:** El mundo exterior contiene respuestas que ya no pueden ignorarse.
+La versión final del canon puede definirla como heredera, descendiente, guardiana o figura equivalente, pero ese peso no debe adelantarse antes de que la narrativa lo merezca.
 
-### Capítulo 9 - Buscando Respuestas
+---
 
-**Buscando Respuestas**
+# La Colonia
 
-**Objetivo narrativo:** Convertir la investigación del pasado en una meta activa.
+La colonia es un personaje narrativo.
 
-**Tema emocional:** Determinación.
+Representa:
 
-**Revelación principal:** La historia perdida deja de ser intuición y empieza a adquirir forma concreta.
+- estabilidad
+- seguridad
+- cooperación
+- esperanza
 
-### Capítulo 10 - Industria Arcana
+Su crecimiento debe reflejar el crecimiento del vínculo entre el jugador y Polen.
 
-**Industria Arcana**
+No es solo un centro de producción. Es la prueba de que algo puede durar sin repetir los errores del pasado.
 
-**Objetivo narrativo:** Escalar la magia y la infraestructura sin perder el enfoque humano de la narrativa.
+---
 
-**Tema emocional:** Deber.
+# La Residencia de Polen
 
-**Revelación principal:** Polen comprende que el poder solo importa si puede sostener y proteger a otros.
+La Residencia de Polen es una estructura narrativa única.
 
-### Capítulo 11 - El Consejo Perdido
+No existe al inicio.
 
-**El Consejo Perdido**
+Su construcción marca el momento en que Polen deja de tratar la colonia como un lugar prestado y empieza a verla como un espacio propio.
 
-**Objetivo narrativo:** Presentar las estructuras de liderazgo desaparecidas del antiguo reino.
+No es simplemente una casa.
 
-**Tema emocional:** Vacío.
+Representa pertenencia.
 
-**Revelación principal:** El reino no perdió solo a una figura central; perdió también su voz colectiva.
+---
 
-### Capítulo 12 - El Reino Perdido
+# Estructura General
 
-**El Reino Perdido**
+La historia principal se divide en cuatro actos y dieciséis capítulos.
 
-**Objetivo narrativo:** Confirmar la existencia y la caída del reino como hecho histórico.
+## Acto I - La Desconocida
 
-**Tema emocional:** Verdad.
+Capítulos 0-3.
 
-**Revelación principal:** El jugador descubre la dimensión real de lo que se perdió.
+Pregunta central:
 
-### Capítulo 13 - La Heredera
+> ¿Quién es Polen?
 
-**La Heredera**
+Aquí importan confianza, refugio, amistad y los primeros ecos de memoria.
 
-**Objetivo narrativo:** Hacer explícita la identidad de Polen dentro de la historia del reino.
+## Acto II - Los Cimientos
 
-**Tema emocional:** Aceptación.
+Capítulos 4-7.
 
-**Revelación principal:** Polen ya no puede negar quién es ni lo que significa para el futuro del reino.
+Pregunta central:
 
-### Capítulo 14 - Coronación
+> ¿Qué estamos construyendo?
 
-**Coronación**
+Aquí la colonia se consolida y Polen empieza a pertenecer a ella.
 
-**Objetivo narrativo:** Cerrar el arco de crecimiento personal de Polen mediante una aceptación elegida.
+## Acto III - Los Secretos Perdidos
 
-**Tema emocional:** Esperanza.
+Capítulos 8-11.
 
-**Revelación principal:** Polen acepta públicamente su papel y se convierte en la nueva Reina.
+Pregunta central:
 
-### Capítulo 15 - Un Nuevo Comienzo
+> ¿Qué ocurrió antes?
 
-**Un Nuevo Comienzo**
+Aquí la exploración y la investigación convierten el pasado en un problema real.
 
-**Objetivo narrativo:** Mostrar que la coronación no es el final del mundo, sino el inicio de una nueva etapa comunitaria.
+## Acto IV - El Despertar
 
-**Tema emocional:** Renovación.
+Capítulos 12-15.
 
-**Revelación principal:** El reino renace como una comunidad viva construida junto al jugador, no como un recuerdo inmóvil del pasado.
+Pregunta central:
+
+> ¿Qué hacemos con este legado?
+
+Aquí todos los sistemas convergen y el conflicto final pasa por decidir qué futuro merece construirse.
+
+---
+
+# Ritmo Narrativo
+
+La progresión principal debe sentirse así:
+
+Persona
+↓
+Confianza
+↓
+Refugio
+↓
+Comunidad
+↓
+Pertenencia
+↓
+Descubrimiento
+↓
+Legado
+↓
+Elección
+↓
+Nuevo comienzo
+
+---
+
+# Estado del Canon
+
+Este documento define la dirección narrativa del proyecto.
+
+Lo estable es:
+
+- Polen como centro emocional
+- la estructura de 4 actos y 16 capítulos
+- las tres progresiones paralelas
+- el paso de intimidad a legado
+- la idea final de construir algo mejor, no copiar el pasado
+
+Lo flexible es:
+
+- el nombre definitivo de la civilización
+- la estructura exacta de su gobierno
+- la naturaleza precisa del vínculo de Polen con ese legado
+- el vocabulario histórico final
+
+El canon debe cerrar contradicciones, no fabricarlas. Si una idea futura rompe el arco emocional de Polen o vuelve secundaria a la colonia, entonces no encaja con la historia que este proyecto quiere contar.

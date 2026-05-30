@@ -1,5 +1,6 @@
 package com.hivesandcolonies.polen.command;
 
+import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenChapterManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
@@ -13,6 +14,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -29,6 +31,43 @@ public final class PolenDebugCommands {
                 .then(registerAffinityCommands())
                 .then(registerChapterCommands())
                 .then(registerFlagCommands())
+                .then(Commands.literal("ai")
+                        .then(Commands.literal("get")
+                                .executes(context -> {
+                                    ServerPlayer player = context.getSource().getPlayerOrException();
+                                    PolenEntity polen = player.serverLevel()
+                                            .getEntitiesOfClass(
+                                                    PolenEntity.class,
+                                                    player.getBoundingBox().inflate(64.0D)
+                                            )
+                                            .stream()
+                                            .findFirst()
+                                            .orElse(null);
+
+                                    if (polen == null) {
+                                        context.getSource().sendFailure(Component.literal("No nearby Polen entity found."));
+                                        return 0;
+                                    }
+
+                                    context.getSource().sendSuccess(
+                                            () -> Component.literal(
+                                                    "Polen AI -> mood="
+                                                            + polen.getMood()
+                                                            + ", quietActivity="
+                                                            + polen.getQuietActivityName()
+                                                            + ", flowerSpot="
+                                                            + formatPos(polen.getFavoriteFlowerPos())
+                                                            + ", hiveSpot="
+                                                            + formatPos(polen.getFavoriteHivePos())
+                                                            + ", restingSpot="
+                                                            + formatPos(polen.getRestingPos())
+                                                            + ", dangerousSpot="
+                                                            + formatPos(polen.getDangerousSpotPos())
+                                            ),
+                                            false
+                                    );
+                                    return 1;
+                                })))
                 .then(Commands.literal("relationship")
                         .then(Commands.literal("get")
                                 .executes(context -> {
@@ -245,5 +284,13 @@ public final class PolenDebugCommands {
         }
 
         return root.then(set).then(clear);
+    }
+
+    private static String formatPos(BlockPos pos) {
+        if (pos == null) {
+            return "null";
+        }
+
+        return "(" + pos.getX() + ", " + pos.getY() + ", " + pos.getZ() + ")";
     }
 }

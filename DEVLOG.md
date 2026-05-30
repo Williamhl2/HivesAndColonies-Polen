@@ -1,6 +1,6 @@
 # Development Log
 
-## 2026-05-29
+## 2026-05-30 (Narrative Direction)
 
 ### Architecture Revision
 
@@ -156,12 +156,14 @@ Future integrations:
 
 ### Technical Notes
 
-Current progression data is temporary and stored in memory.
+This section is kept as historical context.
 
-The following systems still require persistence:
+Persistence has now been implemented for core story progression systems.
+
+Persisted systems:
 
 - Affinity
 - Story Flags
 - Chapter Progression
 
-Persistent player story data is the primary target for v0.0.5.
+Current focus for v0.0.5+ is expansion of relationship depth, chapter events, and settlement-driven story progression.
