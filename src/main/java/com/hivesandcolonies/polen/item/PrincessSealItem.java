@@ -1,21 +1,13 @@
 package com.hivesandcolonies.polen.item;
 
-import java.util.List;
-
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 
-public class PrincessSealItem extends Item {
+public class PrincessSealItem extends TranslatableTooltipItem {
     public PrincessSealItem(Properties properties) {
-        super(properties);
-    }
-
-    @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
-        tooltip.add(Component.translatable("tooltip.polen.princess_seal.line1").withStyle(ChatFormatting.GOLD));
-        tooltip.add(Component.translatable("tooltip.polen.princess_seal.line2").withStyle(ChatFormatting.GRAY));
+        super(
+                properties,
+                new TooltipLine("tooltip.polen.princess_seal.line1", ChatFormatting.GOLD),
+                new TooltipLine("tooltip.polen.princess_seal.line2", ChatFormatting.GRAY)
+        );
     }
 }

@@ -5,12 +5,13 @@ import com.hivesandcolonies.polen.progression.PolenAdvancementManager;
 import com.hivesandcolonies.polen.progression.PolenAffinityLevels;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenChapterManager;
-import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
+import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
+import com.hivesandcolonies.polen.progression.player.PolenPlayerRelationshipManager;
+import com.hivesandcolonies.polen.story.PolenStoryEventManager;
 
-
-import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -26,13 +27,13 @@ import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-
-
 public class PolenEntity extends PathfinderMob {
+    private static final String UNKNOWN_GIRL_KEY = "entity.polen.unknown_girl";
+    private static final String POLEN_KEY = "entity.polen.polen";
 
     public PolenEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
-        this.setCustomName(Component.translatable("entity.polen.unknown_girl"));
+        this.setCustomName(Component.translatable(UNKNOWN_GIRL_KEY));
         this.setCustomNameVisible(true);
         this.setPersistenceRequired();
     }
@@ -44,14 +45,12 @@ public class PolenEntity extends PathfinderMob {
                 .add(Attributes.FOLLOW_RANGE, 24.0D);
     }
 
-    public void updateDisplayName(Player player) {
-        if (PolenStoryFlagsManager.hasFlag(
-                player,
-                PolenStoryFlag.NAME_REVEALED
-        )) {
-            this.setCustomName(Component.translatable("entity.polen.polen"));
+    public void updateDisplayName() {
+        if (this.level() instanceof ServerLevel serverLevel
+                && PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.NAME_REVEALED)) {
+            this.setCustomName(Component.translatable(POLEN_KEY));
         } else {
-            this.setCustomName(Component.translatable("entity.polen.unknown_girl"));
+            this.setCustomName(Component.translatable(UNKNOWN_GIRL_KEY));
         }
 
         this.setCustomNameVisible(true);
@@ -68,6 +67,15 @@ public class PolenEntity extends PathfinderMob {
     }
 
     @Override
+    public void tick() {
+        super.tick();
+
+        if (!this.level().isClientSide && this.tickCount % 20 == 0) {
+            updateDisplayName();
+        }
+    }
+
+    @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new RandomStrollGoal(this, 0.8D));
@@ -78,7 +86,8 @@ public class PolenEntity extends PathfinderMob {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!this.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
-            updateDisplayName(player);
+            updateDisplayName();
+            PolenPlayerRelationshipManager.recordInteraction(player);
 
             if (player instanceof ServerPlayer serverPlayer) {
                 PolenAdvancementManager.grantFirstMeeting(serverPlayer);
@@ -87,25 +96,21 @@ public class PolenEntity extends PathfinderMob {
             int currentChapter = PolenChapterManager.getCurrentChapter(player);
             int affinity = PolenAffinityManager.getAffinity(player);
 
-            if (currentChapter == PolenChapterManager.FOUNDATION
-                    && !PolenStoryFlagsManager.hasFlag(player, PolenStoryFlag.PLAYER_HAS_SHELTER)) {
-                playShelterRecognitionDialogue(player);
-                updateDisplayName(player);
-                return InteractionResult.SUCCESS;
-            }
+            // Funcion adelantada, se comenta para evitar que se active antes de tiempo
+            // if (shouldPlayShelterRecognition(currentChapter, player)) {
+            //     PolenStoryEventManager.playShelterRecognition(player);
+            //     updateDisplayName();
+            //     return InteractionResult.SUCCESS;
+            // }
 
             if (player instanceof ServerPlayer serverPlayer
                     && affinity >= PolenAffinityLevels.FIRST_TRUST) {
                 PolenAdvancementManager.grantFirstTrust(serverPlayer);
             }
 
-            if (!PolenStoryFlagsManager.hasFlag(
-                player,
-                PolenStoryFlag.NAME_REVEALED)
-                && affinity >= PolenAffinityLevels.NAME_REVEAL
-            ) {
-                playNameRevealDialogue(player);
-                updateDisplayName(player);
+            if (shouldRevealName(player, affinity)) {
+                PolenStoryEventManager.playNameReveal(player);
+                updateDisplayName();
                 return InteractionResult.SUCCESS;
             }
 
@@ -119,109 +124,20 @@ public class PolenEntity extends PathfinderMob {
                     false
             );
 
-            updateDisplayName(player);
+            updateDisplayName();
         }
 
         return InteractionResult.SUCCESS;
     }
 
-    private void playNameRevealDialogue(Player player) {
-        player.displayClientMessage(
-                Component.literal("???: Espera...")
-                        .withStyle(ChatFormatting.GRAY),
-                false
-        );
+    // Función adelantada para reconocer el refugio, se activará en el capítulo de la fundación
+    // private static boolean shouldPlayShelterRecognition(int currentChapter, Player player) {
+    //     return currentChapter == PolenChapterManager.FOUNDATION
+    //             && !PolenStoryFlagsManager.hasFlag(player, PolenStoryFlag.PLAYER_HAS_SHELTER);
+    // }
 
-        player.displayClientMessage(
-                Component.literal("???: Hay algo que quiero decirte.")
-                        .withStyle(ChatFormatting.GRAY),
-                false
-        );
-
-        player.displayClientMessage(
-                Component.literal("???: No sé por qué... pero siento que puedo confiar en ti.")
-                        .withStyle(ChatFormatting.GRAY),
-                false
-        );
-
-        player.displayClientMessage(
-                Component.literal("???: Mi nombre es...")
-                        .withStyle(ChatFormatting.GRAY),
-                false
-        );
-
-        this.setCustomName(Component.translatable("entity.polen.polen"));
-        this.setCustomNameVisible(true);
-
-        player.displayClientMessage(
-                Component.literal("Polen: Polen.")
-                        .withStyle(ChatFormatting.LIGHT_PURPLE),
-                false
-        );
-
-        player.displayClientMessage(
-                Component.literal("Has descubierto su nombre: ")
-                        .withStyle(ChatFormatting.GOLD)
-                        .append(Component.literal("Polen").withStyle(ChatFormatting.LIGHT_PURPLE)),
-                false
-        );
-        
-        PolenStoryFlagsManager.setFlag(
-                player,
-                PolenStoryFlag.NAME_REVEALED
-        );
-
-        PolenStoryFlagsManager.setFlag(
-                player,
-                PolenStoryFlag.CHAPTER_0_COMPLETE
-        );
-
-        PolenChapterManager.setCurrentChapter(
-                player,
-                PolenChapterManager.FOUNDATION
-        );
-
-        
-        
-        if (player instanceof ServerPlayer serverPlayer) {
-            PolenAdvancementManager.grantNameReveal(serverPlayer);
-        }
+    private static boolean shouldRevealName(Player player, int affinity) {
+        return !PolenStoryFlagsManager.hasFlag(player, PolenStoryFlag.NAME_REVEALED)
+                && affinity >= PolenAffinityLevels.NAME_REVEAL;
     }
-
-    private void playShelterRecognitionDialogue(Player player) {
-    player.displayClientMessage(
-            Component.literal("Polen: Este lugar...")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE),
-            false
-    );
-
-    player.displayClientMessage(
-            Component.literal("Polen: No parece un palacio, ni una colmena real...")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE),
-            false
-    );
-
-    player.displayClientMessage(
-            Component.literal("Polen: Pero se siente tranquilo.")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE),
-            false
-    );
-
-    player.displayClientMessage(
-            Component.literal("Polen: Tal vez... podamos empezar aquí.")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE),
-            false
-    );
-
-    PolenStoryFlagsManager.setFlag(
-            player,
-            PolenStoryFlag.PLAYER_HAS_SHELTER
-    );
-
-    if (player instanceof ServerPlayer serverPlayer) {
-        PolenAdvancementManager.grantPlayerHasShelter(serverPlayer);
-    }
-}
-
-    
 }

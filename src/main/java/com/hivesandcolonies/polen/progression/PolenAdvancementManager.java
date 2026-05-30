@@ -1,5 +1,7 @@
 package com.hivesandcolonies.polen.progression;
 
+import com.hivesandcolonies.polen.Polen;
+
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -9,16 +11,16 @@ public final class PolenAdvancementManager {
     private PolenAdvancementManager() {}
 
     public static final ResourceLocation ROOT =
-            ResourceLocation.fromNamespaceAndPath("polen", "story/root");
+            ResourceLocation.fromNamespaceAndPath(Polen.MODID, "story/root");
 
     public static final ResourceLocation FIRST_MEETING =
-            ResourceLocation.fromNamespaceAndPath("polen", "story/first_meeting");
+            ResourceLocation.fromNamespaceAndPath(Polen.MODID, "story/first_meeting");
 
     public static final ResourceLocation FIRST_TRUST =
-            ResourceLocation.fromNamespaceAndPath("polen", "story/first_trust");
+            ResourceLocation.fromNamespaceAndPath(Polen.MODID, "story/first_trust");
 
     public static final ResourceLocation NAME_REVEAL =
-            ResourceLocation.fromNamespaceAndPath("polen", "story/name_reveal");
+            ResourceLocation.fromNamespaceAndPath(Polen.MODID, "story/name_reveal");
 
     private static void grant(
             ServerPlayer player,
@@ -56,7 +58,7 @@ public final class PolenAdvancementManager {
 
     public static final ResourceLocation CHAPTER_0_COMPLETE =
         ResourceLocation.fromNamespaceAndPath(
-                "polen",
+                Polen.MODID,
                 "story/chapter0_complete"
         );
 
@@ -72,7 +74,7 @@ public final class PolenAdvancementManager {
     }
 
     public static final ResourceLocation PLAYER_HAS_SHELTER =
-        ResourceLocation.fromNamespaceAndPath("polen", "story/player_has_shelter");
+        ResourceLocation.fromNamespaceAndPath(Polen.MODID, "story/player_has_shelter");
 
     public static void grantPlayerHasShelter(ServerPlayer player) {
         grantChapter0Complete(player);

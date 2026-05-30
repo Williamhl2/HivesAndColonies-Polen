@@ -10,6 +10,8 @@ import com.hivesandcolonies.polen.Polen;
 
 @EventBusSubscriber(modid = Polen.MODID)
 public class ModEntityAttributes {
+    private ModEntityAttributes() {}
+
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(ModEntities.POLEN.get(), PolenEntity.createAttributes().build());

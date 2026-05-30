@@ -5,10 +5,10 @@
       "id": "minecraft:book"
     },
     "title": {
-      "text": "Capítulo 0 Completado"
+      "translate": "advancement.polen.story.chapter0_complete.title"
     },
     "description": {
-      "text": "La Chica del Claro"
+      "translate": "advancement.polen.story.chapter0_complete.description"
     },
     "frame": "goal",
     "show_toast": true,

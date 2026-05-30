@@ -1,5 +1,6 @@
 package com.hivesandcolonies.polen.dialogue;
 
+import com.hivesandcolonies.polen.Polen;
 import com.hivesandcolonies.polen.progression.PolenChapterManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
@@ -9,8 +10,11 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.List;
+import java.util.Map;
 
-public class PolenDialogueManager {
+public final class PolenDialogueManager {
+    private static final String UNKNOWN_GIRL_KEY = "entity." + Polen.MODID + ".unknown_girl";
+    private static final String POLEN_KEY = "entity." + Polen.MODID + ".polen";
 
     private static final List<String> CHAPTER_0_DIALOGUES = List.of(
             "dialogue.polen.chapter0.line1",
@@ -27,17 +31,23 @@ public class PolenDialogueManager {
             "dialogue.polen.chapter1.line4"
     );
 
+    private static final Map<Integer, List<String>> DIALOGUES_BY_CHAPTER = Map.of(
+            PolenChapterManager.PROLOGUE, CHAPTER_0_DIALOGUES,
+            PolenChapterManager.FOUNDATION, CHAPTER_1_DIALOGUES
+    );
+
+    private PolenDialogueManager() {}
+
     public static Component getDialogue(
             Player player,
             int chapter,
             int affinity,
             RandomSource random
     ) {
-        List<String> dialogues = switch (chapter) {
-            case PolenChapterManager.PROLOGUE -> CHAPTER_0_DIALOGUES;
-            case PolenChapterManager.FOUNDATION -> CHAPTER_1_DIALOGUES;
-            default -> CHAPTER_0_DIALOGUES;
-        };
+        List<String> dialogues = DIALOGUES_BY_CHAPTER.getOrDefault(
+                chapter,
+                CHAPTER_0_DIALOGUES
+        );
 
         String key = dialogues.get(random.nextInt(dialogues.size()));
 
@@ -48,9 +58,9 @@ public class PolenDialogueManager {
 
     private static String getSpeakerKey(Player player) {
         if (PolenStoryFlagsManager.hasFlag(player, PolenStoryFlag.NAME_REVEALED)) {
-            return "entity.polen.polen";
+            return POLEN_KEY;
         }
 
-        return "entity.polen.unknown_girl";
+        return UNKNOWN_GIRL_KEY;
     }
 }

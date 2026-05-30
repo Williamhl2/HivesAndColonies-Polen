@@ -7,45 +7,94 @@ import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
+import java.util.List;
+
 public final class PolenStoryEventManager {
+    private static final String UNKNOWN_GIRL_KEY = "entity.polen.unknown_girl";
+    private static final String POLEN_KEY = "entity.polen.polen";
+
+    private static final List<String> SHELTER_RECOGNITION_LINES = List.of(
+            "dialogue.polen.event.shelter.line1",
+            "dialogue.polen.event.shelter.line2",
+            "dialogue.polen.event.shelter.line3",
+            "dialogue.polen.event.shelter.line4"
+    );
+
+    private static final List<String> NAME_REVEAL_LINES = List.of(
+            "dialogue.polen.event.name_reveal.line1",
+            "dialogue.polen.event.name_reveal.line2",
+            "dialogue.polen.event.name_reveal.line3",
+            "dialogue.polen.event.name_reveal.line4"
+    );
 
     private PolenStoryEventManager() {}
 
     public static void playShelterRecognition(Player player) {
-        sendPolenLine(player, "dialogue.polen.event.shelter.line1");
-        sendPolenLine(player, "dialogue.polen.event.shelter.line2");
-        sendPolenLine(player, "dialogue.polen.event.shelter.line3");
-        sendPolenLine(player, "dialogue.polen.event.shelter.line4");
+        sendDialogueSequence(player, POLEN_KEY, ChatFormatting.LIGHT_PURPLE, SHELTER_RECOGNITION_LINES);
 
-        PolenStoryFlagsManager.setFlag(
-                player,
-                PolenStoryFlag.PLAYER_HAS_SHELTER
-        );
+        if (player.level() instanceof ServerLevel serverLevel) {
+            PolenStoryFlagsManager.setFlag(serverLevel, PolenStoryFlag.PLAYER_HAS_SHELTER);
+        }
 
         if (player instanceof ServerPlayer serverPlayer) {
             PolenAdvancementManager.grantPlayerHasShelter(serverPlayer);
         }
     }
 
-    public static void completeChapter0(Player player) {
-        PolenStoryFlagsManager.setFlag(
+    public static void playNameReveal(Player player) {
+        sendDialogueSequence(player, UNKNOWN_GIRL_KEY, ChatFormatting.GRAY, NAME_REVEAL_LINES);
+        sendDialogueLine(
                 player,
-                PolenStoryFlag.CHAPTER_0_COMPLETE
+                POLEN_KEY,
+                ChatFormatting.LIGHT_PURPLE,
+                "dialogue.polen.event.name_reveal.line5"
+        );
+        player.displayClientMessage(
+                Component.translatable("dialogue.polen.event.name_reveal.discovered")
+                        .withStyle(ChatFormatting.GOLD),
+                false
         );
 
-        PolenChapterManager.advanceToChapter(
-                player,
-                PolenChapterManager.FOUNDATION
-        );
+        completeChapter0(player);
     }
 
-    private static void sendPolenLine(Player player, String dialogueKey) {
+    public static void completeChapter0(Player player) {
+        if (player.level() instanceof ServerLevel serverLevel) {
+            PolenStoryFlagsManager.setFlag(serverLevel, PolenStoryFlag.NAME_REVEALED);
+            PolenStoryFlagsManager.setFlag(serverLevel, PolenStoryFlag.CHAPTER_0_COMPLETE);
+            PolenChapterManager.advanceToChapter(serverLevel, PolenChapterManager.FOUNDATION);
+        }
+
+        if (player instanceof ServerPlayer serverPlayer) {
+            PolenAdvancementManager.grantNameReveal(serverPlayer);
+            PolenAdvancementManager.grantChapter0Complete(serverPlayer);
+        }
+    }
+
+    private static void sendDialogueSequence(
+            Player player,
+            String speakerKey,
+            ChatFormatting speakerStyle,
+            List<String> dialogueKeys
+    ) {
+        for (String dialogueKey : dialogueKeys) {
+            sendDialogueLine(player, speakerKey, speakerStyle, dialogueKey);
+        }
+    }
+
+    private static void sendDialogueLine(
+            Player player,
+            String speakerKey,
+            ChatFormatting speakerStyle,
+            String dialogueKey
+    ) {
         player.displayClientMessage(
-                Component.translatable("entity.polen.polen")
-                        .withStyle(ChatFormatting.LIGHT_PURPLE)
+                Component.translatable(speakerKey)
+                        .withStyle(speakerStyle)
                         .append(Component.literal(": ").withStyle(ChatFormatting.WHITE))
                         .append(Component.translatable(dialogueKey).withStyle(ChatFormatting.WHITE)),
                 false

@@ -1,14 +1,14 @@
 {
-  "parent": "polen:story/root",
+  "parent": "polen:story/first_meeting",
   "display": {
     "icon": {
-      "id": "minecraft:oxeye_daisy"
+      "id": "minecraft:honey_bottle"
     },
     "title": {
-      "text": "Primer Encuentro"
+      "translate": "advancement.polen.story.first_trust.title"
     },
     "description": {
-      "text": "Has encontrado a una chica desconocida en el claro."
+      "translate": "advancement.polen.story.first_trust.description"
     },
     "frame": "task",
     "show_toast": true,
@@ -16,7 +16,7 @@
     "hidden": false
   },
   "criteria": {
-    "first_meeting": {
+    "first_trust": {
       "trigger": "minecraft:impossible"
     }
   }

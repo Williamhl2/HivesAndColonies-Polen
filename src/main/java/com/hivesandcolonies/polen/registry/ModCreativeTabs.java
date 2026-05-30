@@ -13,6 +13,8 @@ public class ModCreativeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, Polen.MODID);
 
+    private ModCreativeTabs() {}
+
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> POLEN_TAB =
             CREATIVE_MODE_TABS.register("polen_tab", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.polen"))

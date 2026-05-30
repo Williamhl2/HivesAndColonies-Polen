@@ -1,25 +1,54 @@
 {
   "itemGroup.polen": "Polen",
-  "item.polen.princess_seal": "Sello de la Princesa",
-  "item.polen.princess_letter": "Carta de la Princesa",
-  "item.polen.polen_journal": "Diario de Polen",
-  "tooltip.polen.princess_seal.line1": "El sello legítimo de la Princesa Polen.",
-  "tooltip.polen.princess_seal.line2": "Aún conserva el aroma de la miel real.",
+  "item.polen.princess_seal": "Sello Antiguo",
+  "item.polen.princess_letter": "Carta Gastada",
+  "item.polen.polen_journal": "Cuaderno Viejo",
+
+  "tooltip.polen.princess_seal.line1": "Un sello antiguo de origen desconocido.",
+  "tooltip.polen.princess_seal.line2": "Todavía conserva un tenue aroma a miel.",
   "tooltip.polen.princess_letter.line1": "Una carta escrita con letra temblorosa.",
-  "tooltip.polen.princess_letter.line2": "La Reina ha desaparecido.",
-  "tooltip.polen.princess_letter.line3": "Polen necesita ayuda.",
-  "tooltip.polen.polen_journal.line1": "El diario privado de la Princesa Polen.",
+  "tooltip.polen.princess_letter.line2": "Parece importante, pero le faltan partes.",
+  "tooltip.polen.princess_letter.line3": "Todavía no entiendes toda su historia.",
+  "tooltip.polen.polen_journal.line1": "Un cuaderno privado muy cuidado.",
   "tooltip.polen.polen_journal.line2": "Algunas páginas están manchadas de miel.",
   "tooltip.polen.polen_journal.line3": "Click derecho para leer.",
+
   "entity.polen.unknown_girl": "???",
   "entity.polen.polen": "Polen",
+
   "dialogue.polen.chapter0.line1": "Oh...",
   "dialogue.polen.chapter0.line2": "No esperaba encontrar a nadie aquí.",
   "dialogue.polen.chapter0.line3": "Lo siento... no suelo hablar con desconocidos.",
   "dialogue.polen.chapter0.line4": "Este claro es tranquilo. Por eso me quedé.",
   "dialogue.polen.chapter0.line5": "¿También estás buscando un lugar seguro?",
+
   "dialogue.polen.chapter1.line1": "Ese lugar que estás construyendo... parece seguro.",
   "dialogue.polen.chapter1.line2": "No pensé que volvería a sentirme tranquila cerca de otras personas.",
   "dialogue.polen.chapter1.line3": "Tal vez un refugio pequeño sea suficiente por ahora.",
-  "dialogue.polen.chapter1.line4": "Gracias por volver."
+  "dialogue.polen.chapter1.line4": "Gracias por volver.",
+
+  "dialogue.polen.event.shelter.line1": "Este lugar...",
+  "dialogue.polen.event.shelter.line2": "No parece un palacio, ni una colmena real...",
+  "dialogue.polen.event.shelter.line3": "Pero se siente tranquilo.",
+  "dialogue.polen.event.shelter.line4": "Tal vez... podamos empezar aquí.",
+
+  "dialogue.polen.event.name_reveal.line1": "Espera...",
+  "dialogue.polen.event.name_reveal.line2": "Hay algo que quiero decirte.",
+  "dialogue.polen.event.name_reveal.line3": "No sé por qué... pero siento que puedo confiar en ti.",
+  "dialogue.polen.event.name_reveal.line4": "Mi nombre es...",
+  "dialogue.polen.event.name_reveal.line5": "Polen.",
+  "dialogue.polen.event.name_reveal.discovered": "Has descubierto su nombre: Polen.",
+
+  "advancement.polen.story.root.title": "Rumores entre los Cerezos",
+  "advancement.polen.story.root.description": "Una historia comienza en silencio.",
+  "advancement.polen.story.first_meeting.title": "Primer Encuentro",
+  "advancement.polen.story.first_meeting.description": "Has encontrado a una chica desconocida en el claro.",
+  "advancement.polen.story.first_trust.title": "Un Poco de Confianza",
+  "advancement.polen.story.first_trust.description": "Ella parece sentirse un poco más tranquila contigo.",
+  "advancement.polen.story.name_reveal.title": "La Chica del Claro",
+  "advancement.polen.story.name_reveal.description": "Has descubierto su nombre: Polen.",
+  "advancement.polen.story.chapter0_complete.title": "Capítulo 0 Completado",
+  "advancement.polen.story.chapter0_complete.description": "La Chica del Claro",
+  "advancement.polen.story.player_has_shelter.title": "Un Lugar Seguro",
+  "advancement.polen.story.player_has_shelter.description": "Polen cree que este refugio podría ser un nuevo comienzo."
 }

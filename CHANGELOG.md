@@ -2,6 +2,76 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v0.0.5] - 2026-05-29
+
+### Added
+
+- Persistent story data system
+  - World story SavedData
+  - Player relationship data
+  - Automatic world save integration
+
+- World story architecture
+  - Shared chapter progression
+  - Shared story flags
+  - Persistent world narrative state
+
+- Player relationship architecture
+  - Persistent affinity
+  - Interaction tracking
+  - Relationship progression framework
+
+- World story data
+  - Current chapter persistence
+  - Story flag persistence
+  - Future Polen entity tracking support
+  - Future spawn state support
+
+- Debug utilities
+  - /polen relationship get
+  - /polen worlddata get
+
+### Changed
+
+- Refactored progression system into:
+  - World Story
+  - Player Relationship
+
+- Chapter progression is now shared across the entire world
+
+- Story flags are now global world events
+
+- Affinity is now tracked individually per player
+
+- PolenEntity responsibilities reduced
+  - Interaction handling only
+  - Narrative logic delegated to story systems
+
+- Narrative event logic moved to PolenStoryEventManager
+
+- Dialogue architecture prepared for long-term chapter expansion
+
+- Advancement files moved to proper datapack location:
+  - data/polen/advancement/story
+
+- Advancement titles and descriptions now use translation keys
+
+- Narrative event dialogue moved to language files
+
+- Item tooltip implementation consolidated through reusable tooltip item base class
+
+### Fixed
+
+- Advancement resource structure
+- Story progression persistence after world reload
+- World state synchronization for multiplayer environments
+
+### Technical
+
+- Introduced SavedData-based persistence layer
+- Separated global story progression from player-specific relationship data
+- Prepared architecture for future multiplayer story progression
+
 ## [v0.0.4] - 2026-05-29
 
 ### Added

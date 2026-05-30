@@ -1,14 +1,14 @@
 {
-  "parent": "polen:story/chapter0_complete",
+  "parent": "polen:story/first_trust",
   "display": {
     "icon": {
-      "id": "minecraft:oak_door"
+      "id": "minecraft:poppy"
     },
     "title": {
-      "text": "Un Lugar Seguro"
+      "translate": "advancement.polen.story.name_reveal.title"
     },
     "description": {
-      "text": "Polen cree que este refugio podría ser un nuevo comienzo."
+      "translate": "advancement.polen.story.name_reveal.description"
     },
     "frame": "task",
     "show_toast": true,
@@ -16,7 +16,7 @@
     "hidden": false
   },
   "criteria": {
-    "player_has_shelter": {
+    "revealed_name": {
       "trigger": "minecraft:impossible"
     }
   }

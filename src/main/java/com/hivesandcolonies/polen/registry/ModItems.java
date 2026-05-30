@@ -14,6 +14,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Polen.MODID);
 
+    private ModItems() {}
+
      public static final DeferredItem<Item> PRINCESS_SEAL = ITEMS.registerItem(
             "princess_seal",
             PrincessSealItem::new,

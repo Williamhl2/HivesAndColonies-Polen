@@ -1,14 +1,15 @@
 {
   "itemGroup.polen": "Polen",
-  "item.polen.princess_seal": "Princess Seal",
-  "item.polen.princess_letter": "Princess Letter",
-  "item.polen.polen_journal": "Polen's Journal",
-  "tooltip.polen.princess_seal.line1": "The rightful seal of Princess Polen.",
-  "tooltip.polen.princess_seal.line2": "It still carries the scent of royal honey.",
+  "item.polen.princess_seal": "Ancient Seal",
+  "item.polen.princess_letter": "Worn Letter",
+  "item.polen.polen_journal": "Old Journal",
+
+  "tooltip.polen.princess_seal.line1": "An old seal of unknown origin.",
+  "tooltip.polen.princess_seal.line2": "It still carries a faint scent of honey.",
   "tooltip.polen.princess_letter.line1": "A letter written in shaky handwriting.",
-  "tooltip.polen.princess_letter.line2": "The Queen has disappeared.",
-  "tooltip.polen.princess_letter.line3": "Polen needs help.",
-  "tooltip.polen.polen_journal.line1": "The private journal of Princess Polen.",
+  "tooltip.polen.princess_letter.line2": "It seems important, but parts are missing.",
+  "tooltip.polen.princess_letter.line3": "You do not understand its full story yet.",
+  "tooltip.polen.polen_journal.line1": "A carefully kept private journal.",
   "tooltip.polen.polen_journal.line2": "Some pages are stained with honey.",
   "tooltip.polen.polen_journal.line3": "Right-click to read.",
 
@@ -24,5 +25,30 @@
   "dialogue.polen.chapter1.line1": "That place you're building... it looks safe.",
   "dialogue.polen.chapter1.line2": "I didn't think I would feel calm near other people again.",
   "dialogue.polen.chapter1.line3": "Maybe a small shelter is enough for now.",
-  "dialogue.polen.chapter1.line4": "Thanks for coming back."
+  "dialogue.polen.chapter1.line4": "Thanks for coming back.",
+
+  "dialogue.polen.event.shelter.line1": "This place...",
+  "dialogue.polen.event.shelter.line2": "It does not look like a palace, or a royal hive...",
+  "dialogue.polen.event.shelter.line3": "But it feels peaceful.",
+  "dialogue.polen.event.shelter.line4": "Maybe... we can begin here.",
+
+  "dialogue.polen.event.name_reveal.line1": "Wait...",
+  "dialogue.polen.event.name_reveal.line2": "There is something I want to tell you.",
+  "dialogue.polen.event.name_reveal.line3": "I don't know why... but I feel like I can trust you.",
+  "dialogue.polen.event.name_reveal.line4": "My name is...",
+  "dialogue.polen.event.name_reveal.line5": "Polen.",
+  "dialogue.polen.event.name_reveal.discovered": "You discovered her name: Polen.",
+
+  "advancement.polen.story.root.title": "Rumors Among the Cherry Trees",
+  "advancement.polen.story.root.description": "A story begins in silence.",
+  "advancement.polen.story.first_meeting.title": "First Meeting",
+  "advancement.polen.story.first_meeting.description": "You found an unknown girl in the clearing.",
+  "advancement.polen.story.first_trust.title": "A Little Trust",
+  "advancement.polen.story.first_trust.description": "She seems a little calmer around you.",
+  "advancement.polen.story.name_reveal.title": "The Girl in the Clearing",
+  "advancement.polen.story.name_reveal.description": "You discovered her name: Polen.",
+  "advancement.polen.story.chapter0_complete.title": "Chapter 0 Complete",
+  "advancement.polen.story.chapter0_complete.description": "The Girl in the Clearing",
+  "advancement.polen.story.player_has_shelter.title": "A Safe Place",
+  "advancement.polen.story.player_has_shelter.description": "Polen believes this shelter could be a new beginning."
 }

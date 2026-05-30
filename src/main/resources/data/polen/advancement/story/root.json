@@ -4,10 +4,10 @@
       "id": "minecraft:cornflower"
     },
     "title": {
-      "text": "Polen"
+      "translate": "advancement.polen.story.root.title"
     },
     "description": {
-      "text": "Una historia comienza en silencio."
+      "translate": "advancement.polen.story.root.description"
     },
     "background": "minecraft:textures/block/grass_block_side.png",
     "frame": "task",

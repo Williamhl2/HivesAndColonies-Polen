@@ -1,30 +1,27 @@
 package com.hivesandcolonies.polen.progression;
 
+import com.hivesandcolonies.polen.progression.player.PolenPlayerRelationshipManager;
+
 import net.minecraft.world.entity.player.Player;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 public final class PolenAffinityManager {
-
-    private static final Map<UUID, Integer> AFFINITY = new HashMap<>();
 
     private PolenAffinityManager() {}
 
     public static int getAffinity(Player player) {
-        return AFFINITY.getOrDefault(player.getUUID(), PolenAffinityLevels.STRANGER);
+        return PolenPlayerRelationshipManager.getAffinity(player);
     }
 
     public static void setAffinity(Player player, int value) {
-        AFFINITY.put(player.getUUID(), PolenAffinityLevels.clamp(value));
+        PolenPlayerRelationshipManager.setAffinity(player, value);
     }
 
     public static void addAffinity(Player player, int amount) {
-        setAffinity(player, getAffinity(player) + amount);
+        PolenPlayerRelationshipManager.addAffinity(player, amount);
     }
 
     public static void removeAffinity(Player player, int amount) {
-        setAffinity(player, getAffinity(player) - amount);
+        PolenPlayerRelationshipManager.removeAffinity(player, amount);
     }
 
     public static boolean hasReached(Player player, int level) {
@@ -32,7 +29,7 @@ public final class PolenAffinityManager {
     }
 
     public static boolean hasRevealedName(Player player) {
-        return hasReached(player, PolenAffinityLevels.NAME_REVEAL);
+        return PolenStoryFlagsManager.hasFlag(player, PolenStoryFlag.NAME_REVEALED);
     }
 
     public static boolean isFriend(Player player) {
@@ -48,6 +45,6 @@ public final class PolenAffinityManager {
     }
 
     public static void resetAffinity(Player player) {
-        AFFINITY.remove(player.getUUID());
+        PolenPlayerRelationshipManager.resetAffinity(player);
     }
 }

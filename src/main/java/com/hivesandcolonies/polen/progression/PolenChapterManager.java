@@ -1,10 +1,9 @@
 package com.hivesandcolonies.polen.progression;
 
-import net.minecraft.world.entity.player.Player;
+import com.hivesandcolonies.polen.progression.world.PolenWorldStorySavedData;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
 
 public final class PolenChapterManager {
 
@@ -27,8 +26,6 @@ public final class PolenChapterManager {
 
     public static final int TOTAL_CHAPTERS = NEW_BEGINNING + 1;
 
-    private static final Map<UUID, Integer> CHAPTERS = new HashMap<>();
-
     private PolenChapterManager() {}
 
     public static int getMaxChapterIndex() {
@@ -36,23 +33,54 @@ public final class PolenChapterManager {
     }
 
     public static int getCurrentChapter(Player player) {
-        return CHAPTERS.getOrDefault(player.getUUID(), PROLOGUE);
+        if (!(player.level() instanceof ServerLevel serverLevel)) {
+            return PROLOGUE;
+        }
+
+        return getCurrentChapter(serverLevel);
+    }
+
+    public static int getCurrentChapter(ServerLevel level) {
+        return PolenWorldStorySavedData.get(level).getData().getCurrentChapter();
     }
 
     public static void setCurrentChapter(Player player, int chapter) {
-        CHAPTERS.put(player.getUUID(), clampChapter(chapter));
+        if (player.level() instanceof ServerLevel serverLevel) {
+            setCurrentChapter(serverLevel, chapter);
+        }
+    }
+
+    public static void setCurrentChapter(ServerLevel level, int chapter) {
+        PolenWorldStorySavedData savedData = PolenWorldStorySavedData.get(level);
+        int clampedChapter = clampChapter(chapter);
+
+        if (savedData.getData().getCurrentChapter() != clampedChapter) {
+            savedData.getData().setCurrentChapter(clampedChapter);
+            savedData.setDirty();
+        }
     }
 
     public static void advanceToChapter(Player player, int chapter) {
-        int current = getCurrentChapter(player);
+        if (player.level() instanceof ServerLevel serverLevel) {
+            advanceToChapter(serverLevel, chapter);
+        }
+    }
 
+    public static void advanceToChapter(ServerLevel level, int chapter) {
+        int current = getCurrentChapter(level);
         if (chapter > current) {
-            setCurrentChapter(player, chapter);
+            setCurrentChapter(level, chapter);
         }
     }
 
     public static void resetChapter(Player player) {
-        CHAPTERS.remove(player.getUUID());
+        if (player.level() instanceof ServerLevel serverLevel) {
+            resetChapter(serverLevel);
+        }
+    }
+
+    public static void resetChapter(ServerLevel level) {
+        setCurrentChapter(level, PROLOGUE);
     }
 
     private static int clampChapter(int chapter) {

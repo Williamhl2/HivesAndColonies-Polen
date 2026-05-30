@@ -2,6 +2,95 @@
 
 ## 2026-05-29
 
+### Architecture Revision
+
+The progression system has been redesigned to support multiplayer and long-term narrative development.
+
+Core rule:
+
+Story belongs to the world.
+
+Relationship belongs to the player.
+
+### World Story Layer
+
+Shared by all players.
+
+Current responsibilities:
+
+- Chapter progression
+- Story flags
+- Global narrative state
+- Future kingdom progression
+
+Examples:
+
+- NAME_REVEALED
+- CHAPTER_0_COMPLETE
+- PLAYER_HAS_SHELTER
+
+### Player Relationship Layer
+
+Stored individually per player.
+
+Current responsibilities:
+
+- Affinity
+- Interaction tracking
+- Personal relationship progression
+
+This allows Polen to react differently to individual players while maintaining a shared world narrative.
+
+### Persistence
+
+Story progression now survives:
+
+- World reloads
+- Server restarts
+- Singleplayer sessions
+- Multiplayer sessions
+
+### Narrative Systems
+
+The narrative event system has been separated from entity logic.
+
+PolenEntity now focuses on:
+
+- Interaction
+- Presentation
+- Event triggering
+
+Story execution is handled by:
+
+- PolenStoryEventManager
+
+Dialogue content is now stored in language resources instead of Java code.
+
+### Current Story Status
+
+Completed:
+
+- Chapter 0: The Girl in the Clearing
+
+Implemented:
+
+- First Meeting
+- First Trust
+- Name Reveal
+- Chapter 0 Complete
+- Foundation Chapter Start
+
+In Progress:
+
+- Chapter 1: Foundation
+
+Next Major Goal:
+
+- Shelter Recognition System
+- First meaningful player-built settlement milestone
+
+## 2026-05-29
+
 ### Narrative Direction
 
 Polen is not the Queen of Bees.
