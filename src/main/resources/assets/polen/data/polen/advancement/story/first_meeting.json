@@ -1,0 +1,23 @@
+{
+  "parent": "polen:story/root",
+  "display": {
+    "icon": {
+      "id": "minecraft:oxeye_daisy"
+    },
+    "title": {
+      "text": "Primer Encuentro"
+    },
+    "description": {
+      "text": "Has encontrado a una chica desconocida en el claro."
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "first_meeting": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

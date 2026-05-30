@@ -1,0 +1,23 @@
+{
+  "parent": "polen:story/first_trust",
+  "display": {
+    "icon": {
+      "id": "minecraft:poppy"
+    },
+    "title": {
+      "text": "La Chica del Claro"
+    },
+    "description": {
+      "text": "Has descubierto su nombre: Polen."
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "revealed_name": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

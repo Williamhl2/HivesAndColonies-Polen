@@ -11,8 +11,18 @@
   "tooltip.polen.polen_journal.line1": "The private journal of Princess Polen.",
   "tooltip.polen.polen_journal.line2": "Some pages are stained with honey.",
   "tooltip.polen.polen_journal.line3": "Right-click to read.",
-  "entity.polen.polen": "Princess Polen",
-"dialogue.polen.chapter1.line1": "Polen: H-hi... have you seen my mother?",
-"dialogue.polen.chapter1.line2": "Polen: I am not queen yet. I am just... well, the princess.",
-"dialogue.polen.chapter1.line3": "Polen: The bees keep looking at me like they expect something important.",
-"dialogue.polen.chapter1.line4": "Polen: If we are going to rebuild the kingdom, maybe we should start with somewhere safe."}
+
+  "entity.polen.unknown_girl": "???",
+  "entity.polen.polen": "Polen",
+
+  "dialogue.polen.chapter0.line1": "Oh...",
+  "dialogue.polen.chapter0.line2": "I wasn't expecting anyone here.",
+  "dialogue.polen.chapter0.line3": "Sorry... I don't usually talk to strangers.",
+  "dialogue.polen.chapter0.line4": "This clearing is quiet. That's why I stayed.",
+  "dialogue.polen.chapter0.line5": "Are you looking for somewhere safe too?",
+
+  "dialogue.polen.chapter1.line1": "That place you're building... it looks safe.",
+  "dialogue.polen.chapter1.line2": "I didn't think I would feel calm near other people again.",
+  "dialogue.polen.chapter1.line3": "Maybe a small shelter is enough for now.",
+  "dialogue.polen.chapter1.line4": "Thanks for coming back."
+}

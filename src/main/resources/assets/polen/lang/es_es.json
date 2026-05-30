@@ -11,8 +11,15 @@
   "tooltip.polen.polen_journal.line1": "El diario privado de la Princesa Polen.",
   "tooltip.polen.polen_journal.line2": "Algunas páginas están manchadas de miel.",
   "tooltip.polen.polen_journal.line3": "Click derecho para leer.",
-  "entity.polen.polen": "Princesa Polen",
-"dialogue.polen.chapter1.line1": "Polen: H-hola... ¿has visto a mi madre?",
-"dialogue.polen.chapter1.line2": "Polen: No soy reina todavía. Solo soy... bueno, la princesa.",
-"dialogue.polen.chapter1.line3": "Polen: Las abejas siguen mirándome como si esperaran algo importante.",
-"dialogue.polen.chapter1.line4": "Polen: Si vamos a reconstruir el reino, quizá deberíamos empezar por un lugar seguro."}
+  "entity.polen.unknown_girl": "???",
+  "entity.polen.polen": "Polen",
+  "dialogue.polen.chapter0.line1": "Oh...",
+  "dialogue.polen.chapter0.line2": "No esperaba encontrar a nadie aquí.",
+  "dialogue.polen.chapter0.line3": "Lo siento... no suelo hablar con desconocidos.",
+  "dialogue.polen.chapter0.line4": "Este claro es tranquilo. Por eso me quedé.",
+  "dialogue.polen.chapter0.line5": "¿También estás buscando un lugar seguro?",
+  "dialogue.polen.chapter1.line1": "Ese lugar que estás construyendo... parece seguro.",
+  "dialogue.polen.chapter1.line2": "No pensé que volvería a sentirme tranquila cerca de otras personas.",
+  "dialogue.polen.chapter1.line3": "Tal vez un refugio pequeño sea suficiente por ahora.",
+  "dialogue.polen.chapter1.line4": "Gracias por volver."
+}

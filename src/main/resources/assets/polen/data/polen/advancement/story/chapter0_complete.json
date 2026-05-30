@@ -1,0 +1,23 @@
+{
+  "parent": "polen:story/name_reveal",
+  "display": {
+    "icon": {
+      "id": "minecraft:book"
+    },
+    "title": {
+      "text": "Capítulo 0 Completado"
+    },
+    "description": {
+      "text": "La Chica del Claro"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "chapter0_complete": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

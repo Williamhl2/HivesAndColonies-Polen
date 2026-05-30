@@ -1,0 +1,23 @@
+{
+  "parent": "polen:story/chapter0_complete",
+  "display": {
+    "icon": {
+      "id": "minecraft:oak_door"
+    },
+    "title": {
+      "text": "Un Lugar Seguro"
+    },
+    "description": {
+      "text": "Polen cree que este refugio podría ser un nuevo comienzo."
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "player_has_shelter": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

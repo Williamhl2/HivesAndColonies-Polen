@@ -1,0 +1,23 @@
+{
+  "parent": "polen:story/first_meeting",
+  "display": {
+    "icon": {
+      "id": "minecraft:honey_bottle"
+    },
+    "title": {
+      "text": "Un Poco de Confianza"
+    },
+    "description": {
+      "text": "Ella parece sentirse un poco más tranquila contigo."
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "first_trust": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

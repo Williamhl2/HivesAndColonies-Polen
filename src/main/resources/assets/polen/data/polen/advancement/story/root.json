@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "id": "minecraft:cornflower"
+    },
+    "title": {
+      "text": "Polen"
+    },
+    "description": {
+      "text": "Una historia comienza en silencio."
+    },
+    "background": "minecraft:textures/block/grass_block_side.png",
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false
+  },
+  "criteria": {
+    "started": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}
