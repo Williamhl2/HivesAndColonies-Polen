@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## v0.0.7 - Living Polen Update
+
+### Added
+
+- Added Polen memory system.
+- Added first memory triggers:
+  - `FIRST_FLOWER`
+  - `FIRST_HIVE`
+  - `FIRST_SOURCE`
+  - `FIRST_COLONY`
+- Added new world story flags for Polen memories.
+- Added debug commands for unlocking Polen memories.
+- Added debug command to inspect Polen's current mood.
+- Added new Polen moods:
+  - `CONFIDENT`
+  - `JOYFUL`
+- Added memory dialogue entries in `es_es.json` and `en_us.json`.
+
+### Changed
+
+- Expanded Polen's mood logic to better reflect world progression.
+- `CONFIDENT` now represents trust in the environment/world state.
+- `JOYFUL` represents stronger emotional comfort near trusted players.
+- Polen can now associate flowers, hives and resting places with narrative progression.
+- Improved the connection between Polen's AI behavior and story flags.
+
+### Fixed
+
+- Prevented memory dialogue from repeating after a memory has already been unlocked.
+- Improved debug testing flow for story memories and mood inspection.
+
+### Notes
+
+- This update does not add Polen's residence yet.
+- This update does not add deep MineColonies, Productive Bees or Ars Nouveau integration yet.
+- Those systems are planned for later narrative/content updates.
+
 ## [v0.0.6] - 2026-05-30
 
 ### Added
