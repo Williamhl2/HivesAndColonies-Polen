@@ -2,6 +2,8 @@ package com.hivesandcolonies.polen.entity.ai.mood;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.ai.PolenMood;
+import com.hivesandcolonies.polen.entity.ai.need.PolenNeedController;
+import com.hivesandcolonies.polen.entity.ai.need.PolenNeedSnapshot;
 import com.hivesandcolonies.polen.entity.ai.memory.PolenMemoryHandler;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
@@ -24,6 +26,7 @@ public final class PolenMoodController {
     }
 
     public static PolenMoodAnalysis analyzeMood(PolenEntity polen) {
+        PolenNeedSnapshot needs = PolenNeedController.inspect(polen);
         Player closePlayer = polen.level().getNearestPlayer(polen, UNTRUSTED_CLOSE_RANGE);
         Player nearbyPlayer = polen.level().getNearestPlayer(polen, TRUSTED_NEARBY_RANGE);
 
@@ -36,21 +39,26 @@ public final class PolenMoodController {
             return new PolenMoodAnalysis(PolenMood.UNSETTLED, "bad_weather_exposed");
         }
 
+        if (needs.safety() >= 68) {
+            return new PolenMoodAnalysis(PolenMood.UNSETTLED, "safety_need_high");
+        }
+
         if (nearbyPlayer != null
                 && polen.isComfortableWith(nearbyPlayer)) {
             return new PolenMoodAnalysis(PolenMood.JOYFUL, "trusted_player_nearby");
         }
 
-        if (polen.isDoingQuietActivity()) {
-            return new PolenMoodAnalysis(PolenMood.INSPIRED, "quiet_activity_active");
+        if (polen.isDoingQuietActivity() || needs.magic() >= 60) {
+            return new PolenMoodAnalysis(PolenMood.INSPIRED, "magic_need_high");
         }
 
-        if (PolenMemoryHandler.isNearRememberedInterest(polen)) {
-            return new PolenMoodAnalysis(PolenMood.CURIOUS, "near_remembered_interest");
+        if (PolenMemoryHandler.isNearRememberedInterest(polen) || needs.curiosity() >= 56) {
+            return new PolenMoodAnalysis(PolenMood.CURIOUS, "curiosity_need_high");
         }
 
         if (polen.level() instanceof ServerLevel serverLevel
-                && PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.PLAYER_HAS_SHELTER)) {
+                && PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.PLAYER_HAS_SHELTER)
+                && needs.safety() <= 42) {
             return new PolenMoodAnalysis(PolenMood.CONFIDENT, "world_has_shelter");
         }
 

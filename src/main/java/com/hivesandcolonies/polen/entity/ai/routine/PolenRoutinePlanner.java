@@ -2,6 +2,7 @@ package com.hivesandcolonies.polen.entity.ai.routine;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.PolenDangerMemoryTracker;
+import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 import net.minecraft.core.BlockPos;
@@ -15,45 +16,13 @@ public final class PolenRoutinePlanner {
     private PolenRoutinePlanner() {
     }
 
-    public static BlockPos getRoutineTarget(PolenEntity polen) {
-        if (polen.level().isRaining() || polen.level().isThundering() || polen.level().isNight()) {
-            if (isRememberedSpotStillValid(polen, polen.getRestingPos())
-                    && PolenSafetyEvaluator.isSafeStandingSpot(polen, polen.getRestingPos())) {
-                return polen.getRestingPos();
-            }
-
-            return PolenSafetyNavigator.findNearbySafeSurfaceSpot(polen, DEFAULT_SAFE_SPOT_RADIUS);
-        }
-
-        long dayTime = polen.level().getDayTime() % 24000L;
-        if (dayTime < 6000L
-                && isRememberedSpotStillValid(polen, polen.getFavoriteFlowerPos())
-                && isSafeInterestSpot(polen, polen.getFavoriteFlowerPos())) {
-            return polen.getFavoriteFlowerPos();
-        }
-
-        if (dayTime < 12000L
-                && isRememberedSpotStillValid(polen, polen.getFavoriteHivePos())
-                && isSafeInterestSpot(polen, polen.getFavoriteHivePos())) {
-            return polen.getFavoriteHivePos();
-        }
-
-        if (isRememberedSpotStillValid(polen, polen.getFavoriteFlowerPos())
-                && isSafeInterestSpot(polen, polen.getFavoriteFlowerPos())) {
-            return polen.getFavoriteFlowerPos();
-        }
-
-        if (isRememberedSpotStillValid(polen, polen.getFavoriteHivePos())
-                && isSafeInterestSpot(polen, polen.getFavoriteHivePos())) {
-            return polen.getFavoriteHivePos();
-        }
-
-        if (isRememberedSpotStillValid(polen, polen.getRestingPos())
-                && PolenSafetyEvaluator.isSafeStandingSpot(polen, polen.getRestingPos())) {
-            return polen.getRestingPos();
-        }
-
-        return PolenSafetyNavigator.findNearbySafeSurfaceSpot(polen, DEFAULT_SAFE_SPOT_RADIUS);
+    public static BlockPos getRoutineTarget(PolenEntity polen, PolenIntent intent) {
+        return switch (intent) {
+            case SEEK_REST -> findRestTarget(polen);
+            case QUIET_CREATION -> findQuietCreationTarget(polen);
+            case WANDER_SAFE -> PolenSafetyNavigator.findNearbySafeSurfaceSpot(polen, DEFAULT_SAFE_SPOT_RADIUS);
+            default -> null;
+        };
     }
 
     public static boolean isRememberedSpotStillValid(PolenEntity polen, BlockPos pos) {
@@ -75,5 +44,28 @@ public final class PolenRoutinePlanner {
         boolean brightEnough = polen.level().getMaxLocalRawBrightness(pos.above()) >= MIN_INTEREST_BRIGHTNESS;
 
         return nearSurface && brightEnough;
+    }
+
+    private static BlockPos findRestTarget(PolenEntity polen) {
+        if (isRememberedSpotStillValid(polen, polen.getAiState().getRestingPos())
+                && PolenSafetyEvaluator.isSafeStandingSpot(polen, polen.getAiState().getRestingPos())) {
+            return polen.getAiState().getRestingPos();
+        }
+
+        return PolenSafetyNavigator.findNearbySafeSurfaceSpot(polen, DEFAULT_SAFE_SPOT_RADIUS);
+    }
+
+    private static BlockPos findQuietCreationTarget(PolenEntity polen) {
+        if (isRememberedSpotStillValid(polen, polen.getAiState().getFavoriteSourcePos())
+                && isSafeInterestSpot(polen, polen.getAiState().getFavoriteSourcePos())) {
+            return polen.getAiState().getFavoriteSourcePos();
+        }
+
+        if (isRememberedSpotStillValid(polen, polen.getAiState().getRestingPos())
+                && PolenSafetyEvaluator.isSafeStandingSpot(polen, polen.getAiState().getRestingPos())) {
+            return polen.getAiState().getRestingPos();
+        }
+
+        return PolenSafetyNavigator.findNearbySafeSurfaceSpot(polen, DEFAULT_SAFE_SPOT_RADIUS);
     }
 }

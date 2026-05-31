@@ -1,14 +1,13 @@
 package com.hivesandcolonies.polen.entity;
 
+import com.hivesandcolonies.polen.entity.ai.PolenAiFacade;
 import com.hivesandcolonies.polen.entity.ai.PolenMood;
-import com.hivesandcolonies.polen.entity.ai.activity.PolenQuietActivityController;
-import com.hivesandcolonies.polen.entity.ai.memory.PolenMemoryHandler;
-import com.hivesandcolonies.polen.entity.ai.mood.PolenMoodController;
+import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
+import com.hivesandcolonies.polen.entity.ai.state.PolenAiState;
 import com.hivesandcolonies.polen.progression.PolenAffinityLevels;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
-import com.hivesandcolonies.polen.util.PolenNbtHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -31,9 +30,12 @@ public class PolenEntity extends PathfinderMob {
     private static final String POLEN_KEY = "entity.polen.polen";
     private static final String TAG_FAVORITE_FLOWER_POS = "FavoriteFlowerPos";
     private static final String TAG_FAVORITE_HIVE_POS = "FavoriteHivePos";
+    private static final String TAG_FAVORITE_SOURCE_POS = "FavoriteSourcePos";
     private static final String TAG_RESTING_POS = "RestingPos";
     private static final String TAG_DANGEROUS_SPOT_POS = "DangerousSpotPos";
     private static final String TAG_DANGEROUS_SPOT_UNTIL = "DangerousSpotUntil";
+    private static final String TAG_NEEDS = "NeedState";
+    private static final String TAG_INTENT = "IntentState";
     private static final double DANGEROUS_SPOT_AVOID_RADIUS = 5.0D;
 
     private static final EntityDataAccessor<Integer> QUIET_ACTIVITY =
@@ -43,12 +45,7 @@ public class PolenEntity extends PathfinderMob {
     private static final EntityDataAccessor<Integer> CURRENT_MOOD =
             SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
 
-    private BlockPos favoriteFlowerPos;
-    private BlockPos favoriteHivePos;
-    private BlockPos restingPos;
-    private BlockPos dangerousSpotPos;
-    private long dangerousSpotUntilGameTime;
-    private long lastAmbientDialogueGameTime;
+    private final PolenAiState aiState = new PolenAiState();
 
     public PolenEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -67,12 +64,12 @@ public class PolenEntity extends PathfinderMob {
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(QUIET_ACTIVITY, PolenQuietActivityController.QUIET_ACTIVITY_NONE);
+        builder.define(QUIET_ACTIVITY, 0);
         builder.define(QUIET_ACTIVITY_TICKS, 0);
         builder.define(CURRENT_MOOD, PolenMood.CALM.getId());
     }
 
-    void refreshDisplayName() {
+    public void refreshDisplayName() {
         if (this.level() instanceof ServerLevel serverLevel
                 && PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.NAME_REVEALED)) {
             this.setCustomName(Component.translatable(POLEN_KEY));
@@ -98,43 +95,48 @@ public class PolenEntity extends PathfinderMob {
         super.tick();
 
         if (this.level().isClientSide) {
-            PolenQuietActivityController.tickClientParticles(this);
+            PolenAiFacade.tickClient(this);
             return;
         }
 
-        if (this.tickCount % 20 == 0) {
-            this.refreshDisplayName();
-            this.updateMood();
-        }
-
-        if (this.tickCount % 100 == 0) {
-            PolenMemoryHandler.seedMemoriesFromNearbyEnvironment(this);
-        }
-
-        PolenQuietActivityController.tickServer(this);
+        PolenAiFacade.tickServer(this);
     }
 
     @Override
     protected void registerGoals() {
-        PolenGoalRegistry.register(this, this.goalSelector);
+        PolenAiFacade.registerGoals(this, this.goalSelector);
     }
 
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        PolenNbtHelper.saveBlockPos(tag, TAG_FAVORITE_FLOWER_POS, this.favoriteFlowerPos);
-        PolenNbtHelper.saveBlockPos(tag, TAG_FAVORITE_HIVE_POS, this.favoriteHivePos);
-        PolenNbtHelper.saveBlockPos(tag, TAG_RESTING_POS, this.restingPos);
-        PolenDangerMemoryTracker.save(this, tag, TAG_DANGEROUS_SPOT_POS, TAG_DANGEROUS_SPOT_UNTIL);
+        this.aiState.save(
+                tag,
+                TAG_FAVORITE_FLOWER_POS,
+                TAG_FAVORITE_HIVE_POS,
+                TAG_FAVORITE_SOURCE_POS,
+                TAG_RESTING_POS,
+                TAG_DANGEROUS_SPOT_POS,
+                TAG_DANGEROUS_SPOT_UNTIL,
+                TAG_NEEDS,
+                TAG_INTENT
+        );
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        this.favoriteFlowerPos = PolenNbtHelper.loadBlockPos(tag, TAG_FAVORITE_FLOWER_POS);
-        this.favoriteHivePos = PolenNbtHelper.loadBlockPos(tag, TAG_FAVORITE_HIVE_POS);
-        this.restingPos = PolenNbtHelper.loadBlockPos(tag, TAG_RESTING_POS);
-        PolenDangerMemoryTracker.load(this, tag, TAG_DANGEROUS_SPOT_POS, TAG_DANGEROUS_SPOT_UNTIL);
+        this.aiState.load(
+                tag,
+                TAG_FAVORITE_FLOWER_POS,
+                TAG_FAVORITE_HIVE_POS,
+                TAG_FAVORITE_SOURCE_POS,
+                TAG_RESTING_POS,
+                TAG_DANGEROUS_SPOT_POS,
+                TAG_DANGEROUS_SPOT_UNTIL,
+                TAG_NEEDS,
+                TAG_INTENT
+        );
     }
 
     @Override
@@ -143,15 +145,15 @@ public class PolenEntity extends PathfinderMob {
     }
 
     public boolean isDoingQuietActivity() {
-        return PolenQuietActivityController.isDoingQuietActivity(this);
+        return PolenAiFacade.isDoingQuietActivity(this);
     }
 
     public void startQuietActivity(int activityType, int ticks) {
-        PolenQuietActivityController.startQuietActivity(this, activityType, ticks);
+        PolenAiFacade.startQuietActivity(this, activityType, ticks);
     }
 
     public void stopQuietActivity() {
-        PolenQuietActivityController.stopQuietActivity(this);
+        PolenAiFacade.stopQuietActivity(this);
     }
 
     public boolean hasNearbyPlayer(double range) {
@@ -170,40 +172,28 @@ public class PolenEntity extends PathfinderMob {
         return PolenDangerMemoryTracker.getActiveDangerousSpotPos(this);
     }
 
+    public PolenAiState getAiState() {
+        return this.aiState;
+    }
+
     public int pickQuietActivity() {
-        return PolenQuietActivityController.pickQuietActivity(this);
-    }
-
-    public BlockPos getFavoriteFlowerPos() {
-        return this.favoriteFlowerPos;
-    }
-
-    public BlockPos getFavoriteHivePos() {
-        return this.favoriteHivePos;
-    }
-
-    public BlockPos getRestingPos() {
-        return this.restingPos;
+        return PolenAiFacade.pickQuietActivity(this);
     }
 
     public String getQuietActivityName() {
-        return PolenQuietActivityController.getQuietActivityName(this);
+        return PolenAiFacade.getQuietActivityName(this);
     }
 
-    private void updateMood() {
-        this.entityData.set(CURRENT_MOOD, PolenMoodController.calculateMood(this).getId());
+    public PolenIntent getCurrentIntent() {
+        return this.aiState.getIntentState().currentIntent();
     }
 
-    public void setFavoriteFlowerPos(BlockPos pos) {
-        this.favoriteFlowerPos = pos;
+    public String getCurrentIntentReason() {
+        return this.aiState.getIntentState().currentReason();
     }
 
-    public void setFavoriteHivePos(BlockPos pos) {
-        this.favoriteHivePos = pos;
-    }
-
-    public void setRestingPos(BlockPos pos) {
-        this.restingPos = pos;
+    public void setMood(PolenMood mood) {
+        this.entityData.set(CURRENT_MOOD, mood.getId());
     }
 
     public int getQuietActivityType() {
@@ -221,32 +211,11 @@ public class PolenEntity extends PathfinderMob {
     }
 
     public void rememberInterestingSpot(BlockPos pos) {
-        PolenMemoryHandler.rememberInterestingSpot(this, pos);
+        PolenAiFacade.rememberInterestingSpot(this, pos);
     }
 
     public void rememberRestingSpot(BlockPos pos) {
-        PolenMemoryHandler.rememberRestingSpot(this, pos);
-    }
-
-    long getLastAmbientDialogueGameTime() {
-        return this.lastAmbientDialogueGameTime;
-    }
-
-    void setLastAmbientDialogueGameTime(long gameTime) {
-        this.lastAmbientDialogueGameTime = gameTime;
-    }
-
-    BlockPos getDangerousSpotPosRaw() {
-        return this.dangerousSpotPos;
-    }
-
-    long getDangerousSpotUntilGameTime() {
-        return this.dangerousSpotUntilGameTime;
-    }
-
-    void setDangerousSpotState(BlockPos pos, long untilGameTime) {
-        this.dangerousSpotPos = pos;
-        this.dangerousSpotUntilGameTime = untilGameTime;
+        PolenAiFacade.rememberRestingSpot(this, pos);
     }
 
     double getDangerousSpotAvoidRadius() {

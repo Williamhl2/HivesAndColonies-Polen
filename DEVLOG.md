@@ -1,5 +1,40 @@
 # Development Log
 
+## 2026-05-31 (v0.0.11 - Autonomy Update)
+
+### Added
+
+- `PolenAutonomyController`
+  - centralizes the slow autonomy tick outside `PolenEntity`
+- `PolenAiFacade`
+  - central AI entry point used by `PolenEntity`
+- `PolenAiState`
+  - persistent shared state container for memory, danger memory, needs and intent
+- `PolenNeedState` and `PolenNeedController`
+  - persistent internal needs for safety, social contact, curiosity, rest and magic
+- `PolenIntentState` and `PolenIntentController`
+  - high-level intention selection with short decision locks
+- `PolenInterestLocator`
+  - reusable remembered/local interest discovery for flowers, hives and source-like spots
+
+### Changed
+
+- `PolenEntity` now delegates autonomy orchestration instead of manually sequencing need, intent and memory updates in its own tick.
+- `PolenMemoryHandler` now treats source-like locations as first-class remembered interests.
+- `PolenMoodController` now reflects internal needs instead of only immediate context.
+- `PolenRoutineGoal`, `PolenApproachTrustedPlayerGoal`, `PolenCuriousInterestGoal`, `PolenIdleHobbyGoal` and `PolenSafeStrollGoal` now depend on high-level intent gating.
+- `/polen ai get` now exposes intent, dominant need and the full internal need snapshot for balancing.
+- Removed internal movement deadlocks where an intent could remain selected while its concrete goal was still blocked by cooldown or over-restrictive proximity checks.
+
+### Result
+
+Polen now feels less like a bundle of reactions and more like an NPC with short-term will:
+
+- she accumulates internal pressures
+- she picks a current intention
+- she sustains that intention long enough to look deliberate
+- her visible mood now reflects those underlying pressures
+
 ## 2026-05-31 (Item Progression Foundation)
 
 ### Added

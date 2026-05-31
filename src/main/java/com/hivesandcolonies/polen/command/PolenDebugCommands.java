@@ -57,8 +57,24 @@ public final class PolenDebugCommands {
                                                             + snapshot.mood()
                                                             + ", moodReason="
                                                             + snapshot.moodReason()
+                                                            + ", intent="
+                                                            + snapshot.intent()
+                                                            + ", intentReason="
+                                                            + snapshot.intentReason()
                                                             + ", quietActivity="
                                                             + snapshot.quietActivity()
+                                                            + ", dominantNeed="
+                                                            + snapshot.dominantNeed()
+                                                            + ", safetyNeed="
+                                                            + snapshot.safetyNeed()
+                                                            + ", socialNeed="
+                                                            + snapshot.socialNeed()
+                                                            + ", curiosityNeed="
+                                                            + snapshot.curiosityNeed()
+                                                            + ", restNeed="
+                                                            + snapshot.restNeed()
+                                                            + ", magicNeed="
+                                                            + snapshot.magicNeed()
                                                             + ", unsafeArea="
                                                             + snapshot.unsafeArea()
                                                             + ", shouldSeekSafety="
@@ -71,6 +87,8 @@ public final class PolenDebugCommands {
                                                             + formatPos(snapshot.flowerSpot())
                                                             + ", hiveSpot="
                                                             + formatPos(snapshot.hiveSpot())
+                                                            + ", sourceSpot="
+                                                            + formatPos(snapshot.sourceSpot())
                                                             + ", restingSpot="
                                                             + formatPos(snapshot.restingSpot())
                                                             + ", dangerousSpot="

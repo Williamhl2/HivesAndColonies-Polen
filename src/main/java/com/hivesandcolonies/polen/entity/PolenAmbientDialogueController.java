@@ -18,7 +18,7 @@ public final class PolenAmbientDialogueController {
         }
 
         long gameTime = serverLevel.getGameTime();
-        if (gameTime - polen.getLastAmbientDialogueGameTime() < AMBIENT_DIALOGUE_COOLDOWN) {
+        if (gameTime - polen.getAiState().getLastAmbientDialogueGameTime() < AMBIENT_DIALOGUE_COOLDOWN) {
             return;
         }
 
@@ -35,7 +35,7 @@ public final class PolenAmbientDialogueController {
         }
 
         if (sentAny) {
-            polen.setLastAmbientDialogueGameTime(gameTime);
+            polen.getAiState().setLastAmbientDialogueGameTime(gameTime);
         }
     }
 }

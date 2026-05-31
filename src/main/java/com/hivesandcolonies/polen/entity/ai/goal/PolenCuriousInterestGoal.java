@@ -2,13 +2,16 @@ package com.hivesandcolonies.polen.entity.ai.goal;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
+import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
+import com.hivesandcolonies.polen.entity.ai.interest.PolenInterestLocator;
+import com.hivesandcolonies.polen.entity.ai.interest.PolenInterestTarget;
+import com.hivesandcolonies.polen.entity.ai.interest.PolenInterestType;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.polen.story.PolenMemoryManager;
+import com.hivesandcolonies.polen.story.PolenMemoryType;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.ai.goal.Goal;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
@@ -21,7 +24,7 @@ public class PolenCuriousInterestGoal extends Goal {
 
     private final PolenEntity polen;
 
-    private BlockPos targetPos;
+    private PolenInterestTarget target;
     private int observeTicks;
 
     public PolenCuriousInterestGoal(PolenEntity polen) {
@@ -34,40 +37,60 @@ public class PolenCuriousInterestGoal extends Goal {
         if (this.polen.isDoingQuietActivity()
                 || PolenSafetyNavigator.isInUnsafeArea(this.polen)
                 || this.polen.hasNearbyPlayer(2.5D)
-                || this.polen.getRandom().nextInt(100) != 0) {
+                || this.polen.getCurrentIntent() != PolenIntent.INVESTIGATE_INTEREST) {
             return false;
         }
 
-        this.targetPos = findInterestingBlock();
+        this.target = PolenInterestLocator.findPreferredInterest(this.polen, true);
         this.observeTicks = 40 + this.polen.getRandom().nextInt(60);
-        return this.targetPos != null;
+        return this.target != null;
     }
 
     @Override
     public boolean canContinueToUse() {
-        return this.targetPos != null
+        return this.target != null
                 && this.observeTicks > 0
                 && !this.polen.hasNearbyPlayer(2.0D)
-                && isInteresting(this.polen.level().getBlockState(this.targetPos));
+                && this.polen.getCurrentIntent() == PolenIntent.INVESTIGATE_INTEREST;
     }
 
     @Override
     public void start() {
-        this.polen.rememberInterestingSpot(this.targetPos);
-        PolenAmbientDialogueController.tryPlay(
-                this.polen,
-                com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_CURIOSITY
-        );
+        if (this.target == null) {
+            return;
+        }
+
+        if (this.target.type() == PolenInterestType.SOURCE) {
+            this.polen.rememberInterestingSpot(this.target.pos());
+            PolenMemoryManager.unlockMemory(
+                    (net.minecraft.server.level.ServerLevel) this.polen.level(),
+                    PolenMemoryType.FIRST_SOURCE,
+                    this.target.pos().getX() + 0.5D,
+                    this.target.pos().getY() + 0.5D,
+                    this.target.pos().getZ() + 0.5D
+            );
+            PolenAmbientDialogueController.tryPlay(
+                    this.polen,
+                    com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_MAGIC
+            );
+        } else {
+            this.polen.rememberInterestingSpot(this.target.pos());
+            PolenAmbientDialogueController.tryPlay(
+                    this.polen,
+                    com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_CURIOSITY
+            );
+        }
+
         moveToTarget();
     }
 
     @Override
     public void tick() {
-        if (this.targetPos == null) {
+        if (this.target == null) {
             return;
         }
 
-        Vec3 targetCenter = Vec3.atCenterOf(this.targetPos);
+        Vec3 targetCenter = Vec3.atCenterOf(this.target.pos());
         double distanceSqr = this.polen.distanceToSqr(targetCenter);
 
         if (distanceSqr <= STOP_DISTANCE_SQR) {
@@ -85,50 +108,20 @@ public class PolenCuriousInterestGoal extends Goal {
     @Override
     public void stop() {
         this.polen.getNavigation().stop();
-        this.targetPos = null;
+        this.target = null;
         this.observeTicks = 0;
     }
 
     private void moveToTarget() {
-        if (this.targetPos == null) {
+        if (this.target == null) {
             return;
         }
 
         this.polen.getNavigation().moveTo(
-                this.targetPos.getX() + 0.5D,
-                this.targetPos.getY(),
-                this.targetPos.getZ() + 0.5D,
+                this.target.pos().getX() + 0.5D,
+                this.target.pos().getY(),
+                this.target.pos().getZ() + 0.5D,
                 MOVE_SPEED
         );
-    }
-
-    private BlockPos findInterestingBlock() {
-        BlockPos origin = this.polen.blockPosition();
-        BlockPos bestPos = null;
-        double bestDistanceSqr = Double.MAX_VALUE;
-
-        for (BlockPos pos : BlockPos.betweenClosed(
-                origin.offset(-SEARCH_RADIUS, -SEARCH_HEIGHT, -SEARCH_RADIUS),
-                origin.offset(SEARCH_RADIUS, SEARCH_HEIGHT, SEARCH_RADIUS)
-        )) {
-            BlockState state = this.polen.level().getBlockState(pos);
-            if (!isInteresting(state)) {
-                continue;
-            }
-
-            double distanceSqr = pos.distSqr(origin);
-            if (distanceSqr < bestDistanceSqr) {
-                bestDistanceSqr = distanceSqr;
-                bestPos = pos.immutable();
-            }
-        }
-
-        return bestPos;
-    }
-
-    private static boolean isInteresting(BlockState state) {
-        return state.is(BlockTags.FLOWERS)
-                || state.is(Blocks.BEE_NEST)
-                || state.is(Blocks.BEEHIVE);
     }
 }

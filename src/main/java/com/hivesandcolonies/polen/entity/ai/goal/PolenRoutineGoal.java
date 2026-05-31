@@ -1,6 +1,7 @@
 package com.hivesandcolonies.polen.entity.ai.goal;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
 import com.hivesandcolonies.polen.entity.ai.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 
@@ -18,6 +19,8 @@ public class PolenRoutineGoal extends Goal {
 
     private BlockPos targetPos;
     private int waitTicks;
+    private int repathCooldown;
+    private int stuckTicks;
 
     public PolenRoutineGoal(PolenEntity polen) {
         this.polen = polen;
@@ -28,12 +31,12 @@ public class PolenRoutineGoal extends Goal {
     public boolean canUse() {
         if (this.polen.isDoingQuietActivity()
                 || PolenSafetyNavigator.isInUnsafeArea(this.polen)
-                || this.polen.hasNearbyPlayer(3.0D)
-                || this.polen.getRandom().nextInt(80) != 0) {
+                || this.polen.getCurrentIntent() != PolenIntent.SEEK_REST
+                && this.polen.getCurrentIntent() != PolenIntent.QUIET_CREATION) {
             return false;
         }
 
-        this.targetPos = PolenRoutinePlanner.getRoutineTarget(this.polen);
+        this.targetPos = PolenRoutinePlanner.getRoutineTarget(this.polen, this.polen.getCurrentIntent());
         this.waitTicks = 60 + this.polen.getRandom().nextInt(60);
         return this.targetPos != null && !this.polen.blockPosition().closerToCenterThan(Vec3.atCenterOf(this.targetPos), 1.5D);
     }
@@ -41,8 +44,12 @@ public class PolenRoutineGoal extends Goal {
     @Override
     public boolean canContinueToUse() {
         return this.targetPos != null
-                && !this.polen.hasNearbyPlayer(2.5D)
                 && this.waitTicks > 0
+                && !this.polen.isDoingQuietActivity()
+                && !PolenSafetyNavigator.isInUnsafeArea(this.polen)
+                && (this.polen.getCurrentIntent() == PolenIntent.SEEK_REST
+                || this.polen.getCurrentIntent() == PolenIntent.QUIET_CREATION)
+                && this.stuckTicks < 40
                 && PolenRoutinePlanner.isRememberedSpotStillValid(this.polen, this.targetPos);
     }
 
@@ -66,7 +73,13 @@ public class PolenRoutineGoal extends Goal {
         }
 
         if (this.polen.getNavigation().isDone()) {
-            moveToTarget();
+            this.stuckTicks++;
+            if (this.repathCooldown-- <= 0) {
+                this.repathCooldown = 10;
+                moveToTarget();
+            }
+        } else {
+            this.stuckTicks = 0;
         }
     }
 
@@ -75,6 +88,8 @@ public class PolenRoutineGoal extends Goal {
         this.polen.getNavigation().stop();
         this.targetPos = null;
         this.waitTicks = 0;
+        this.repathCooldown = 0;
+        this.stuckTicks = 0;
     }
 
     private void moveToTarget() {
@@ -82,11 +97,15 @@ public class PolenRoutineGoal extends Goal {
             return;
         }
 
-        this.polen.getNavigation().moveTo(
+        boolean started = this.polen.getNavigation().moveTo(
                 this.targetPos.getX() + 0.5D,
                 this.targetPos.getY(),
                 this.targetPos.getZ() + 0.5D,
                 MOVE_SPEED
         );
+
+        if (!started) {
+            this.stuckTicks += 10;
+        }
     }
 }

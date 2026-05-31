@@ -1,5 +1,89 @@
 # Polen AI
 
+## v0.0.11 - Autonomy Update
+
+Esta pasada cambia el centro de la IA.
+
+Polen ya no decide solo por `goal` aislado o por reaccion inmediata al entorno.
+Ahora existe una capa intermedia de autonomia compacta:
+
+- `entity/ai/PolenAiFacade`
+  - punto unico de entrada desde `PolenEntity` hacia la IA
+  - reduce imports y evita volver a mezclar wiring con estado
+- `entity/ai/state/PolenAiState`
+  - concentra memoria espacial, danger memory, needs e intent
+  - evita que `PolenEntity` tenga que exponer decenas de campos propios
+- `entity/ai/autonomy/PolenAutonomyController`
+  - orquesta el tick alto nivel de autonomia
+  - actualiza necesidades, intencion, mood y semillas de memoria sin inflar `PolenEntity`
+- `entity/ai/need/PolenNeedState`
+  - estado persistente de necesidades internas
+- `entity/ai/need/PolenNeedController`
+  - ajusta seguridad, compañia, curiosidad, descanso y resonancia magica
+- `entity/ai/intent/PolenIntentState`
+  - guarda la intencion actual, su razon y un lock temporal
+- `entity/ai/intent/PolenIntentController`
+  - decide que quiere hacer Polen antes de que los goals compitan
+- `entity/ai/interest/PolenInterestLocator`
+  - resuelve flores, colmenas y spots source como objetivos de interes reutilizables
+
+Objetivo practico:
+
+- que Polen parezca tener continuidad entre decisiones
+- que la IA no vuelva a crecer solo por agregar goals nuevos
+- que cada future feature de autonomia entre por `needs -> intent -> goal`
+
+## Modelo mental actual
+
+La cadena actual es esta:
+
+1. `PolenAutonomyController` actualiza contexto lento.
+2. `PolenNeedController` modifica necesidades internas.
+3. `PolenIntentController` elige una intencion dominante.
+4. Los goals solo se activan si esa intencion los habilita.
+5. `PolenMoodController` expresa externamente el resultado emocional.
+
+Eso deja dos niveles claros:
+
+- interno
+  - necesidades e intencion
+- visible
+  - mood, movimiento, hobbies, acercamiento, huida y curiosidad
+
+## Necesidades actuales
+
+`PolenNeedState` persiste cinco tensiones internas:
+
+- `SAFETY`
+- `SOCIAL`
+- `CURIOSITY`
+- `REST`
+- `MAGIC`
+
+No son stats de jugador ni barras UI.
+Son presiones blandas que ayudan a que Polen no cambie de conducta de forma arbitraria cada pocos ticks.
+
+## Intenciones actuales
+
+`PolenIntentController` puede fijar estas intenciones:
+
+- `SEEK_SAFETY`
+- `KEEP_DISTANCE`
+- `APPROACH_TRUSTED_PLAYER`
+- `INVESTIGATE_INTEREST`
+- `SEEK_REST`
+- `QUIET_CREATION`
+- `WANDER_SAFE`
+
+Cada una queda bloqueada por una ventana corta de ticks.
+Eso evita jitter de decisiones y ayuda a que Polen "insista" un poco en lo que estaba haciendo.
+
+Regla importante:
+
+- una intencion no debe depender de un goal ocultamente bloqueado por cooldown local
+- si un goal queda gated por la intencion, su disponibilidad real debe seguir siendo alcanzable
+- si no, se produce un falso estado "quiero moverme" pero sin movimiento real
+
 ## Ultima pasada de limpieza
 
 Tambien se extrajeron estas responsabilidades:
@@ -53,6 +137,22 @@ Responsabilidades ya extraidas:
   - expiracion y persistencia NBT de esa memoria
 - `PolenGoalRegistry`
   - registro de prioridades de goals fuera de la entidad
+- `PolenAiFacade`
+  - concentrador del cableado principal de IA desde la entidad
+- `PolenAiState`
+  - contenedor del estado compartido de IA y persistencia asociada
+- `PolenAutonomyController`
+  - ordena la actualizacion lenta de autonomia sin pegarla a `tick`
+- `PolenNeedState`
+  - necesidades persistentes de seguridad, compañia, curiosidad, descanso y magia
+- `PolenNeedController`
+  - evolucion gradual de necesidades segun contexto
+- `PolenIntentState`
+  - estado actual de voluntad de Polen
+- `PolenIntentController`
+  - seleccion de intencion dominante antes de resolver goals
+- `PolenInterestLocator`
+  - localizacion compartida de flores, colmenas y source
 - `PolenMoodController`
   - calculo de moods segun entorno, afinidad y actividad
 - `PolenMemoryHandler`
@@ -146,8 +246,8 @@ Este archivo concentra:
 - mood
 - actividad tranquila
 - memoria básica de lugares
-- diálogos ambientales contextuales
-- actualización periódica de IA pasiva
+- puertas de acceso a estado persistente compartido
+- delegación de autonomia, diálogo e interacción
 
 ## Estado sincronizado actual
 

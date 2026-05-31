@@ -21,6 +21,7 @@ public class PolenSeekSafetyGoal extends Goal {
     private BlockPos targetSpot;
     private int repathCooldownTicks;
     private int failedRepathAttempts;
+    private int nextSafetyCheckTick;
     private boolean unsafeDialoguePlayed;
     private boolean fallbackExplorationMode;
 
@@ -31,12 +32,14 @@ public class PolenSeekSafetyGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (!PolenSafetyNavigator.shouldSeekSafety(this.polen)) {
+        if (this.polen.tickCount < this.nextSafetyCheckTick
+                || !PolenSafetyNavigator.shouldSeekSafety(this.polen)) {
             return false;
         }
 
         this.repathCooldownTicks = 0;
         this.failedRepathAttempts = 0;
+        this.nextSafetyCheckTick = this.polen.tickCount + 20;
         this.unsafeDialoguePlayed = false;
         this.fallbackExplorationMode = false;
 
@@ -50,6 +53,7 @@ public class PolenSeekSafetyGoal extends Goal {
 
         playUnsafeDialogueIfNeeded();
         PolenSafetyNavigator.tryEmergencyRelocateToSafeSurface(this.polen);
+        this.nextSafetyCheckTick = this.polen.tickCount + 40;
         return false;
     }
 
@@ -116,6 +120,7 @@ public class PolenSeekSafetyGoal extends Goal {
         this.targetSpot = null;
         this.repathCooldownTicks = 0;
         this.failedRepathAttempts = 0;
+        this.nextSafetyCheckTick = this.polen.tickCount + 20;
         this.unsafeDialoguePlayed = false;
         this.fallbackExplorationMode = false;
     }

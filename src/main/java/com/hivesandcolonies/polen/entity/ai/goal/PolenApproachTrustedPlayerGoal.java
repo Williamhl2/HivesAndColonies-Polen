@@ -4,6 +4,7 @@ import com.hivesandcolonies.polen.dialogue.PolenDialogueManager;
 import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.ai.PolenMood;
+import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -18,14 +19,11 @@ public class PolenApproachTrustedPlayerGoal extends Goal {
     private static final double MOVE_SPEED = 0.9D;
     private static final int MIN_OBSERVE_TICKS = 40;
     private static final int MAX_EXTRA_OBSERVE_TICKS = 80;
-    private static final int MIN_COOLDOWN = 220;
-    private static final int MAX_EXTRA_COOLDOWN = 260;
 
     private final PolenEntity polen;
 
     private Player targetPlayer;
     private int observeTicks;
-    private int cooldownTicks = MIN_COOLDOWN;
     private boolean dialoguePlayed;
 
     public PolenApproachTrustedPlayerGoal(PolenEntity polen) {
@@ -35,14 +33,9 @@ public class PolenApproachTrustedPlayerGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (this.cooldownTicks > 0) {
-            this.cooldownTicks--;
-            return false;
-        }
-
         if (this.polen.isDoingQuietActivity()
                 || PolenSafetyNavigator.isInUnsafeArea(this.polen)
-                || this.polen.getRandom().nextInt(40) != 0) {
+                || this.polen.getCurrentIntent() != PolenIntent.APPROACH_TRUSTED_PLAYER) {
             return false;
         }
 
@@ -112,7 +105,6 @@ public class PolenApproachTrustedPlayerGoal extends Goal {
         this.targetPlayer = null;
         this.observeTicks = 0;
         this.dialoguePlayed = false;
-        this.cooldownTicks = MIN_COOLDOWN + this.polen.getRandom().nextInt(MAX_EXTRA_COOLDOWN + 1);
     }
 
     private void moveToTargetPlayer() {

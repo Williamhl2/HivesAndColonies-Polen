@@ -4,10 +4,15 @@
 
 Se agregaron estas piezas fuera de `PolenEntity`:
 
+- `entity/ai/PolenAiFacade`
 - `entity/PolenInteractionController`
 - `entity/PolenAmbientDialogueController`
 - `entity/PolenDangerMemoryTracker`
 - `entity/PolenGoalRegistry`
+- `entity/ai/autonomy/PolenAutonomyController`
+- `entity/ai/need/*`
+- `entity/ai/intent/*`
+- `entity/ai/interest/*`
 - `dialogue/PolenSpeakerResolver`
 - `dialogue/PolenChapterDialogueResolver`
 - `dialogue/PolenAmbientToneResolver`
@@ -29,9 +34,29 @@ Extracciones activas:
 - `entity/PolenDangerMemoryTracker`
 - `entity/PolenGoalRegistry`
 - `entity/ai/activity/PolenQuietActivityController`
+- `entity/ai/PolenAiFacade`
+ - fachada central entre `PolenEntity` y la capa de IA
+- `entity/ai/state/PolenAiState`
+ - contenedor persistente del estado compartido de IA
+- `entity/ai/autonomy/PolenAutonomyController`
+ - coordina el tick lento de autonomia
+- `entity/ai/interest/PolenInterestLocator`
+ - localiza intereses recordados y locales
+- `entity/ai/intent/PolenIntent`
+ - enum de intenciones de alto nivel
+- `entity/ai/intent/PolenIntentState`
+ - estado persistente de intencion actual
+- `entity/ai/intent/PolenIntentController`
+ - selecciona la intencion dominante
 - `entity/ai/memory/PolenMemoryHandler`
 - `entity/ai/magic/PolenMagicController`
 - `entity/ai/mood/PolenMoodController`
+- `entity/ai/need/PolenNeed`
+ - enum de necesidades internas
+- `entity/ai/need/PolenNeedState`
+ - estado persistente de necesidades
+- `entity/ai/need/PolenNeedController`
+ - ajusta necesidades segun entorno, social y magia
 - `entity/ai/routine/PolenRoutinePlanner`
 - `entity/ai/safety/PolenSafetyEvaluator`
 - `entity/ai/safety/PolenSafetyNavigator`
@@ -82,8 +107,38 @@ Objetivo:
 
 ### `com.hivesandcolonies.polen.entity.ai`
 
+- `PolenAiFacade`
+  - entrada unica de wiring entre entidad y subsistemas de IA
 - `PolenMood`
   - enum de estado emocional actual
+
+### `com.hivesandcolonies.polen.entity.ai.state`
+
+- `PolenAiState`
+  - memoria espacial, danger memory, needs e intent en un solo contenedor persistente
+
+### `com.hivesandcolonies.polen.entity.ai.autonomy`
+
+- `PolenAutonomyController`
+  - ordena el flujo `needs -> intent -> mood -> memory seeding`
+
+### `com.hivesandcolonies.polen.entity.ai.interest`
+
+- `PolenInterestType`
+  - tipo de interes encontrado
+- `PolenInterestTarget`
+  - destino tipado reutilizable
+- `PolenInterestLocator`
+  - escaneo local y reutilizacion de intereses recordados
+
+### `com.hivesandcolonies.polen.entity.ai.intent`
+
+- `PolenIntent`
+  - enum de voluntad inmediata de Polen
+- `PolenIntentState`
+  - estado persistido de intencion y lock temporal
+- `PolenIntentController`
+  - politica compacta de seleccion de intencion
 
 ### `com.hivesandcolonies.polen.entity.ai.magic`
 
@@ -100,7 +155,16 @@ Objetivo:
 - `PolenIdleHobbyGoal`
   - dibujo y canto sin interacción directa
 - `PolenCuriousInterestGoal`
-  - interés por flores, colmenas y nidos de abejas
+  - interes por flores, colmenas y source
+
+### `com.hivesandcolonies.polen.entity.ai.need`
+
+- `PolenNeed`
+  - enum de necesidades internas
+- `PolenNeedState`
+  - valores persistentes de seguridad, social, curiosidad, descanso y magia
+- `PolenNeedController`
+  - deriva presiones internas desde contexto y progresion
 
 ### `com.hivesandcolonies.polen.item`
 
@@ -207,11 +271,9 @@ Contiene:
 
 ## Flujo basico de IA
 
-1. `PolenEntity` actualiza nombre, mood y memorias en `tick`.
-2. Los goals compiten por prioridad.
-3. La prioridad alta protege personalidad:
-   - timidez
-   - rutina contextual
-   - hobbies
-   - curiosidad
-4. El renderer solo dibuja; la lógica vive en entidad y goals.
+1. `PolenEntity` delega el tick lento a `PolenAutonomyController`.
+2. `PolenNeedController` ajusta necesidades internas.
+3. `PolenIntentController` decide la intencion dominante.
+4. Los goals solo compiten si la intencion actual los habilita.
+5. `PolenMoodController` traduce el estado interno a expresion emocional visible.
+6. El renderer solo dibuja; la logica vive en controladores, planners y goals.

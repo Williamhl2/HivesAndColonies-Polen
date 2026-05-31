@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased - v0.0.11 Autonomy Update
+
+### Added
+
+- Added `PolenAutonomyController` to keep high-level autonomy flow out of `PolenEntity`.
+- Added `PolenAiFacade` as the single AI-facing entry point used by `PolenEntity`.
+- Added `PolenAiState` to store remembered places, danger memory, needs, and intent outside the entity class itself.
+- Added persistent need-state tracking for safety, social contact, curiosity, rest, and magic.
+- Added high-level intent selection with short-lived decision locks so Polen can sustain actions instead of jittering between reactions.
+- Added reusable interest discovery for flowers, hives, and source-like locations.
+
+### Changed
+
+- Polen's server-side AI now follows a compact `needs -> intent -> mood -> goals` loop.
+- Source-like locations are now remembered as first-class interests and can feed later autonomous behavior.
+- Routine, hobby, curiosity, trusted approach, and safe wandering goals now activate through explicit intent gating.
+- `/polen ai get` now exposes intent, dominant need, full need values, and remembered source data for balancing.
+- Fixed a movement deadlock where Polen could keep a selected intent while the matching movement goal was still blocked, causing her to look around without walking.
+
 ## Unreleased - Item Progression Foundation
 
 ### Added

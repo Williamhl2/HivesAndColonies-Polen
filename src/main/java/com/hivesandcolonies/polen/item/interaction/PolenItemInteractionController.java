@@ -80,6 +80,7 @@ public final class PolenItemInteractionController {
         }
 
         if (isSourceLike(clickedState)) {
+            polen.rememberInterestingSpot(clickedPos);
             PolenMemoryManager.unlockMemory(
                     serverLevel,
                     PolenMemoryType.FIRST_SOURCE,
@@ -130,7 +131,7 @@ public final class PolenItemInteractionController {
         }
 
         polen.rememberRestingSpot(targetPos);
-        if (polen.getRestingPos() == null || !polen.getRestingPos().equals(targetPos)) {
+        if (polen.getAiState().getRestingPos() == null || !polen.getAiState().getRestingPos().equals(targetPos)) {
             sendStatus(player, "message.polen.item.settlement_charm.spot_not_safe");
             return InteractionResult.FAIL;
         }
