@@ -1,13 +1,36 @@
 # Codebase Map
 
+## Ultimas extracciones
+
+Se agregaron estas piezas fuera de `PolenEntity`:
+
+- `entity/PolenInteractionController`
+- `entity/PolenAmbientDialogueController`
+- `entity/PolenDangerMemoryTracker`
+- `entity/PolenGoalRegistry`
+- `dialogue/PolenSpeakerResolver`
+- `dialogue/PolenChapterDialogueResolver`
+- `dialogue/PolenAmbientToneResolver`
+- `dialogue/PolenAmbientDialogueResolver`
+
+Tambien existe una capa de debug de IA para inspeccion local:
+
+- `entity/ai/debug/PolenAiDebugInspector`
+- `entity/ai/debug/PolenAiDebugSnapshot`
+
 ## Refactor actual de Polen
 
 La IA ya no vive solo en `PolenEntity`.
 
 Extracciones activas:
 
+- `entity/PolenInteractionController`
+- `entity/PolenAmbientDialogueController`
+- `entity/PolenDangerMemoryTracker`
+- `entity/PolenGoalRegistry`
 - `entity/ai/activity/PolenQuietActivityController`
 - `entity/ai/memory/PolenMemoryHandler`
+- `entity/ai/magic/PolenMagicController`
 - `entity/ai/mood/PolenMoodController`
 - `entity/ai/routine/PolenRoutinePlanner`
 - `entity/ai/safety/PolenSafetyEvaluator`
@@ -47,12 +70,26 @@ Objetivo:
 
 - `PolenEntity`
   - entidad principal
-  - punto central de IA, mood, hobbies y memoria ligera
+  - contenedor de estado sincronizado y ciclo base
+- `PolenInteractionController`
+  - interaccion con jugador y reveal del nombre
+- `PolenAmbientDialogueController`
+  - emision de dialogos ambientales cercanos
+- `PolenDangerMemoryTracker`
+  - memoria temporal de peligro y persistencia asociada
+- `PolenGoalRegistry`
+  - orden centralizado de goals de Polen
 
 ### `com.hivesandcolonies.polen.entity.ai`
 
 - `PolenMood`
   - enum de estado emocional actual
+
+### `com.hivesandcolonies.polen.entity.ai.magic`
+
+- `PolenMagicController`
+  - blink de seguridad con FX y sonido
+  - microhechizos de quiet activity ligados al eje Ars Nouveau
 
 ### `com.hivesandcolonies.polen.entity.ai.goal`
 

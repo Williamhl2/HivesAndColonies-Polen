@@ -21,6 +21,7 @@
   "dialogue.polen.memory.first_source": "Esa energía... siento que debería reconocerla.",
   "dialogue.polen.memory.first_colony": "No estás construyendo solo para pasar la noche, ¿verdad?",
 
+  
   "dialogue.polen.chapter0.line1": "Oh...",
   "dialogue.polen.chapter0.line2": "No esperaba encontrar a nadie aquí.",
   "dialogue.polen.chapter0.line3": "Lo siento... no suelo hablar con desconocidos.",
@@ -47,9 +48,11 @@
   "dialogue.polen.ambient_singing.guarded.line1": "Perdón... no quería hacer ruido.",
   "dialogue.polen.ambient_singing.guarded.line2": "Solo estaba tarareando. Ya me callo.",
   "dialogue.polen.ambient_singing.guarded.line3": "A veces canto sin darme cuenta...",
+
   "dialogue.polen.ambient_singing.soft.line1": "Esta melodía me ayuda a pensar.",
   "dialogue.polen.ambient_singing.soft.line2": "No recordaba toda la canción... pero una parte sí.",
   "dialogue.polen.ambient_singing.soft.line3": "Cuando todo está en calma, me sale sola.",
+
   "dialogue.polen.ambient_singing.warm.line1": "No te rías... esta parte me gusta mucho.",
   "dialogue.polen.ambient_singing.warm.line2": "Contigo cerca no se siente tan raro cantar.",
   "dialogue.polen.ambient_singing.warm.line3": "Creo que este lugar suena distinto cuando está tranquilo.",
@@ -57,9 +60,11 @@
   "dialogue.polen.ambient_drawing.guarded.line1": "Oh... solo estaba dibujando un poco.",
   "dialogue.polen.ambient_drawing.guarded.line2": "No es nada importante. Solo unas líneas.",
   "dialogue.polen.ambient_drawing.guarded.line3": "A veces dibujo para ordenar mis ideas.",
+
   "dialogue.polen.ambient_drawing.soft.line1": "Quería recordar esta forma antes de olvidarla.",
   "dialogue.polen.ambient_drawing.soft.line2": "Si lo dibujo, siento que se queda conmigo un poco más.",
   "dialogue.polen.ambient_drawing.soft.line3": "No siempre entiendo lo que recuerdo... pero puedo dibujarlo.",
+  
   "dialogue.polen.ambient_drawing.warm.line1": "Luego quizá te enseñe este boceto.",
   "dialogue.polen.ambient_drawing.warm.line2": "Me gusta dibujar las cosas cuando el día ha sido amable.",
   "dialogue.polen.ambient_drawing.warm.line3": "Quería guardar este momento antes de que pasara.",
@@ -67,9 +72,11 @@
   "dialogue.polen.ambient_curiosity.guarded.line1": "Estas flores... son distintas de cerca.",
   "dialogue.polen.ambient_curiosity.guarded.line2": "Las abejas se fijan en cosas que casi nadie mira.",
   "dialogue.polen.ambient_curiosity.guarded.line3": "Hay algo aquí que me resulta familiar.",
+
   "dialogue.polen.ambient_curiosity.soft.line1": "Siento que ya había visto algo así antes.",
   "dialogue.polen.ambient_curiosity.soft.line2": "A veces una colmena dice más que un libro entero.",
   "dialogue.polen.ambient_curiosity.soft.line3": "Cuanto más miro, más preguntas me dan ganas de hacer.",
+
   "dialogue.polen.ambient_curiosity.warm.line1": "Mira cómo se mueven... parece que supieran exactamente a dónde ir.",
   "dialogue.polen.ambient_curiosity.warm.line2": "Podría quedarme aquí mucho rato observándolas.",
   "dialogue.polen.ambient_curiosity.warm.line3": "Me gusta cuando encuentro algo pequeño y todavía me sorprende.",
@@ -77,9 +84,11 @@
   "dialogue.polen.ambient_timid.guarded.line1": "Lo siento... necesito un poco de espacio.",
   "dialogue.polen.ambient_timid.guarded.line2": "No es nada personal. Solo... demasiado cerca.",
   "dialogue.polen.ambient_timid.guarded.line3": "Prefiero hablar cuando puedo respirar un poco.",
+
   "dialogue.polen.ambient_timid.soft.line1": "Dame un segundo... ya estoy bien.",
   "dialogue.polen.ambient_timid.soft.line2": "Todavía me cuesta cuando alguien aparece tan de repente.",
   "dialogue.polen.ambient_timid.soft.line3": "No quiero irme. Solo necesito un momento.",
+
   "dialogue.polen.ambient_timid.warm.line1": "Perdón... a veces me sobresalto aunque seas tú.",
   "dialogue.polen.ambient_timid.warm.line2": "Ya sabes cómo soy. Solo dame un instante.",
   "dialogue.polen.ambient_timid.warm.line3": "No pasa nada. Solo me asusté un poco.",
@@ -87,12 +96,30 @@
   "dialogue.polen.ambient_unsafe.guarded.line1": "No me gusta este lugar...",
   "dialogue.polen.ambient_unsafe.guarded.line2": "Está muy oscuro. Prefiero salir de aquí.",
   "dialogue.polen.ambient_unsafe.guarded.line3": "No creo que debamos quedarnos aquí.",
+
   "dialogue.polen.ambient_unsafe.soft.line1": "Aquí no me siento tranquila. Buscaré un sitio mejor.",
   "dialogue.polen.ambient_unsafe.soft.line2": "El aire aquí pesa demasiado... mejor vamos a otro lugar.",
   "dialogue.polen.ambient_unsafe.soft.line3": "Prefiero ver el cielo cuando puedo.",
+
   "dialogue.polen.ambient_unsafe.warm.line1": "Vámonos un poco más arriba, ¿sí?",
   "dialogue.polen.ambient_unsafe.warm.line2": "No quiero alejarme, solo salir de este sitio.",
   "dialogue.polen.ambient_unsafe.warm.line3": "Me sentiré mejor cuando volvamos a un lugar abierto.",
+
+  "dialogue.polen.ambient_approach.warm.line1": "se acerca con cuidado.",
+  "dialogue.polen.ambient_approach.warm.line2": "se acerca lentamente, sin hacer ruido.",
+  "dialogue.polen.ambient_approach.warm.line3": "se acerca a ti, con una sonrisa tímida.",
+
+  "dialogue.polen.ambient_magic.guarded.line1": "No es nada... solo un hilo de magia.",
+  "dialogue.polen.ambient_magic.guarded.line2": "A veces las runas responden cuando me quedo quieta.",
+  "dialogue.polen.ambient_magic.guarded.line3": "No quise asustarte. Todavia puedo hacer cosas pequenas.",
+
+  "dialogue.polen.ambient_magic.soft.line1": "Cuando todo esta en calma, el source me escucha mejor.",
+  "dialogue.polen.ambient_magic.soft.line2": "No recuerdo hechizos grandes... solo gestos pequenos.",
+  "dialogue.polen.ambient_magic.soft.line3": "La magia recuerda algunas cosas antes que yo.",
+
+  "dialogue.polen.ambient_magic.warm.line1": "Mira... solo una chispa. No hace dano.",
+  "dialogue.polen.ambient_magic.warm.line2": "Contigo cerca, hasta esto se siente mas facil.",
+  "dialogue.polen.ambient_magic.warm.line3": "A veces canto o dibujo, y el aire responde.",
 
   "advancement.polen.story.root.title": "Rumores entre los Cerezos",
   "advancement.polen.story.root.description": "Una historia comienza en silencio.",
@@ -105,5 +132,5 @@
   "advancement.polen.story.chapter0_complete.title": "Capítulo 0 Completado",
   "advancement.polen.story.chapter0_complete.description": "La Chica del Claro",
   "advancement.polen.story.player_has_shelter.title": "Un Lugar Seguro",
-  "advancement.polen.story.player_has_shelter.description": "Polen cree que este refugio podría ser un nuevo comienzo."
+  "advancement.polen.story.player_has_shelter.description": "cree que este refugio podría ser un nuevo comienzo."
 }

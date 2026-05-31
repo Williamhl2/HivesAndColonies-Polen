@@ -1,6 +1,7 @@
 package com.hivesandcolonies.polen.entity.ai.routine;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.PolenDangerMemoryTracker;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 import net.minecraft.core.BlockPos;
@@ -61,11 +62,11 @@ public final class PolenRoutinePlanner {
         }
 
         return (!polen.level().getBlockState(pos).isAir() || pos.closerToCenterThan(polen.position(), 2.0D))
-                && !polen.isDangerousMemorySpot(pos);
+                && !PolenDangerMemoryTracker.isDangerousMemorySpot(polen, pos);
     }
 
     public static boolean isSafeInterestSpot(PolenEntity polen, BlockPos pos) {
-        if (pos == null || polen.isDangerousMemorySpot(pos)) {
+        if (pos == null || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, pos)) {
             return false;
         }
 

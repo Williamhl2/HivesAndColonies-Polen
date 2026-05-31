@@ -94,6 +94,17 @@
   "dialogue.polen.ambient_unsafe.warm.line2": "I do not want to leave you. I just want to leave this place.",
   "dialogue.polen.ambient_unsafe.warm.line3": "I will feel better once we are somewhere open again.",
 
+  "dialogue.polen.ambient_approach.warm.line1": "Polen quietly approaches you.",
+  "dialogue.polen.ambient_magic.guarded.line1": "It is nothing... only a thread of magic.",
+  "dialogue.polen.ambient_magic.guarded.line2": "Sometimes the runes answer when I stay still.",
+  "dialogue.polen.ambient_magic.guarded.line3": "I did not mean to startle you. I can still do small things.",
+  "dialogue.polen.ambient_magic.soft.line1": "When everything is calm, source listens to me a little better.",
+  "dialogue.polen.ambient_magic.soft.line2": "I do not remember great spells... only small gestures.",
+  "dialogue.polen.ambient_magic.soft.line3": "Magic remembers some things before I do.",
+  "dialogue.polen.ambient_magic.warm.line1": "Look... only a spark. It will not hurt anything.",
+  "dialogue.polen.ambient_magic.warm.line2": "It feels easier to do this when you are nearby.",
+  "dialogue.polen.ambient_magic.warm.line3": "Sometimes I sing or draw, and the air answers back.",
+  
   "advancement.polen.story.root.title": "Rumors Among the Cherry Trees",
   "advancement.polen.story.root.description": "A story begins in silence.",
   "advancement.polen.story.first_meeting.title": "First Meeting",

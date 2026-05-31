@@ -1,6 +1,9 @@
 package com.hivesandcolonies.polen.entity.ai.goal;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.PolenDangerMemoryTracker;
+import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyEvaluator;
+import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.phys.Vec3;
@@ -21,12 +24,15 @@ public class PolenSafeStrollGoal extends RandomStrollGoal {
                 continue;
             }
 
-            if (this.polen.isSafeStandingSpot(net.minecraft.core.BlockPos.containing(candidate))
-                    && !this.polen.isDangerousMemorySpot(net.minecraft.core.BlockPos.containing(candidate))) {
+            if (PolenSafetyEvaluator.isSafeStandingSpot(this.polen, net.minecraft.core.BlockPos.containing(candidate))
+                    && !PolenDangerMemoryTracker.isDangerousMemorySpot(
+                            this.polen,
+                            net.minecraft.core.BlockPos.containing(candidate)
+                    )) {
                 return candidate;
             }
         }
 
-        return this.polen.getNearestSafeSpotCenter(16);
+        return PolenSafetyNavigator.getNearestSafeSpotCenter(this.polen, 16);
     }
 }

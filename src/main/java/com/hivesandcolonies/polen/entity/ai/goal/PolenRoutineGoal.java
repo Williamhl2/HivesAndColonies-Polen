@@ -1,6 +1,8 @@
 package com.hivesandcolonies.polen.entity.ai.goal;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.ai.routine.PolenRoutinePlanner;
+import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -25,13 +27,13 @@ public class PolenRoutineGoal extends Goal {
     @Override
     public boolean canUse() {
         if (this.polen.isDoingQuietActivity()
-                || this.polen.isInUnsafeArea()
+                || PolenSafetyNavigator.isInUnsafeArea(this.polen)
                 || this.polen.hasNearbyPlayer(3.0D)
                 || this.polen.getRandom().nextInt(80) != 0) {
             return false;
         }
 
-        this.targetPos = this.polen.getRoutineTarget();
+        this.targetPos = PolenRoutinePlanner.getRoutineTarget(this.polen);
         this.waitTicks = 60 + this.polen.getRandom().nextInt(60);
         return this.targetPos != null && !this.polen.blockPosition().closerToCenterThan(Vec3.atCenterOf(this.targetPos), 1.5D);
     }
@@ -41,7 +43,7 @@ public class PolenRoutineGoal extends Goal {
         return this.targetPos != null
                 && !this.polen.hasNearbyPlayer(2.5D)
                 && this.waitTicks > 0
-                && this.polen.isRememberedSpotStillValid(this.targetPos);
+                && PolenRoutinePlanner.isRememberedSpotStillValid(this.polen, this.targetPos);
     }
 
     @Override
@@ -70,6 +72,7 @@ public class PolenRoutineGoal extends Goal {
 
     @Override
     public void stop() {
+        this.polen.getNavigation().stop();
         this.targetPos = null;
         this.waitTicks = 0;
     }

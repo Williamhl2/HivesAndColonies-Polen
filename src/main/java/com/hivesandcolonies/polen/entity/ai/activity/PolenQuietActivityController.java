@@ -2,6 +2,7 @@ package com.hivesandcolonies.polen.entity.ai.activity;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.ai.PolenMood;
+import com.hivesandcolonies.polen.entity.ai.magic.PolenMagicController;
 import net.minecraft.core.particles.ParticleTypes;
 
 public final class PolenQuietActivityController {
@@ -38,6 +39,7 @@ public final class PolenQuietActivityController {
             return;
         }
 
+        PolenMagicController.tickQuietMagic(polen);
         polen.setQuietActivityState(polen.getQuietActivityType(), quietActivityTicks - 1);
     }
 

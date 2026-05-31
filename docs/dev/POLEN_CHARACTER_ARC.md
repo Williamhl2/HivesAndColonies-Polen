@@ -109,6 +109,12 @@ Capítulos 2-3.
 - `CURIOUS`
 - `INSPIRED` cerca de magia o símbolos familiares
 
+### Magia temprana
+
+- pequenos hechizos instintivos
+- reacciones sutiles del source cuando canta o dibuja
+- desplazamiento breve de emergencia si queda atrapada
+
 ### Tono de diálogo
 
 - más conversacional

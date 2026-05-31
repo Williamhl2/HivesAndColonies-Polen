@@ -1,6 +1,8 @@
 package com.hivesandcolonies.polen.command;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.ai.debug.PolenAiDebugInspector;
+import com.hivesandcolonies.polen.entity.ai.debug.PolenAiDebugSnapshot;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenChapterManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
@@ -41,34 +43,38 @@ public final class PolenDebugCommands {
                         .then(Commands.literal("get")
                                 .executes(context -> {
                                     ServerPlayer player = context.getSource().getPlayerOrException();
-                                    PolenEntity polen = player.serverLevel()
-                                            .getEntitiesOfClass(
-                                                    PolenEntity.class,
-                                                    player.getBoundingBox().inflate(64.0D)
-                                            )
-                                            .stream()
-                                            .findFirst()
-                                            .orElse(null);
+                                    PolenEntity polen = findNearbyPolen(player);
 
                                     if (polen == null) {
                                         context.getSource().sendFailure(Component.literal("No nearby Polen entity found."));
                                         return 0;
                                     }
 
+                                    PolenAiDebugSnapshot snapshot = PolenAiDebugInspector.inspect(polen);
                                     context.getSource().sendSuccess(
                                             () -> Component.literal(
                                                     "Polen AI -> mood="
-                                                            + polen.getMood()
+                                                            + snapshot.mood()
+                                                            + ", moodReason="
+                                                            + snapshot.moodReason()
                                                             + ", quietActivity="
-                                                            + polen.getQuietActivityName()
+                                                            + snapshot.quietActivity()
+                                                            + ", unsafeArea="
+                                                            + snapshot.unsafeArea()
+                                                            + ", shouldSeekSafety="
+                                                            + snapshot.shouldSeekSafety()
+                                                            + ", unsafeDialogue="
+                                                            + snapshot.shouldUseUnsafeDialogue()
+                                                            + ", nearRememberedInterest="
+                                                            + snapshot.nearRememberedInterest()
                                                             + ", flowerSpot="
-                                                            + formatPos(polen.getFavoriteFlowerPos())
+                                                            + formatPos(snapshot.flowerSpot())
                                                             + ", hiveSpot="
-                                                            + formatPos(polen.getFavoriteHivePos())
+                                                            + formatPos(snapshot.hiveSpot())
                                                             + ", restingSpot="
-                                                            + formatPos(polen.getRestingPos())
+                                                            + formatPos(snapshot.restingSpot())
                                                             + ", dangerousSpot="
-                                                            + formatPos(polen.getDangerousSpotPos())
+                                                            + formatPos(snapshot.dangerousSpot())
                                             ),
                                             false
                                     );
@@ -327,15 +333,8 @@ public final class PolenDebugCommands {
                     .then(Commands.literal("get")
                             .executes(context -> {
                                 ServerPlayer player = context.getSource().getPlayerOrException();
-                        
-                                PolenEntity polen = player.serverLevel()
-                                        .getEntitiesOfClass(
-                                                PolenEntity.class,
-                                                player.getBoundingBox().inflate(64.0D)
-                                        )
-                                        .stream()
-                                        .findFirst()
-                                        .orElse(null);
+
+                                PolenEntity polen = findNearbyPolen(player);
                                 
                                 if (polen == null) {
                                     context.getSource().sendFailure(
@@ -352,6 +351,18 @@ public final class PolenDebugCommands {
                                 return 1;
                             }));
         }
+
+    private static PolenEntity findNearbyPolen(ServerPlayer player) {
+        return player.serverLevel()
+                .getEntitiesOfClass(
+                        PolenEntity.class,
+                        player.getBoundingBox().inflate(64.0D)
+                )
+                .stream()
+                .findFirst()
+                .orElse(null);
+    }
+
     private static String formatPos(BlockPos pos) {
         if (pos == null) {
             return "null";

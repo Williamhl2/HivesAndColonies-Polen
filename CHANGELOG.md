@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased - Ars Magic Follow-up
+
+### Added
+
+- Added `PolenMagicController` for emergency blink relocation and subtle quiet-activity spell effects.
+- Added new ambient magic dialogue lines for both Spanish and English localization.
+
+### Changed
+
+- Emergency relocation now uses a magical blink with particles and sound instead of a silent raw teleport.
+- Singing and drawing can now produce small Ars-inspired spell feedback while Polen is calm.
+- Updated lore and AI documentation to treat Polen's magic as instinctive, intimate Ars Nouveau behavior rather than late-game combat magic.
+
+## Unreleased - Dialogue and Debug Follow-up
+
+### Changed
+
+- Split dialogue responsibilities into dedicated resolvers for speaker, chapter lines, ambient tone, and ambient key construction.
+- Expanded `/polen ai get` to expose mood reason and safety-related debug state.
+
+### Technical
+
+- Added JUnit 5 test infrastructure.
+- Added initial pure-logic unit tests for dialogue resolvers and danger-memory math.
+
 ## Unreleased
 
 ### Changed
@@ -11,6 +36,10 @@ All notable changes to this project will be documented in this file.
 - Moved reusable `BlockPos` NBT serialization into `PolenNbtHelper`.
 - Moved routine target selection out of `PolenEntity` into `PolenRoutinePlanner`.
 - Moved safety escape planning out of `PolenEntity` into `PolenSafetyNavigator`.
+- Moved player interaction flow out of `PolenEntity` into `PolenInteractionController`.
+- Moved ambient dialogue emission out of `PolenEntity` into `PolenAmbientDialogueController`.
+- Moved dangerous spot memory handling out of `PolenEntity` into `PolenDangerMemoryTracker`.
+- Moved goal registration out of `PolenEntity` into `PolenGoalRegistry`.
 - Tightened unsafe dialogue rules so cave-escape lines are no longer used for normal outdoor positions.
 - Improved safety escape replanning so Polen can recover better when the first route is blocked or awkward.
 
@@ -18,6 +47,7 @@ All notable changes to this project will be documented in this file.
 
 - `PolenEntity` now delegates passive hobby timing and client particle feedback to a dedicated controller.
 - Entity NBT persistence is prepared for reuse by future extracted systems.
+- Goals now depend more directly on planners/controllers instead of routing through extra public facades on `PolenEntity`.
 - Escape search now prefers reachable safe spots and gives extra weight to upward/open destinations when leaving enclosed unsafe areas.
 
 ## v0.0.8 - Entity Refactor Update

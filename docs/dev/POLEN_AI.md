@@ -1,11 +1,58 @@
 # Polen AI
 
+## Ultima pasada de limpieza
+
+Tambien se extrajeron estas responsabilidades:
+
+- `PolenInteractionController`
+- `PolenAmbientDialogueController`
+- `PolenDangerMemoryTracker`
+- `PolenGoalRegistry`
+- `PolenSpeakerResolver`
+- `PolenChapterDialogueResolver`
+- `PolenAmbientToneResolver`
+- `PolenAmbientDialogueResolver`
+
+Objetivo practico:
+
+- que `PolenEntity` conserve estado y ciclo de vida
+- que seleccion de dialogo, emision ambiental, memoria de peligro y registro de goals no vuelvan a inflarlo
+
+## Debug y tests
+
+`/polen ai get` ahora incluye mas señal:
+
+- mood
+- razon del mood
+- `unsafeArea`
+- `shouldSeekSafety`
+- `shouldUseUnsafeDialogue`
+- `nearRememberedInterest`
+
+Tambien se agrego una base minima de tests unitarios puros con JUnit 5 para:
+
+- tono ambiental por afinidad
+- resolucion de dialogo por capitulo
+- construccion de keys de ambient dialogue
+- matematica de memoria de peligro
+
 ## Estado actual del refactor
 
 `PolenEntity` sigue siendo la coordinadora principal, pero ya no debe crecer como archivo unico.
 
 Responsabilidades ya extraidas:
 
+- `PolenInteractionController`
+  - interaccion principal con jugador
+  - reveal del nombre
+  - trigger de dialogo normal y progreso basico
+- `PolenAmbientDialogueController`
+  - cooldown y broadcast local de dialogos ambientales
+- `PolenDangerMemoryTracker`
+  - memoria temporal de zonas peligrosas
+  - expiracion y persistencia NBT de esa memoria
+- `PolenGoalRegistry`
+  - registro de prioridades de goals fuera de la entidad
 - `PolenMoodController`
   - calculo de moods segun entorno, afinidad y actividad
 - `PolenMemoryHandler`
@@ -24,18 +71,22 @@ Responsabilidades ya extraidas:
   - decision de huida
   - busqueda de spots seguros alcanzables
   - replanteo de ruta cuando Polen se atasca o no logra salir
+- `PolenMagicController`
+  - blink de emergencia con particulas y sonido
+  - microhechizos durante quiet activity
+  - puente practico entre IA y el eje narrativo de Ars Nouveau
 
 Responsabilidades que aun conserva `PolenEntity`:
 
 - estado sincronizado de la entidad
-- flujo de interaccion con jugador
-- seleccion de rutina y destinos
-- memoria temporal de zonas peligrosas
-- dialogos ambientales
+- persistencia de estado propio
+- ciclo base de `tick`
+- algunos getters/setters de estado compartido entre goals y controladores
 
 Regla de mantenimiento actual:
 
 - si una responsabilidad puede probarse o evolucionar sin conocer toda la entidad, debe vivir fuera de `PolenEntity`
+- si una clase externa solo necesita comportamiento, debe depender del controller/planner correcto y no de una fachada publica nueva en `PolenEntity`
 
 ## Ajuste reciente de escape y peligro
 
@@ -53,6 +104,23 @@ Efectos practicos:
 - Polen ya no deberia quejarse de "salir de aqui" solo por estar al aire libre en un contexto no cavernoso
 - la huida reintenta una nueva ruta si la anterior termina mal
 - la busqueda de escape ahora prioriza spots alcanzables y con ganancia vertical cuando conviene subir
+- si no existe salida fisica razonable, Polen puede hacer blink a una superficie segura cercana en vez de quedarse congelada
+
+## Magia y Ars
+
+Polen no usa magia como mago de combate ni como sistema generico.
+
+La implementacion actual la trata como magia intima e instintiva:
+
+- escape magico cuando queda atrapada en un encierro imposible
+- pequenas respuestas visuales del source cuando canta o dibuja en calma
+- dialogo ambiental propio para esos momentos
+
+Esto mantiene alineados:
+
+- su caracter reservado
+- el foco narrativo en intimidad antes que epica
+- la presencia real de Ars Nouveau dentro de su comportamiento
 
 ## Objetivo
 

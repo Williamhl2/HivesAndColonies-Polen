@@ -1,6 +1,8 @@
 package com.hivesandcolonies.polen.entity.ai.goal;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
+import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
@@ -30,7 +32,7 @@ public class PolenCuriousInterestGoal extends Goal {
     @Override
     public boolean canUse() {
         if (this.polen.isDoingQuietActivity()
-                || this.polen.isInUnsafeArea()
+                || PolenSafetyNavigator.isInUnsafeArea(this.polen)
                 || this.polen.hasNearbyPlayer(2.5D)
                 || this.polen.getRandom().nextInt(100) != 0) {
             return false;
@@ -52,7 +54,10 @@ public class PolenCuriousInterestGoal extends Goal {
     @Override
     public void start() {
         this.polen.rememberInterestingSpot(this.targetPos);
-        this.polen.tryAmbientDialogue(com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_CURIOSITY);
+        PolenAmbientDialogueController.tryPlay(
+                this.polen,
+                com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_CURIOSITY
+        );
         moveToTarget();
     }
 
@@ -79,6 +84,7 @@ public class PolenCuriousInterestGoal extends Goal {
 
     @Override
     public void stop() {
+        this.polen.getNavigation().stop();
         this.targetPos = null;
         this.observeTicks = 0;
     }

@@ -1,6 +1,8 @@
 package com.hivesandcolonies.polen.entity.ai.memory;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.PolenDangerMemoryTracker;
+import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
 import com.hivesandcolonies.polen.story.PolenMemoryManager;
@@ -53,7 +55,8 @@ public final class PolenMemoryHandler {
             return;
         }
 
-        if (polen.isSafeStandingSpot(pos) && !polen.isDangerousMemorySpot(pos)) {
+        if (PolenSafetyEvaluator.isSafeStandingSpot(polen, pos)
+                && !PolenDangerMemoryTracker.isDangerousMemorySpot(polen, pos)) {
             polen.setRestingPos(pos.immutable());
 
             if (polen.level() instanceof ServerLevel serverLevel) {

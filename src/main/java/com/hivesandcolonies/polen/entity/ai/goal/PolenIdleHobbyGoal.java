@@ -1,7 +1,9 @@
 package com.hivesandcolonies.polen.entity.ai.goal;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.polen.entity.ai.activity.PolenQuietActivityController;
+import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 
 import net.minecraft.world.entity.ai.goal.Goal;
 
@@ -32,7 +34,7 @@ public class PolenIdleHobbyGoal extends Goal {
         }
 
         if (this.polen.isDoingQuietActivity()
-                || this.polen.isInUnsafeArea()
+                || PolenSafetyNavigator.isInUnsafeArea(this.polen)
                 || this.polen.hasNearbyPlayer(3.0D)
                 || !this.polen.onGround()
                 || this.polen.isInWaterOrBubble()
@@ -57,7 +59,8 @@ public class PolenIdleHobbyGoal extends Goal {
         this.polen.rememberRestingSpot(this.polen.blockPosition());
         this.polen.startQuietActivity(this.activityType, this.activityTicks);
         this.polen.getNavigation().stop();
-        this.polen.tryAmbientDialogue(
+        PolenAmbientDialogueController.tryPlay(
+                this.polen,
                 this.activityType == PolenQuietActivityController.QUIET_ACTIVITY_SINGING
                         ? com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_SINGING
                         : com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_DRAWING

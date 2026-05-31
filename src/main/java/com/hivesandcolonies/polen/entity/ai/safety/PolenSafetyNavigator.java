@@ -1,6 +1,8 @@
 package com.hivesandcolonies.polen.entity.ai.safety;
 
+import com.hivesandcolonies.polen.entity.PolenDangerMemoryTracker;
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.ai.magic.PolenMagicController;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.Path;
@@ -11,6 +13,7 @@ public final class PolenSafetyNavigator {
     private static final int LOCAL_ESCAPE_VERTICAL_RANGE = 6;
     private static final int[] LOCAL_Y_OFFSETS = {1, 2, 0, 3, -1, 4, 5, -2, 6};
     private static final int[] SURFACE_Y_OFFSETS = {0, -1, 1, 2, -2};
+    private static final int[] EMERGENCY_RELOCATION_RADII = {32, 64, 96};
 
     private PolenSafetyNavigator() {
     }
@@ -20,7 +23,7 @@ public final class PolenSafetyNavigator {
         boolean unsafe = !PolenSafetyEvaluator.isSafeStandingSpot(polen, currentPos);
 
         if (PolenSafetyEvaluator.isTrulyDangerousStandingSpot(polen, currentPos)) {
-            polen.rememberDangerousSpot(currentPos);
+            PolenDangerMemoryTracker.rememberDangerousSpot(polen, currentPos);
         }
 
         return unsafe;
@@ -30,7 +33,7 @@ public final class PolenSafetyNavigator {
         BlockPos currentPos = polen.blockPosition();
         boolean dangerous = PolenSafetyEvaluator.isTrulyDangerousStandingSpot(polen, currentPos);
         if (dangerous) {
-            polen.rememberDangerousSpot(currentPos);
+            PolenDangerMemoryTracker.rememberDangerousSpot(polen, currentPos);
             return true;
         }
 
@@ -50,9 +53,24 @@ public final class PolenSafetyNavigator {
         return findBestReachableSurfaceSpot(polen, radius);
     }
 
+    public static BlockPos findFallbackExplorationSpot(PolenEntity polen, int radius) {
+        return findBestReachableExplorationSpot(polen, Math.max(8, radius));
+    }
+
     public static Vec3 getNearestSafeSpotCenter(PolenEntity polen, int radius) {
         BlockPos pos = findNearbySafeSurfaceSpot(polen, radius);
         return pos == null ? null : Vec3.atCenterOf(pos);
+    }
+
+    public static boolean tryEmergencyRelocateToSafeSurface(PolenEntity polen) {
+        BlockPos target = findEmergencyRelocationSpot(polen);
+        if (target == null) {
+            return false;
+        }
+
+        polen.getNavigation().stop();
+        polen.stopQuietActivity();
+        return PolenMagicController.blinkToSafety(polen, target);
     }
 
     private static BlockPos findBestReachableLocalEscapeSpot(PolenEntity polen, int radius) {
@@ -122,8 +140,81 @@ public final class PolenSafetyNavigator {
         return null;
     }
 
+    private static BlockPos findBestReachableExplorationSpot(PolenEntity polen, int radius) {
+        BlockPos origin = polen.blockPosition();
+        BlockPos bestPos = null;
+        double bestScore = Double.MAX_VALUE;
+
+        for (int searchRadius : new int[] {radius / 2, radius, radius * 2}) {
+            int effectiveRadius = Math.max(8, searchRadius);
+            for (int dx = -effectiveRadius; dx <= effectiveRadius; dx++) {
+                for (int dz = -effectiveRadius; dz <= effectiveRadius; dz++) {
+                    for (int yOffset : LOCAL_Y_OFFSETS) {
+                        BlockPos candidate = origin.offset(dx, yOffset, dz);
+                        double candidateScore = scoreExplorationCandidate(polen, origin, candidate);
+                        if (candidateScore < bestScore) {
+                            bestScore = candidateScore;
+                            bestPos = candidate.immutable();
+                        }
+                    }
+                }
+            }
+
+            if (bestPos != null) {
+                return bestPos;
+            }
+        }
+
+        return null;
+    }
+
+    private static BlockPos findEmergencyRelocationSpot(PolenEntity polen) {
+        Level level = polen.level();
+        BlockPos origin = polen.blockPosition();
+        BlockPos bestPos = null;
+        double bestScore = Double.MAX_VALUE;
+
+        for (int searchRadius : EMERGENCY_RELOCATION_RADII) {
+            for (int dx = -searchRadius; dx <= searchRadius; dx++) {
+                for (int dz = -searchRadius; dz <= searchRadius; dz++) {
+                    int x = origin.getX() + dx;
+                    int z = origin.getZ() + dz;
+                    int surfaceY = level.getHeight(
+                            net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                            x,
+                            z
+                    );
+
+                    for (int yOffset : SURFACE_Y_OFFSETS) {
+                        BlockPos candidate = new BlockPos(x, surfaceY + yOffset, z);
+                        if (!PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)) {
+                            continue;
+                        }
+
+                        double score = candidate.distSqr(origin);
+                        if (level.canSeeSky(candidate)) {
+                            score -= 8.0D;
+                        }
+
+                        if (score < bestScore) {
+                            bestScore = score;
+                            bestPos = candidate.immutable();
+                        }
+                    }
+                }
+            }
+
+            if (bestPos != null) {
+                return bestPos;
+            }
+        }
+
+        return null;
+    }
+
     private static double scoreCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
-        if (!PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate) || polen.isDangerousMemorySpot(candidate)) {
+        if (!PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)
+                || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)) {
             return Double.MAX_VALUE;
         }
 
@@ -144,6 +235,30 @@ public final class PolenSafetyNavigator {
             score -= 12.0D;
         } else if (PolenSafetyEvaluator.isNearOutdoorSurface(polen.level(), candidate)) {
             score -= 6.0D;
+        }
+
+        return score;
+    }
+
+    private static double scoreExplorationCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
+        if (!PolenSafetyEvaluator.isStandableSpot(polen, candidate)
+                || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)) {
+            return Double.MAX_VALUE;
+        }
+
+        Path path = polen.getNavigation().createPath(candidate, 0);
+        if (path == null || !path.canReach()) {
+            return Double.MAX_VALUE;
+        }
+
+        double score = candidate.distSqr(origin);
+        score -= Math.max(0, candidate.getY() - origin.getY()) * 10.0D;
+        score -= polen.level().getMaxLocalRawBrightness(candidate) * 0.75D;
+
+        if (polen.level().canSeeSky(candidate)) {
+            score -= 20.0D;
+        } else if (PolenSafetyEvaluator.isNearOutdoorSurface(polen.level(), candidate)) {
+            score -= 8.0D;
         }
 
         return score;

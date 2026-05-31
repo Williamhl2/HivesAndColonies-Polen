@@ -1,5 +1,45 @@
 # Development Log
 
+## 2026-05-30 (Ars Magic Integration)
+
+### Added
+
+- `PolenMagicController` for:
+  - emergency blink relocation with particles and teleport sound
+  - subtle idle spell effects during singing and drawing
+- Ambient magic dialogue lines in both `es_es.json` and `en_us.json`
+
+### Changed
+
+- Emergency safety relocation now uses Polen's own magic instead of a raw teleport.
+- Quiet activities now have a low-key magical layer that reflects the Ars Nouveau side of the story.
+- Narrative documentation now states that Polen retains instinctive magic even before fully remembering her past.
+
+### Result
+
+Polen's behavior now reflects Ars Nouveau directly in gameplay:
+
+- she can escape impossible enclosed spawns without looking bugged
+- she can show small magical responses while calm instead of only ordinary idle particles
+
+## 2026-05-30 (Dialogue, Debug and Tests)
+
+### Added
+
+- Dialogue resolvers for:
+  - speaker identity
+  - chapter key selection
+  - ambient tone selection
+  - ambient key construction
+- AI debug snapshot support
+- Initial JUnit 5 unit test setup for pure logic
+
+### Result
+
+`PolenDialogueManager` is now more of a facade than a container for every dialogue concern.
+
+`/polen ai get` also exposes more reasoning signal, which should make future AI balancing faster.
+
 ## 2026-05-30 (Entity Refactor)
 
 ### Goal
@@ -10,6 +50,17 @@ Continue reducing `PolenEntity` before it turns into a single oversized AI file.
 
 Extracted or consolidated responsibilities:
 
+- `PolenInteractionController`
+  - player interaction flow
+  - name reveal trigger
+- `PolenAmbientDialogueController`
+  - ambient dialogue cooldown
+  - nearby player broadcast
+- `PolenDangerMemoryTracker`
+  - dangerous spot memory state
+  - expiration and NBT persistence
+- `PolenGoalRegistry`
+  - goal priority registration outside the entity
 - `PolenSafetyEvaluator`
   - safe spots
   - dangerous spots
@@ -39,10 +90,8 @@ Extracted or consolidated responsibilities:
 `PolenEntity` remains the coordinator of:
 
 - synced entity state
-- interaction flow
-- routine target selection
-- ambient dialogue dispatch
-- dangerous spot memory ownership
+- base tick lifecycle
+- shared state used by goals and controllers
 
 This keeps behavior split by concern instead of growing one monolithic AI file.
 

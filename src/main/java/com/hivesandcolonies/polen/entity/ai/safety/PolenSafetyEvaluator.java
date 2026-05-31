@@ -67,15 +67,23 @@ public final class PolenSafetyEvaluator {
             return false;
         }
 
-        double dx = (dangerousSpotPos.getX() + 0.5D) - (pos.getX() + 0.5D);
-        double dy = (dangerousSpotPos.getY() + 0.5D) - (pos.getY() + 0.5D);
-        double dz = (dangerousSpotPos.getZ() + 0.5D) - (pos.getZ() + 0.5D);
+        return PolenDangerMemoryMath.isDangerousMemorySpot(
+                dangerousSpotPos.getX(),
+                dangerousSpotPos.getY(),
+                dangerousSpotPos.getZ(),
+                pos.getX(),
+                pos.getY(),
+                pos.getZ(),
+                radius
+        );
+    }
 
-        if (Math.abs(dy) > 3.0D) {
+    public static boolean isStandableSpot(Entity entity, BlockPos pos) {
+        if (entity == null || pos == null) {
             return false;
         }
 
-        return (dx * dx + dz * dz) <= (radius * radius);
+        return canPhysicallyStandAt(entity.level(), pos);
     }
 
     private static boolean canPhysicallyStandAt(Level level, BlockPos pos) {

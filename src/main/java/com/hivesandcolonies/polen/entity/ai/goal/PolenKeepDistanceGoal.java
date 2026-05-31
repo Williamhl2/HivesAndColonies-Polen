@@ -1,6 +1,7 @@
 package com.hivesandcolonies.polen.entity.ai.goal;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
 
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
@@ -57,7 +58,10 @@ public class PolenKeepDistanceGoal extends Goal {
     public void start() {
         if (this.targetPos != null) {
             this.polen.stopQuietActivity();
-            this.polen.tryAmbientDialogue(com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_TIMID);
+            PolenAmbientDialogueController.tryPlay(
+                    this.polen,
+                    com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_TIMID
+            );
             this.polen.getNavigation().moveTo(this.targetPos.x, this.targetPos.y, this.targetPos.z, MOVE_SPEED);
         }
     }
@@ -71,6 +75,7 @@ public class PolenKeepDistanceGoal extends Goal {
 
     @Override
     public void stop() {
+        this.polen.getNavigation().stop();
         this.nearbyPlayer = null;
         this.targetPos = null;
     }

@@ -95,6 +95,15 @@ Representa:
 
 La magia permite comprender y reactivar partes del mundo que el tiempo intentó borrar.
 
+En Polen, ese vinculo con Ars Nouveau no es abstracto.
+
+Incluso antes de recuperar del todo su historia, conserva magia instintiva:
+
+- pequenos desplazamientos para salir de encierros imposibles
+- chispas, runas y respuestas sutiles del aire cuando canta, dibuja o descansa
+
+La idea narrativa correcta no es "maga de combate", sino alguien cuyo cuerpo y memoria todavia recuerdan fragmentos de una tradicion mas antigua.
+
 ---
 
 # Temas Principales
