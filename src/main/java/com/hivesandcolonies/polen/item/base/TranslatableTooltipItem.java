@@ -1,4 +1,4 @@
-package com.hivesandcolonies.polen.item;
+package com.hivesandcolonies.polen.item.base;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.Item;
@@ -27,6 +27,6 @@ public class TranslatableTooltipItem extends Item {
         }
     }
 
-    protected record TooltipLine(String key, net.minecraft.ChatFormatting style) {
+    public record TooltipLine(String key, net.minecraft.ChatFormatting style) {
     }
 }

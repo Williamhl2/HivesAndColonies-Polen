@@ -1,5 +1,50 @@
 # Development Log
 
+## 2026-05-31 (Item Progression Foundation)
+
+### Added
+
+- Item family metadata:
+  - `PolenItemFamily`
+  - `PolenProgressionStage`
+- Typed item bases:
+  - `PolenTypedItem`
+  - `PolenLoreItem`
+  - `PolenMaterialItem`
+  - `PolenUsableFocusItem`
+  - `PolenColonyItem`
+- Item progression design document:
+  - `docs/dev/ITEM_PROGRESSION.md`
+
+### Changed
+
+- Migrated current narrative items onto the new typed item hierarchy.
+- Marked story items as unique and mapped them to explicit progression stages.
+- Mapped `royal_pollen` as a reusable material aligned with later discovery content.
+- Grouped `ModItems` and the creative tab by family intent instead of flat growth.
+
+### Result
+
+The item layer now has a durable foundation for scaling without turning every future feature into an isolated one-off item.
+
+## 2026-05-31 (First Functional Item Wave)
+
+### Added
+
+- `bloom_focus`
+  - can mark flowers and hives for Polen's memory
+  - can resonate with source-like blocks to trigger the first source memory
+- `settlement_charm`
+  - can mark a safe resting place for Polen once shelter progression exists
+- `source_touched_petal`
+- `resonant_wax`
+
+### Changed
+
+- Added an item interaction controller so functional items can reuse progression, memory and affinity systems without embedding too much logic in the item classes themselves.
+- Creative tab and item progression docs now include the first focus and colony layers.
+- Added first-pass survival recipes and item family tags so the item layer is testable without creative-only spawning.
+
 ## 2026-05-30 (Ars Magic Integration)
 
 ### Added

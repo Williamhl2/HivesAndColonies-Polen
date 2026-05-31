@@ -104,11 +104,26 @@ Objetivo:
 
 ### `com.hivesandcolonies.polen.item`
 
-- `TranslatableTooltipItem`
+- `base/TranslatableTooltipItem`
   - base para tooltips traducibles
-- `PrincessSealItem`
-- `PrincessLetterItem`
-- `PolenJournalItem`
+- `base/PolenTypedItem`
+  - base con familia, etapa de progresion y marca de unicidad
+- `base/PolenLoreItem`
+- `base/PolenMaterialItem`
+- `base/PolenUsableFocusItem`
+- `base/PolenColonyItem`
+- `meta/PolenItemFamily`
+- `meta/PolenProgressionStage`
+- `meta/PolenItemTags`
+- `story/PrincessSealItem`
+- `story/PrincessLetterItem`
+- `story/PolenJournalItem`
+- `material/RoyalPollenItem`
+- `material/SourceTouchedPetalItem`
+- `material/ResonantWaxItem`
+- `focus/BloomFocusItem`
+- `colony/SettlementCharmItem`
+- `interaction/PolenItemInteractionController`
 
 ### `com.hivesandcolonies.polen.progression`
 
@@ -177,6 +192,10 @@ Contiene:
 ### `src/main/resources/data/polen`
 
 - advancements narrativos
+- `recipe/*`
+  - adquisicion base de items jugables
+- `tags/item/*`
+  - clasificacion por familia para sistemas futuros
 
 ## Flujo basico de una interaccion
 

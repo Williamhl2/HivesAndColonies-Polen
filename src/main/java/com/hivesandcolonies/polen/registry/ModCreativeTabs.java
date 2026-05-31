@@ -20,9 +20,21 @@ public class ModCreativeTabs {
                     .title(Component.translatable("itemGroup.polen"))
                     .icon(() -> ModItems.PRINCESS_SEAL.get().getDefaultInstance())
                     .displayItems((parameters, output) -> {
+                        // Story progression items.
                         output.accept(ModItems.PRINCESS_SEAL.get());
                         output.accept(ModItems.PRINCESS_LETTER.get());
                         output.accept(ModItems.POLEN_JOURNAL.get());
+
+                        // Reusable materials and future systems.
+                        output.accept(ModItems.ROYAL_POLLEN.get());
+                        output.accept(ModItems.SOURCE_TOUCHED_PETAL.get());
+                        output.accept(ModItems.RESONANT_WAX.get());
+
+                        // Focus and colony tools.
+                        output.accept(ModItems.BLOOM_FOCUS.get());
+                        output.accept(ModItems.SETTLEMENT_CHARM.get());
+
+                        // Debug / spawn support.
                         output.accept(ModItems.POLEN_SPAWN_EGG.get());
 
                     })

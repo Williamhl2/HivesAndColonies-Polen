@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased - Item Progression Foundation
+
+### Added
+
+- Added typed item metadata for family, progression stage, and uniqueness.
+- Added reusable item bases for story, material, focus, and colony item families.
+- Added `docs/dev/ITEM_PROGRESSION.md` to define long-term item scaling rules.
+
+### Changed
+
+- Reclassified current items into explicit progression roles instead of leaving them as flat standalone entries.
+- Grouped item registration and creative-tab ordering by family intent.
+
+## Unreleased - First Functional Item Wave
+
+### Added
+
+- Added `bloom_focus` as a reusable focus item for helping Polen remember flowers, hives, and source-like resonances.
+- Added `settlement_charm` as a colony item for marking safe resting places once shelter progression exists.
+- Added `source_touched_petal` and `resonant_wax` as early scalable materials for future Ars and bee-related systems.
+
+### Changed
+
+- Added a dedicated item interaction controller so new item behaviors route through existing memory, affinity, and story systems.
+- Added first-pass survival recipes and item-family datapack tags for the new item layer.
+
 ## Unreleased - Ars Magic Follow-up
 
 ### Added

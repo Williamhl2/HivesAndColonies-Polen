@@ -1,0 +1,16 @@
+package com.hivesandcolonies.polen.item.material;
+
+import com.hivesandcolonies.polen.item.base.PolenMaterialItem;
+import com.hivesandcolonies.polen.item.meta.PolenProgressionStage;
+import net.minecraft.ChatFormatting;
+
+public class ResonantWaxItem extends PolenMaterialItem {
+    public ResonantWaxItem(Properties properties) {
+        super(
+                properties,
+                PolenProgressionStage.ACT_II_DISCOVERY,
+                new TooltipLine("tooltip.polen.resonant_wax.line1", ChatFormatting.GOLD),
+                new TooltipLine("tooltip.polen.resonant_wax.line2", ChatFormatting.YELLOW)
+        );
+    }
+}
