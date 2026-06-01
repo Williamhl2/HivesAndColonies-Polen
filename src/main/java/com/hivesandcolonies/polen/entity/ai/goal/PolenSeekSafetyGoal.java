@@ -3,6 +3,8 @@ package com.hivesandcolonies.polen.entity.ai.goal;
 import com.hivesandcolonies.polen.dialogue.PolenDialogueManager;
 import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.ai.gesture.PolenGesture;
+import com.hivesandcolonies.polen.entity.ai.gesture.PolenGestureController;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -15,15 +17,19 @@ public class PolenSeekSafetyGoal extends Goal {
     private static final double STOP_DISTANCE_SQR = 2.25D;
     private static final int REPATH_COOLDOWN_TICKS = 20;
     private static final int MAX_FAILED_REPATHS = 6;
+    private static final int BLINK_COOLDOWN_TICKS = 30;
+    private static final int STUCK_TICKS_BEFORE_BLINK = 18;
 
     private final PolenEntity polen;
 
     private BlockPos targetSpot;
     private int repathCooldownTicks;
     private int failedRepathAttempts;
-    private int nextSafetyCheckTick;
     private boolean unsafeDialoguePlayed;
     private boolean fallbackExplorationMode;
+    private int blinkCooldownTicks;
+    private int stuckTicks;
+    private double lastDistanceSqr;
 
     public PolenSeekSafetyGoal(PolenEntity polen) {
         this.polen = polen;
@@ -32,16 +38,17 @@ public class PolenSeekSafetyGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (this.polen.tickCount < this.nextSafetyCheckTick
-                || !PolenSafetyNavigator.shouldSeekSafety(this.polen)) {
+        if (!PolenSafetyNavigator.shouldSeekSafety(this.polen)) {
             return false;
         }
 
         this.repathCooldownTicks = 0;
         this.failedRepathAttempts = 0;
-        this.nextSafetyCheckTick = this.polen.tickCount + 20;
         this.unsafeDialoguePlayed = false;
         this.fallbackExplorationMode = false;
+        this.blinkCooldownTicks = 0;
+        this.stuckTicks = 0;
+        this.lastDistanceSqr = Double.MAX_VALUE;
 
         if (planSafeEscapeRoute(20)) {
             return true;
@@ -53,7 +60,6 @@ public class PolenSeekSafetyGoal extends Goal {
 
         playUnsafeDialogueIfNeeded();
         PolenSafetyNavigator.tryEmergencyRelocateToSafeSurface(this.polen);
-        this.nextSafetyCheckTick = this.polen.tickCount + 40;
         return false;
     }
 
@@ -67,7 +73,9 @@ public class PolenSeekSafetyGoal extends Goal {
     @Override
     public void start() {
         this.polen.stopQuietActivity();
+        PolenGestureController.triggerGesture(this.polen, PolenGesture.STARTLED);
         playUnsafeDialogueIfNeeded();
+        this.lastDistanceSqr = this.targetSpot == null ? Double.MAX_VALUE : this.polen.distanceToSqr(Vec3.atCenterOf(this.targetSpot));
         moveToTargetSpot();
     }
 
@@ -86,12 +94,29 @@ public class PolenSeekSafetyGoal extends Goal {
         if (this.repathCooldownTicks > 0) {
             this.repathCooldownTicks--;
         }
+        if (this.blinkCooldownTicks > 0) {
+            this.blinkCooldownTicks--;
+        }
 
         if (!PolenSafetyNavigator.shouldSeekSafety(this.polen)) {
             return;
         }
 
-        boolean reachedTarget = this.polen.distanceToSqr(Vec3.atCenterOf(this.targetSpot)) <= STOP_DISTANCE_SQR;
+        double distanceSqr = this.polen.distanceToSqr(Vec3.atCenterOf(this.targetSpot));
+        boolean reachedTarget = distanceSqr <= STOP_DISTANCE_SQR;
+        updateStuckCounter(distanceSqr);
+
+        if (!reachedTarget && this.blinkCooldownTicks == 0
+                && (this.stuckTicks >= STUCK_TICKS_BEFORE_BLINK || this.polen.getNavigation().isDone())) {
+            if (PolenSafetyNavigator.tryBlinkTowardSafeSpot(this.polen, this.targetSpot, 7)) {
+                this.blinkCooldownTicks = BLINK_COOLDOWN_TICKS;
+                this.stuckTicks = 0;
+                this.lastDistanceSqr = this.polen.distanceToSqr(Vec3.atCenterOf(this.targetSpot));
+                moveToTargetSpot();
+                return;
+            }
+        }
+
         if ((reachedTarget || this.polen.getNavigation().isDone()) && this.repathCooldownTicks == 0) {
             int nextRadius = reachedTarget ? 16 : 20 + this.failedRepathAttempts * 8;
 
@@ -120,13 +145,21 @@ public class PolenSeekSafetyGoal extends Goal {
         this.targetSpot = null;
         this.repathCooldownTicks = 0;
         this.failedRepathAttempts = 0;
-        this.nextSafetyCheckTick = this.polen.tickCount + 20;
         this.unsafeDialoguePlayed = false;
         this.fallbackExplorationMode = false;
+        this.blinkCooldownTicks = 0;
+        this.stuckTicks = 0;
+        this.lastDistanceSqr = Double.MAX_VALUE;
     }
 
     private boolean planSafeEscapeRoute(int radius) {
-        this.targetSpot = PolenSafetyNavigator.findNearbySafeSurfaceSpot(this.polen, radius);
+        if (PolenSafetyNavigator.shouldSeekRainShelter(this.polen)) {
+            this.targetSpot = PolenSafetyNavigator.findNearbyShelteredSpot(this.polen, Math.max(8, radius));
+        } else if (PolenSafetyNavigator.shouldSeekNightLight(this.polen)) {
+            this.targetSpot = PolenSafetyNavigator.findNearbyNightLightSpot(this.polen, Math.max(10, radius));
+        } else {
+            this.targetSpot = PolenSafetyNavigator.findNearbySafeSurfaceSpot(this.polen, radius);
+        }
         this.fallbackExplorationMode = false;
         return this.targetSpot != null;
     }
@@ -142,12 +175,31 @@ public class PolenSeekSafetyGoal extends Goal {
             return;
         }
 
-        this.polen.getNavigation().moveTo(
+        boolean pathStarted = this.polen.getNavigation().moveTo(
                 this.targetSpot.getX() + 0.5D,
                 this.targetSpot.getY(),
                 this.targetSpot.getZ() + 0.5D,
                 MOVE_SPEED
         );
+
+        if (!pathStarted && this.blinkCooldownTicks == 0) {
+            if (PolenSafetyNavigator.tryBlinkTowardSafeSpot(this.polen, this.targetSpot, 7)) {
+                PolenGestureController.triggerGesture(this.polen, PolenGesture.STARTLED, BLINK_COOLDOWN_TICKS);
+                this.blinkCooldownTicks = BLINK_COOLDOWN_TICKS;
+                this.stuckTicks = 0;
+                this.lastDistanceSqr = this.polen.distanceToSqr(Vec3.atCenterOf(this.targetSpot));
+            }
+        }
+    }
+
+    private void updateStuckCounter(double distanceSqr) {
+        if (distanceSqr < this.lastDistanceSqr - 0.04D) {
+            this.stuckTicks = 0;
+        } else {
+            this.stuckTicks++;
+        }
+
+        this.lastDistanceSqr = distanceSqr;
     }
 
     private void playUnsafeDialogueIfNeeded() {

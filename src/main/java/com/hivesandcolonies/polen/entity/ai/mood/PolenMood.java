@@ -1,4 +1,4 @@
-package com.hivesandcolonies.polen.entity.ai;
+package com.hivesandcolonies.polen.entity.ai.mood;
 
 public enum PolenMood {
     CALM(0),

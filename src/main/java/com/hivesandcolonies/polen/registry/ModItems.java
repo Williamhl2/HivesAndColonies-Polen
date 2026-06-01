@@ -10,6 +10,7 @@ import com.hivesandcolonies.polen.item.story.PolenJournalItem;
 import com.hivesandcolonies.polen.item.story.PrincessLetterItem;
 import com.hivesandcolonies.polen.item.story.PrincessSealItem;
 
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -46,6 +47,11 @@ public class ModItems {
     // Colony items: player-facing tools for integrating Polen into safe settlement spaces.
     public static final DeferredItem<Item> SETTLEMENT_CHARM =
             registerColonyItem("settlement_charm", SettlementCharmItem::new);
+    public static final DeferredItem<Item> POLEN_LANTERN =
+            ITEMS.registerItem(
+                    "polen_lantern",
+                    properties -> new BlockItem(ModBlocks.POLEN_LANTERN.get(), properties)
+            );
 
     public static final DeferredItem<DeferredSpawnEggItem> POLEN_SPAWN_EGG =
         ITEMS.registerItem(

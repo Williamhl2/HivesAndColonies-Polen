@@ -13,6 +13,8 @@ public final class PolenDialogueManager {
     public static final String AMBIENT_UNSAFE = "ambient_unsafe";
     public static final String AMBIENT_APPROACH = "ambient_approach";
     public static final String AMBIENT_MAGIC = "ambient_magic";
+    public static final String AMBIENT_ILLUMINATION = "ambient_illumination";
+    public static final String AMBIENT_REFLECTION = "ambient_reflection";
 
     private PolenDialogueManager() {}
 

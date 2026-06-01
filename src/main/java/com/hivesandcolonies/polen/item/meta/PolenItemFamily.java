@@ -4,5 +4,6 @@ public enum PolenItemFamily {
     STORY,
     MATERIAL,
     FOCUS,
-    COLONY
+    COLONY,
+    ACCESSORY
 }

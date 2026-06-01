@@ -1,6 +1,6 @@
 package com.hivesandcolonies.polen.entity.ai.debug;
 
-import com.hivesandcolonies.polen.entity.ai.PolenMood;
+import com.hivesandcolonies.polen.entity.ai.mood.PolenMood;
 import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
 import com.hivesandcolonies.polen.entity.ai.need.PolenNeed;
 import net.minecraft.core.BlockPos;

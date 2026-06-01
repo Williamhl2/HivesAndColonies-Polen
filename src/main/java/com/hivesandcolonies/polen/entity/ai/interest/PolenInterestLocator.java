@@ -25,6 +25,19 @@ public final class PolenInterestLocator {
         return findNearestLocalInterest(polen, DEFAULT_LOCAL_RADIUS, DEFAULT_LOCAL_HEIGHT, includeSource);
     }
 
+    public static PolenInterestTarget findPreferredInterestOfType(PolenEntity polen, PolenInterestType type) {
+        BlockPos rememberedPos = switch (type) {
+            case FLOWER -> polen.getAiState().getFavoriteFlowerPos();
+            case HIVE -> polen.getAiState().getFavoriteHivePos();
+            case SOURCE -> polen.getAiState().getFavoriteSourcePos();
+        };
+        if (isRememberedInterestStillValid(polen, rememberedPos)) {
+            return new PolenInterestTarget(rememberedPos.immutable(), type);
+        }
+
+        return findNearestLocalInterestOfType(polen, DEFAULT_LOCAL_RADIUS, DEFAULT_LOCAL_HEIGHT, type);
+    }
+
     public static PolenInterestTarget findRememberedInterest(PolenEntity polen, boolean includeSource) {
         PolenInterestTarget best = null;
         double bestDistanceSqr = Double.MAX_VALUE;
@@ -87,6 +100,35 @@ public final class PolenInterestLocator {
             if (distanceSqr < bestDistanceSqr) {
                 bestDistanceSqr = distanceSqr;
                 best = new PolenInterestTarget(pos.immutable(), type);
+            }
+        }
+
+        return best;
+    }
+
+    public static PolenInterestTarget findNearestLocalInterestOfType(
+            PolenEntity polen,
+            int radius,
+            int height,
+            PolenInterestType type
+    ) {
+        BlockPos origin = polen.blockPosition();
+        PolenInterestTarget best = null;
+        double bestDistanceSqr = Double.MAX_VALUE;
+
+        for (BlockPos pos : BlockPos.betweenClosed(
+                origin.offset(-radius, -height, -radius),
+                origin.offset(radius, height, radius)
+        )) {
+            PolenInterestType candidateType = classify(polen.level().getBlockState(pos), true);
+            if (candidateType != type || !isInterestTargetSafe(polen, pos)) {
+                continue;
+            }
+
+            double distanceSqr = pos.distSqr(origin);
+            if (distanceSqr < bestDistanceSqr) {
+                bestDistanceSqr = distanceSqr;
+                best = new PolenInterestTarget(pos.immutable(), candidateType);
             }
         }
 

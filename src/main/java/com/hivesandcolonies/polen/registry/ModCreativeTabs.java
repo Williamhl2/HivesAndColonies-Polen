@@ -33,6 +33,7 @@ public class ModCreativeTabs {
                         // Focus and colony tools.
                         output.accept(ModItems.BLOOM_FOCUS.get());
                         output.accept(ModItems.SETTLEMENT_CHARM.get());
+                        output.accept(ModItems.POLEN_LANTERN.get());
 
                         // Debug / spawn support.
                         output.accept(ModItems.POLEN_SPAWN_EGG.get());

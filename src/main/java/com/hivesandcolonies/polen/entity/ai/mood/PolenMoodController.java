@@ -1,7 +1,6 @@
 package com.hivesandcolonies.polen.entity.ai.mood;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
-import com.hivesandcolonies.polen.entity.ai.PolenMood;
 import com.hivesandcolonies.polen.entity.ai.need.PolenNeedController;
 import com.hivesandcolonies.polen.entity.ai.need.PolenNeedSnapshot;
 import com.hivesandcolonies.polen.entity.ai.memory.PolenMemoryHandler;

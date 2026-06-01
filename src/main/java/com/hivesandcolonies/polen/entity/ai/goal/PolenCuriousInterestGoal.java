@@ -2,6 +2,8 @@ package com.hivesandcolonies.polen.entity.ai.goal;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
+import com.hivesandcolonies.polen.entity.ai.gesture.PolenGesture;
+import com.hivesandcolonies.polen.entity.ai.gesture.PolenGestureController;
 import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
 import com.hivesandcolonies.polen.entity.ai.interest.PolenInterestLocator;
 import com.hivesandcolonies.polen.entity.ai.interest.PolenInterestTarget;
@@ -26,6 +28,9 @@ public class PolenCuriousInterestGoal extends Goal {
 
     private PolenInterestTarget target;
     private int observeTicks;
+    private int stuckTicks;
+    private int blinkCooldownTicks;
+    private double lastDistanceSqr;
 
     public PolenCuriousInterestGoal(PolenEntity polen) {
         this.polen = polen;
@@ -43,6 +48,9 @@ public class PolenCuriousInterestGoal extends Goal {
 
         this.target = PolenInterestLocator.findPreferredInterest(this.polen, true);
         this.observeTicks = 40 + this.polen.getRandom().nextInt(60);
+        this.stuckTicks = 0;
+        this.blinkCooldownTicks = 0;
+        this.lastDistanceSqr = Double.MAX_VALUE;
         return this.target != null;
     }
 
@@ -60,6 +68,7 @@ public class PolenCuriousInterestGoal extends Goal {
             return;
         }
 
+        PolenGestureController.triggerGesture(this.polen, PolenGesture.CURIOUS);
         if (this.target.type() == PolenInterestType.SOURCE) {
             this.polen.rememberInterestingSpot(this.target.pos());
             PolenMemoryManager.unlockMemory(
@@ -81,6 +90,7 @@ public class PolenCuriousInterestGoal extends Goal {
             );
         }
 
+        this.lastDistanceSqr = this.polen.distanceToSqr(Vec3.atCenterOf(this.target.pos()));
         moveToTarget();
     }
 
@@ -100,7 +110,17 @@ public class PolenCuriousInterestGoal extends Goal {
             return;
         }
 
-        if (this.polen.getNavigation().isDone()) {
+        if (this.blinkCooldownTicks > 0) {
+            this.blinkCooldownTicks--;
+        }
+
+        updateStuckCounter(distanceSqr);
+        if (this.blinkCooldownTicks == 0 && (this.stuckTicks >= 30 || this.polen.getNavigation().isDone())) {
+            if (PolenSafetyNavigator.tryBlinkTowardStandableSpot(this.polen, this.target.pos(), 6)) {
+                this.blinkCooldownTicks = 40;
+                this.stuckTicks = 0;
+                this.lastDistanceSqr = this.polen.distanceToSqr(targetCenter);
+            }
             moveToTarget();
         }
     }
@@ -110,6 +130,9 @@ public class PolenCuriousInterestGoal extends Goal {
         this.polen.getNavigation().stop();
         this.target = null;
         this.observeTicks = 0;
+        this.stuckTicks = 0;
+        this.blinkCooldownTicks = 0;
+        this.lastDistanceSqr = Double.MAX_VALUE;
     }
 
     private void moveToTarget() {
@@ -117,11 +140,28 @@ public class PolenCuriousInterestGoal extends Goal {
             return;
         }
 
-        this.polen.getNavigation().moveTo(
+        boolean pathStarted = this.polen.getNavigation().moveTo(
                 this.target.pos().getX() + 0.5D,
                 this.target.pos().getY(),
                 this.target.pos().getZ() + 0.5D,
                 MOVE_SPEED
         );
+
+        if (!pathStarted && this.blinkCooldownTicks == 0) {
+            if (PolenSafetyNavigator.tryBlinkTowardStandableSpot(this.polen, this.target.pos(), 6)) {
+                this.blinkCooldownTicks = 40;
+                this.stuckTicks = 0;
+            }
+        }
+    }
+
+    private void updateStuckCounter(double distanceSqr) {
+        if (distanceSqr < this.lastDistanceSqr - 0.04D) {
+            this.stuckTicks = 0;
+        } else {
+            this.stuckTicks++;
+        }
+
+        this.lastDistanceSqr = distanceSqr;
     }
 }

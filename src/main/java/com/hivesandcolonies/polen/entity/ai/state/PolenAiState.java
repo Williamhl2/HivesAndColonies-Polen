@@ -13,7 +13,9 @@ public final class PolenAiState {
     private BlockPos favoriteSourcePos;
     private BlockPos restingPos;
     private BlockPos dangerousSpotPos;
+    private BlockPos activeLightPos;
     private long dangerousSpotUntilGameTime;
+    private long activeLightUntilGameTime;
     private long lastAmbientDialogueGameTime;
     private final PolenNeedState needState = new PolenNeedState();
     private final PolenIntentState intentState = new PolenIntentState();
@@ -26,6 +28,8 @@ public final class PolenAiState {
             String restingKey,
             String dangerousSpotKey,
             String dangerousSpotUntilKey,
+            String activeLightKey,
+            String activeLightUntilKey,
             String needsKey,
             String intentKey
     ) {
@@ -35,6 +39,8 @@ public final class PolenAiState {
         PolenNbtHelper.saveBlockPos(tag, restingKey, this.restingPos);
         PolenNbtHelper.saveBlockPos(tag, dangerousSpotKey, this.dangerousSpotPos);
         tag.putLong(dangerousSpotUntilKey, this.dangerousSpotUntilGameTime);
+        PolenNbtHelper.saveBlockPos(tag, activeLightKey, this.activeLightPos);
+        tag.putLong(activeLightUntilKey, this.activeLightUntilGameTime);
         this.needState.save(tag, needsKey);
         this.intentState.save(tag, intentKey);
     }
@@ -47,6 +53,8 @@ public final class PolenAiState {
             String restingKey,
             String dangerousSpotKey,
             String dangerousSpotUntilKey,
+            String activeLightKey,
+            String activeLightUntilKey,
             String needsKey,
             String intentKey
     ) {
@@ -56,6 +64,8 @@ public final class PolenAiState {
         this.restingPos = PolenNbtHelper.loadBlockPos(tag, restingKey);
         this.dangerousSpotPos = PolenNbtHelper.loadBlockPos(tag, dangerousSpotKey);
         this.dangerousSpotUntilGameTime = Math.max(0L, tag.getLong(dangerousSpotUntilKey));
+        this.activeLightPos = PolenNbtHelper.loadBlockPos(tag, activeLightKey);
+        this.activeLightUntilGameTime = Math.max(0L, tag.getLong(activeLightUntilKey));
         this.needState.load(tag, needsKey);
         this.intentState.load(tag, intentKey);
     }
@@ -103,6 +113,19 @@ public final class PolenAiState {
     public void setDangerousSpotState(BlockPos dangerousSpotPos, long dangerousSpotUntilGameTime) {
         this.dangerousSpotPos = dangerousSpotPos;
         this.dangerousSpotUntilGameTime = dangerousSpotUntilGameTime;
+    }
+
+    public BlockPos getActiveLightPos() {
+        return this.activeLightPos;
+    }
+
+    public long getActiveLightUntilGameTime() {
+        return this.activeLightUntilGameTime;
+    }
+
+    public void setActiveLightState(BlockPos activeLightPos, long activeLightUntilGameTime) {
+        this.activeLightPos = activeLightPos;
+        this.activeLightUntilGameTime = activeLightUntilGameTime;
     }
 
     public long getLastAmbientDialogueGameTime() {

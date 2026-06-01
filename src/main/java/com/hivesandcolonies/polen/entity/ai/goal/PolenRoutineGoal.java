@@ -14,13 +14,18 @@ import java.util.EnumSet;
 public class PolenRoutineGoal extends Goal {
     private static final double MOVE_SPEED = 0.85D;
     private static final double STOP_DISTANCE_SQR = 2.25D;
+    private static final int DEFAULT_STUCK_TICKS = 30;
+    private static final int QUICK_ESCAPE_STUCK_TICKS = 18;
+    private static final int DEFAULT_BLINK_DISTANCE = 6;
+    private static final int QUICK_ESCAPE_BLINK_DISTANCE = 8;
 
     private final PolenEntity polen;
 
     private BlockPos targetPos;
     private int waitTicks;
-    private int repathCooldown;
     private int stuckTicks;
+    private int blinkCooldownTicks;
+    private double lastDistanceSqr;
 
     public PolenRoutineGoal(PolenEntity polen) {
         this.polen = polen;
@@ -38,6 +43,9 @@ public class PolenRoutineGoal extends Goal {
 
         this.targetPos = PolenRoutinePlanner.getRoutineTarget(this.polen, this.polen.getCurrentIntent());
         this.waitTicks = 60 + this.polen.getRandom().nextInt(60);
+        this.stuckTicks = 0;
+        this.blinkCooldownTicks = 0;
+        this.lastDistanceSqr = Double.MAX_VALUE;
         return this.targetPos != null && !this.polen.blockPosition().closerToCenterThan(Vec3.atCenterOf(this.targetPos), 1.5D);
     }
 
@@ -45,16 +53,12 @@ public class PolenRoutineGoal extends Goal {
     public boolean canContinueToUse() {
         return this.targetPos != null
                 && this.waitTicks > 0
-                && !this.polen.isDoingQuietActivity()
-                && !PolenSafetyNavigator.isInUnsafeArea(this.polen)
-                && (this.polen.getCurrentIntent() == PolenIntent.SEEK_REST
-                || this.polen.getCurrentIntent() == PolenIntent.QUIET_CREATION)
-                && this.stuckTicks < 40
                 && PolenRoutinePlanner.isRememberedSpotStillValid(this.polen, this.targetPos);
     }
 
     @Override
     public void start() {
+        this.lastDistanceSqr = this.targetPos == null ? Double.MAX_VALUE : this.polen.distanceToSqr(Vec3.atCenterOf(this.targetPos));
         moveToTarget();
     }
 
@@ -72,14 +76,19 @@ public class PolenRoutineGoal extends Goal {
             return;
         }
 
-        if (this.polen.getNavigation().isDone()) {
-            this.stuckTicks++;
-            if (this.repathCooldown-- <= 0) {
-                this.repathCooldown = 10;
-                moveToTarget();
+        if (this.blinkCooldownTicks > 0) {
+            this.blinkCooldownTicks--;
+        }
+
+        updateStuckCounter(this.polen.distanceToSqr(targetCenter));
+        if (this.blinkCooldownTicks == 0
+                && (this.stuckTicks >= getStuckTicksBeforeBlink() || this.polen.getNavigation().isDone())) {
+            if (PolenSafetyNavigator.tryBlinkTowardStandableSpot(this.polen, this.targetPos, getBlinkDistance())) {
+                this.blinkCooldownTicks = 40;
+                this.stuckTicks = 0;
+                this.lastDistanceSqr = this.polen.distanceToSqr(targetCenter);
             }
-        } else {
-            this.stuckTicks = 0;
+            moveToTarget();
         }
     }
 
@@ -88,8 +97,9 @@ public class PolenRoutineGoal extends Goal {
         this.polen.getNavigation().stop();
         this.targetPos = null;
         this.waitTicks = 0;
-        this.repathCooldown = 0;
         this.stuckTicks = 0;
+        this.blinkCooldownTicks = 0;
+        this.lastDistanceSqr = Double.MAX_VALUE;
     }
 
     private void moveToTarget() {
@@ -97,15 +107,43 @@ public class PolenRoutineGoal extends Goal {
             return;
         }
 
-        boolean started = this.polen.getNavigation().moveTo(
+        boolean pathStarted = this.polen.getNavigation().moveTo(
                 this.targetPos.getX() + 0.5D,
                 this.targetPos.getY(),
                 this.targetPos.getZ() + 0.5D,
                 MOVE_SPEED
         );
 
-        if (!started) {
-            this.stuckTicks += 10;
+        if (!pathStarted && this.blinkCooldownTicks == 0) {
+            if (PolenSafetyNavigator.tryBlinkTowardStandableSpot(this.polen, this.targetPos, getBlinkDistance())) {
+                this.blinkCooldownTicks = 40;
+                this.stuckTicks = 0;
+            }
         }
+    }
+
+    private int getStuckTicksBeforeBlink() {
+        return shouldUseQuickEscapeBlink() ? QUICK_ESCAPE_STUCK_TICKS : DEFAULT_STUCK_TICKS;
+    }
+
+    private int getBlinkDistance() {
+        return shouldUseQuickEscapeBlink() ? QUICK_ESCAPE_BLINK_DISTANCE : DEFAULT_BLINK_DISTANCE;
+    }
+
+    private boolean shouldUseQuickEscapeBlink() {
+        return this.targetPos != null
+                && this.polen.getCurrentIntent() == PolenIntent.QUIET_CREATION
+                && (PolenRoutinePlanner.isDarkEnoughForLightMagic(this.polen)
+                || this.targetPos.getY() >= this.polen.blockPosition().getY() + 2);
+    }
+
+    private void updateStuckCounter(double distanceSqr) {
+        if (distanceSqr < this.lastDistanceSqr - 0.04D) {
+            this.stuckTicks = 0;
+        } else {
+            this.stuckTicks++;
+        }
+
+        this.lastDistanceSqr = distanceSqr;
     }
 }

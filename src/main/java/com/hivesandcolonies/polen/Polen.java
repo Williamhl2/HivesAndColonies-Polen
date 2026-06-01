@@ -3,6 +3,7 @@ package com.hivesandcolonies.polen;
 import org.slf4j.Logger;
 
 import com.hivesandcolonies.polen.command.PolenDebugCommands;
+import com.hivesandcolonies.polen.registry.ModBlocks;
 import com.hivesandcolonies.polen.registry.ModCreativeTabs;
 import com.hivesandcolonies.polen.registry.ModEntities;
 import com.hivesandcolonies.polen.registry.ModItems;
@@ -20,6 +21,7 @@ public class Polen {
 
     @SuppressWarnings("unused")
     public Polen(IEventBus modEventBus, ModContainer modContainer) {
+        ModBlocks.BLOCKS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         ModEntities.ENTITY_TYPES.register(modEventBus);

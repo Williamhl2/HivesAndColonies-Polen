@@ -2,6 +2,9 @@ package com.hivesandcolonies.polen.entity.ai.goal;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
+import com.hivesandcolonies.polen.entity.ai.gesture.PolenGesture;
+import com.hivesandcolonies.polen.entity.ai.gesture.PolenGestureController;
+import com.hivesandcolonies.polen.entity.ai.mood.PolenMood;
 
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.util.LandRandomPos;
@@ -31,8 +34,8 @@ public class PolenKeepDistanceGoal extends Goal {
             return false;
         }
 
-        if (this.polen.getMood() == com.hivesandcolonies.polen.entity.ai.PolenMood.CONFIDENT
-                || this.polen.getMood() == com.hivesandcolonies.polen.entity.ai.PolenMood.JOYFUL) {
+        if (this.polen.getMood() == PolenMood.CONFIDENT
+                || this.polen.getMood() == PolenMood.JOYFUL) {
             return false;
         }
 
@@ -58,6 +61,7 @@ public class PolenKeepDistanceGoal extends Goal {
     public void start() {
         if (this.targetPos != null) {
             this.polen.stopQuietActivity();
+            PolenGestureController.triggerGesture(this.polen, PolenGesture.WITHDRAWN);
             PolenAmbientDialogueController.tryPlay(
                     this.polen,
                     com.hivesandcolonies.polen.dialogue.PolenDialogueManager.AMBIENT_TIMID

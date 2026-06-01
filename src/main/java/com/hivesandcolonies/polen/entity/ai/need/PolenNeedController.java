@@ -58,7 +58,7 @@ public final class PolenNeedController {
             state.adjustRest(-8);
         }
 
-        state.adjustMagic(nearSource ? -14 : polen.isDoingQuietActivity() ? -8 : shelterKnown ? 3 : 1);
+        state.adjustMagic(nearSource ? -14 : polen.isDoingQuietActivity() ? -10 : shelterKnown ? 2 : 1);
         if (unsafeArea) {
             state.adjustMagic(-3);
         }

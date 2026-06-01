@@ -12,6 +12,7 @@ public final class PolenItemTags {
     public static final TagKey<Item> MATERIAL_ITEMS = create("material_items");
     public static final TagKey<Item> FOCUS_ITEMS = create("focus_items");
     public static final TagKey<Item> COLONY_ITEMS = create("colony_items");
+    public static final TagKey<Item> ACCESSORY_ITEMS = create("accessory_items");
 
     private PolenItemTags() {
     }

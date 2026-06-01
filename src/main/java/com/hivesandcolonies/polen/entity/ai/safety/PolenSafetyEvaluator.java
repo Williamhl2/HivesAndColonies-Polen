@@ -25,11 +25,15 @@ public final class PolenSafetyEvaluator {
             return false;
         }
 
+        if (isNearOutdoorSurface(level, pos)) {
+            return true;
+        }
+
         if (level.getMaxLocalRawBrightness(pos) < MIN_SAFE_BRIGHTNESS) {
             return false;
         }
 
-        return isNearOutdoorSurface(level, pos) || isShelteredStandingSpot(level, pos);
+        return isShelteredStandingSpot(level, pos);
     }
 
     public static boolean isClaustrophobicStandingSpot(Entity entity, BlockPos pos) {
@@ -108,12 +112,16 @@ public final class PolenSafetyEvaluator {
         return pos.getY() >= surfaceY - 2;
     }
 
-    private static boolean isShelteredStandingSpot(Level level, BlockPos pos) {
+    public static boolean isShelteredStandingSpot(Level level, BlockPos pos) {
         if (level.canSeeSky(pos) || !isNearOutdoorSurface(level, pos)) {
             return false;
         }
 
         return hasOverheadCover(level, pos);
+    }
+
+    public static boolean isExposedToRain(Level level, BlockPos pos) {
+        return level.isRaining() && level.isRainingAt(pos.above()) && level.canSeeSky(pos.above());
     }
 
     private static boolean isUndergroundEnclosedSpot(Level level, BlockPos pos) {
@@ -122,7 +130,7 @@ public final class PolenSafetyEvaluator {
                 && hasOverheadCover(level, pos);
     }
 
-    private static boolean hasOverheadCover(Level level, BlockPos pos) {
+    public static boolean hasOverheadCover(Level level, BlockPos pos) {
         for (int dy = 2; dy <= 6; dy++) {
             BlockPos roofPos = pos.above(dy);
 

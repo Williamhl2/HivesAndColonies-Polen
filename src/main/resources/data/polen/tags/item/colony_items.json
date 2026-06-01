@@ -1,6 +1,7 @@
 {
   "replace": false,
   "values": [
-    "polen:settlement_charm"
+    "polen:settlement_charm",
+    "polen:polen_lantern"
   ]
 }

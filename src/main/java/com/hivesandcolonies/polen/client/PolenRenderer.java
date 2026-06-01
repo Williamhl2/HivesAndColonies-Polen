@@ -1,23 +1,23 @@
 package com.hivesandcolonies.polen.client;
 
 import com.hivesandcolonies.polen.Polen;
+import com.hivesandcolonies.polen.client.model.PolenModel;
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.resources.ResourceLocation;
 
-public class PolenRenderer extends MobRenderer<PolenEntity, HumanoidModel<PolenEntity>> {
+public class PolenRenderer extends MobRenderer<PolenEntity, PolenModel> {
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(Polen.MODID, "textures/entity/polen.png");
 
     public PolenRenderer(EntityRendererProvider.Context context) {
         super(
                 context,
-                new HumanoidModel<>(context.bakeLayer(ModelLayers.PLAYER)),
+                new PolenModel(context.bakeLayer(ModelLayers.PLAYER)),
                 0.5F
         );
     }

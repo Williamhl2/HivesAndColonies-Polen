@@ -3,8 +3,10 @@ package com.hivesandcolonies.polen.entity.ai.goal;
 import com.hivesandcolonies.polen.dialogue.PolenDialogueManager;
 import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.polen.entity.PolenEntity;
-import com.hivesandcolonies.polen.entity.ai.PolenMood;
+import com.hivesandcolonies.polen.entity.ai.gesture.PolenGesture;
+import com.hivesandcolonies.polen.entity.ai.gesture.PolenGestureController;
 import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
+import com.hivesandcolonies.polen.entity.ai.mood.PolenMood;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -76,6 +78,7 @@ public class PolenApproachTrustedPlayerGoal extends Goal {
     @Override
     public void start() {
         this.polen.stopQuietActivity();
+        PolenGestureController.triggerGesture(this.polen, PolenGesture.APPROACHING);
         moveToTargetPlayer();
     }
 
@@ -115,6 +118,7 @@ public class PolenApproachTrustedPlayerGoal extends Goal {
 
     private void playApproachDialogueIfNeeded() {
         if (!this.dialoguePlayed) {
+            PolenGestureController.triggerGesture(this.polen, PolenGesture.APPROACHING, 40);
             PolenAmbientDialogueController.tryPlay(this.polen, PolenDialogueManager.AMBIENT_APPROACH);
             this.dialoguePlayed = true;
         }

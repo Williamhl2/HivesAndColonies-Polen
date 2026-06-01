@@ -1,10 +1,13 @@
 package com.hivesandcolonies.polen.entity.ai.intent;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
-import com.hivesandcolonies.polen.entity.ai.PolenMood;
 import com.hivesandcolonies.polen.entity.ai.interest.PolenInterestLocator;
+import com.hivesandcolonies.polen.entity.ai.interest.PolenInterestType;
 import com.hivesandcolonies.polen.entity.ai.need.PolenNeedController;
 import com.hivesandcolonies.polen.entity.ai.need.PolenNeedSnapshot;
+import com.hivesandcolonies.polen.entity.ai.action.PolenAutonomousActionPlanner;
+import com.hivesandcolonies.polen.entity.ai.mood.PolenMood;
+import com.hivesandcolonies.polen.entity.ai.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -82,6 +85,19 @@ public final class PolenIntentController {
             return locked(PolenIntent.APPROACH_TRUSTED_PLAYER, "social_need_high", gameTime, 100L);
         }
 
+        if (needs.rest() >= 32 && canDoQuietCreation(polen)
+                && PolenAutonomousActionPlanner.shouldReflect(polen, polen.getMood())) {
+            return locked(PolenIntent.QUIET_CREATION, "reflective_pause_available", gameTime, 90L);
+        }
+
+        if (needs.magic() >= 28 && canDoQuietCreation(polen) && hasLightMagicTarget(polen)) {
+            return locked(PolenIntent.QUIET_CREATION, "darkness_needs_light", gameTime, 100L);
+        }
+
+        if (needs.magic() >= 52 && canDoQuietCreation(polen) && hasSourceForQuietCreation(polen)) {
+            return locked(PolenIntent.QUIET_CREATION, "source_attunement_needed", gameTime, 120L);
+        }
+
         if ((needs.curiosity() >= 52 || needs.magic() >= 56)
                 && PolenInterestLocator.findPreferredInterest(polen, true) != null) {
             return locked(PolenIntent.INVESTIGATE_INTEREST, "interesting_target_available", gameTime, 120L);
@@ -101,6 +117,14 @@ public final class PolenIntentController {
 
         if (needs.curiosity() >= 38 && PolenInterestLocator.findPreferredInterest(polen, true) != null) {
             return locked(PolenIntent.INVESTIGATE_INTEREST, "curiosity_need_rising", gameTime, 100L);
+        }
+
+        if (needs.magic() >= 20 && canDoQuietCreation(polen) && hasLightMagicTarget(polen)) {
+            return locked(PolenIntent.QUIET_CREATION, "light_magic_available", gameTime, 80L);
+        }
+
+        if (needs.magic() >= 38 && canDoQuietCreation(polen) && hasSourceForQuietCreation(polen)) {
+            return locked(PolenIntent.QUIET_CREATION, "source_magic_available", gameTime, 90L);
         }
 
         if (needs.rest() >= 38 && canSeekRest(polen)) {
@@ -136,6 +160,14 @@ public final class PolenIntentController {
                 && !polen.isDoingQuietActivity()
                 && polen.onGround()
                 && !polen.isInWaterOrBubble();
+    }
+
+    private static boolean hasSourceForQuietCreation(PolenEntity polen) {
+        return PolenInterestLocator.findPreferredInterestOfType(polen, PolenInterestType.SOURCE) != null;
+    }
+
+    private static boolean hasLightMagicTarget(PolenEntity polen) {
+        return PolenRoutinePlanner.findLightMagicTarget(polen) != null;
     }
 
     private static boolean isAtRestSpot(PolenEntity polen) {

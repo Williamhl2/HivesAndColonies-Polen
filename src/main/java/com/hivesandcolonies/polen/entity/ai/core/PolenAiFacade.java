@@ -1,9 +1,12 @@
-package com.hivesandcolonies.polen.entity.ai;
+package com.hivesandcolonies.polen.entity.ai.core;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.PolenGoalRegistry;
 import com.hivesandcolonies.polen.entity.ai.activity.PolenQuietActivityController;
+import com.hivesandcolonies.polen.entity.ai.action.PolenAutonomousActionPlan;
 import com.hivesandcolonies.polen.entity.ai.autonomy.PolenAutonomyController;
+import com.hivesandcolonies.polen.entity.ai.gesture.PolenGestureController;
+import com.hivesandcolonies.polen.entity.ai.magic.PolenMagicController;
 import com.hivesandcolonies.polen.entity.ai.memory.PolenMemoryHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
@@ -18,8 +21,10 @@ public final class PolenAiFacade {
     }
 
     public static void tickServer(PolenEntity polen) {
+        PolenGestureController.tickServer(polen);
         PolenAutonomyController.tickServer(polen);
         PolenQuietActivityController.tickServer(polen);
+        PolenMagicController.tickPersistentMagic(polen);
     }
 
     public static void registerGoals(PolenEntity polen, GoalSelector goalSelector) {
@@ -40,6 +45,10 @@ public final class PolenAiFacade {
 
     public static int pickQuietActivity(PolenEntity polen) {
         return PolenQuietActivityController.pickQuietActivity(polen);
+    }
+
+    public static PolenAutonomousActionPlan pickQuietActionPlan(PolenEntity polen) {
+        return PolenQuietActivityController.pickQuietAction(polen);
     }
 
     public static String getQuietActivityName(PolenEntity polen) {
