@@ -1,0 +1,23 @@
+{
+  "parent": "polen:story/name_reveal",
+  "display": {
+    "icon": {
+      "id": "minecraft:book"
+    },
+    "title": {
+      "translate": "advancement.polen.story.chapter0_complete.title"
+    },
+    "description": {
+      "translate": "advancement.polen.story.chapter0_complete.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "chapter0_complete": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}
