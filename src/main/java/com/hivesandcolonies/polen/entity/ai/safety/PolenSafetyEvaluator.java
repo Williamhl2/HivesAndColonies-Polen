@@ -10,6 +10,7 @@ public final class PolenSafetyEvaluator {
 
     private static final int MIN_SAFE_BRIGHTNESS = 8;
     private static final int MIN_TRUE_DANGER_BRIGHTNESS = 4;
+    private static final int RAIN_SHELTER_OPEN_SIDE_RADIUS = 2;
 
     private PolenSafetyEvaluator() {
     }
@@ -26,6 +27,10 @@ public final class PolenSafetyEvaluator {
         }
 
         if (isNearOutdoorSurface(level, pos)) {
+            return true;
+        }
+
+        if (isRainShelteredStandingSpot(level, pos)) {
             return true;
         }
 
@@ -120,6 +125,14 @@ public final class PolenSafetyEvaluator {
         return hasOverheadCover(level, pos);
     }
 
+    public static boolean isRainShelteredStandingSpot(Level level, BlockPos pos) {
+        if (!canPhysicallyStandAt(level, pos) || isExposedToRain(level, pos) || !hasOverheadCover(level, pos)) {
+            return false;
+        }
+
+        return isNearOutdoorSurface(level, pos) || hasNearbyOpenSkyAccess(level, pos);
+    }
+
     public static boolean isExposedToRain(Level level, BlockPos pos) {
         return level.isRaining() && level.isRainingAt(pos.above()) && level.canSeeSky(pos.above());
     }
@@ -136,6 +149,23 @@ public final class PolenSafetyEvaluator {
 
             if (level.getBlockState(roofPos).isFaceSturdy(level, roofPos, Direction.DOWN)) {
                 return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean hasNearbyOpenSkyAccess(Level level, BlockPos pos) {
+        for (int dx = -RAIN_SHELTER_OPEN_SIDE_RADIUS; dx <= RAIN_SHELTER_OPEN_SIDE_RADIUS; dx++) {
+            for (int dz = -RAIN_SHELTER_OPEN_SIDE_RADIUS; dz <= RAIN_SHELTER_OPEN_SIDE_RADIUS; dz++) {
+                if (dx == 0 && dz == 0) {
+                    continue;
+                }
+
+                BlockPos nearby = pos.offset(dx, 0, dz);
+                if (level.canSeeSky(nearby.above()) || isNearOutdoorSurface(level, nearby)) {
+                    return true;
+                }
             }
         }
 

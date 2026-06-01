@@ -138,6 +138,10 @@ public final class PolenMagicController {
         return blinkToSafety(polen, blinkTarget);
     }
 
+    public static boolean canBlinkToward(PolenEntity polen, BlockPos target, int maxDistance, boolean requireSafeSpot) {
+        return target != null && findBlinkStep(polen, target, Math.max(2, maxDistance), requireSafeSpot) != null;
+    }
+
     private static BlockPos findBlinkStep(PolenEntity polen, BlockPos target, int maxDistance, boolean requireSafeSpot) {
         BlockPos origin = polen.blockPosition();
         Vec3 originCenter = Vec3.atCenterOf(origin);

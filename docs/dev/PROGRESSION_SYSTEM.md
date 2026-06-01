@@ -1,97 +1,112 @@
 # Progression System
 
-## Resumen
+## Summary
 
-La progresión está separada en dos ejes:
+Progression is intentionally split into two axes:
 
-- progreso global del mundo
-- relación individual por jugador
+- world-level story progress
+- per-player relationship progress
 
-Esa separación es intencional.
+That split is structural, not optional.
 
-## Progreso global del mundo
+## World progress
 
-Archivos:
+Files:
 
 - [PolenChapterManager.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenChapterManager.java)
 - [PolenStoryFlagsManager.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenStoryFlagsManager.java)
 - [PolenWorldStorySavedData.java](../../src/main/java/com/hivesandcolonies/polen/progression/world/PolenWorldStorySavedData.java)
 - [PolenWorldStoryData.java](../../src/main/java/com/hivesandcolonies/polen/progression/world/PolenWorldStoryData.java)
 
-Guarda:
+Stores:
 
-- capítulo actual
-- flags de historia
-- UUID de Polen
-- estado de spawn
+- current chapter
+- world story flags
+- Polen UUID
+- spawn state
 
-Se persiste en el overworld mediante `SavedData`.
+Persistence lives in overworld `SavedData`.
 
-## Relacion por jugador
+## Per-player relationship
 
-Archivos:
+Files:
 
 - [PolenAffinityLevels.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenAffinityLevels.java)
 - [PolenAffinityManager.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenAffinityManager.java)
 - [PolenPlayerRelationshipManager.java](../../src/main/java/com/hivesandcolonies/polen/progression/player/PolenPlayerRelationshipManager.java)
 - [PolenPlayerRelationshipData.java](../../src/main/java/com/hivesandcolonies/polen/progression/player/PolenPlayerRelationshipData.java)
 
-Guarda:
+Stores:
 
-- afinidad
-- cantidad de interacciones
-- tareas completadas
-- último tiempo de interacción
-- flags de relación específicos por jugador
+- affinity
+- interaction count
+- completed tasks
+- last interaction time
+- player-specific relationship flags
 
-## Flags actuales
+## Story flags
 
-Ver [PolenStoryFlag.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenStoryFlag.java).
+See [PolenStoryFlag.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenStoryFlag.java).
 
-Actualmente:
+Current baseline includes:
 
 - `NAME_REVEALED`
 - `CHAPTER_0_COMPLETE`
 - `PLAYER_HAS_SHELTER`
 
-Estos flags son globales del mundo, no por jugador.
+These are world flags, not player flags.
 
-## Eventos narrativos
+## Event orchestration
 
-Archivo:
+File:
 
 - [PolenStoryEventManager.java](../../src/main/java/com/hivesandcolonies/polen/story/PolenStoryEventManager.java)
 
-Responsabilidad:
+Responsibilities:
 
-- reproducir secuencias de diálogo
-- marcar flags
-- avanzar capítulo cuando corresponda
-- otorgar advancements
+- run dialogue sequences
+- mark story flags
+- advance chapters
+- grant advancements
+
+## Why this matters to AI
+
+Progression now informs more than dialogue.
+It also shapes how Polen should evolve over time:
+
+- trust and comfort with specific players
+- tone and openness
+- willingness to approach or stay near
+- future room for accessory use, residence ownership, and stronger autonomous behavior
+
+The rule is simple:
+
+- story progression decides macro growth
+- affinity decides personal closeness
+- AI reads both indirectly through controllers and managers
 
 ## Advancements
 
-Archivo:
+File:
 
 - [PolenAdvancementManager.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenAdvancementManager.java)
 
-Funciona como capa de servicio.
+This should remain a service layer.
+Do not move story branching logic into the advancement manager.
 
-No contiene lógica narrativa compleja; solo resuelve IDs y otorga criterios.
+## Recommended workflow for new progression features
 
-## Regla de diseño recomendada
+1. Decide whether the new state belongs to the world or to a player.
+2. If it changes chapters or shared milestones, store it in world progression.
+3. If it changes trust or personal history, store it in player relationship data.
+4. If it needs a scene, put the orchestration in `PolenStoryEventManager`.
+5. If it has visible reward or milestone feedback, hook an advancement.
+6. If it changes Polen's behavior over time, document the AI-facing implication too.
 
-Cuando agregues una nueva feature narrativa:
+## Common mistakes to avoid
 
-1. Decide si pertenece al mundo o al jugador.
-2. Si cambia capítulos o hitos globales, usar `PolenWorldStorySavedData`.
-3. Si cambia confianza o historial personal, usar `PolenPlayerRelationshipManager`.
-4. Si requiere escena, crear un método en `PolenStoryEventManager`.
-5. Si requiere recompensa visual en progreso, conectar advancement.
-
-## Errores comunes a evitar
-
-- Guardar afinidad en flags globales.
-- Poner lógica de progreso compleja dentro de `PolenEntity.tick()`.
-- Saltar capítulos desde diálogos normales sin evento formal.
-- Duplicar constantes de capítulo o flags fuera de sus managers.
+- storing affinity in global flags
+- putting progression logic in `PolenEntity.tick()`
+- bypassing story event orchestration with ad-hoc dialogue conditions
+- duplicating chapter or flag constants outside their managers
+- changing public behavior without updating docs

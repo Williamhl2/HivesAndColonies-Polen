@@ -36,9 +36,9 @@ public final class PolenGesturePoseApplier {
             case ILLUMINATING -> applyIlluminatingPose(model, idleWave);
             case REFLECTING -> applyReflectingPose(model, idleWave);
             case CURIOUS -> applyCuriousPose(model, idleWave);
-            case APPROACHING -> applyApproachingPose(model, walkCycle, walkAmount);
-            case WITHDRAWN -> applyWithdrawnPose(model, idleWave);
-            case STARTLED -> applyStartledPose(model, ageInTicks);
+            case APPROACHING -> applyApproachingPose(model, walkAmount);
+            case WITHDRAWN -> applyWithdrawnPose(model, idleWave, walkAmount);
+            case STARTLED -> applyStartledPose(model, ageInTicks, walkAmount);
             case IDLE -> applyIdlePose(model, idleWave, walkAmount);
         }
 
@@ -67,22 +67,24 @@ public final class PolenGesturePoseApplier {
     private static void applySingingPose(HumanoidModel<PolenEntity> model, float idleWave, float shoulderSway) {
         model.head.xRot -= 0.04F;
         model.head.yRot += idleWave * 0.04F;
-        model.rightArm.xRot -= 0.30F;
-        model.leftArm.xRot -= 0.18F;
-        model.rightArm.zRot += 0.05F;
-        model.leftArm.zRot -= 0.03F;
+        model.rightArm.xRot -= 0.22F;
+        model.leftArm.xRot -= 0.14F;
+        model.rightArm.yRot -= 0.04F;
+        model.leftArm.yRot += 0.03F;
+        model.rightArm.zRot += 0.02F;
+        model.leftArm.zRot -= 0.02F;
         model.body.xRot += 0.03F;
         model.body.yRot += shoulderSway * 0.35F;
     }
 
     private static void applyDrawingPose(HumanoidModel<PolenEntity> model, float idleWave) {
         model.head.xRot += 0.14F;
-        model.rightArm.xRot = -1.10F + idleWave * 0.04F;
-        model.rightArm.yRot = -0.22F;
-        model.rightArm.zRot = 0.08F;
-        model.leftArm.xRot = -0.58F;
-        model.leftArm.yRot = 0.14F;
-        model.leftArm.zRot = -0.06F;
+        model.rightArm.xRot = -0.96F + idleWave * 0.03F;
+        model.rightArm.yRot = -0.14F;
+        model.rightArm.zRot = 0.03F;
+        model.leftArm.xRot = -0.46F;
+        model.leftArm.yRot = 0.08F;
+        model.leftArm.zRot = -0.03F;
         model.body.xRot += 0.10F;
     }
 
@@ -90,32 +92,32 @@ public final class PolenGesturePoseApplier {
         model.head.xRot -= 0.08F;
         model.rightArm.xRot = -0.92F + shoulderSway;
         model.leftArm.xRot = -0.92F - shoulderSway;
-        model.rightArm.yRot = -0.14F;
-        model.leftArm.yRot = 0.14F;
-        model.rightArm.zRot = 0.16F;
-        model.leftArm.zRot = -0.16F;
+        model.rightArm.yRot = -0.10F;
+        model.leftArm.yRot = 0.10F;
+        model.rightArm.zRot = 0.08F;
+        model.leftArm.zRot = -0.08F;
         model.body.xRot += 0.05F;
     }
 
     private static void applyIlluminatingPose(HumanoidModel<PolenEntity> model, float idleWave) {
         model.head.xRot -= 0.02F;
-        model.rightArm.xRot = -1.15F;
-        model.rightArm.yRot = -0.10F;
-        model.rightArm.zRot = 0.12F;
-        model.leftArm.xRot = -0.45F + idleWave * 0.03F;
-        model.leftArm.yRot = 0.18F;
-        model.leftArm.zRot = -0.08F;
+        model.rightArm.xRot = -1.02F;
+        model.rightArm.yRot = -0.06F;
+        model.rightArm.zRot = 0.05F;
+        model.leftArm.xRot = -0.38F + idleWave * 0.02F;
+        model.leftArm.yRot = 0.10F;
+        model.leftArm.zRot = -0.04F;
         model.body.xRot += 0.07F;
     }
 
     private static void applyReflectingPose(HumanoidModel<PolenEntity> model, float idleWave) {
         model.head.xRot += 0.10F;
-        model.rightArm.xRot = -0.42F + idleWave * 0.02F;
-        model.leftArm.xRot = -0.42F - idleWave * 0.02F;
-        model.rightArm.yRot = -0.16F;
-        model.leftArm.yRot = 0.16F;
-        model.rightArm.zRot = 0.04F;
-        model.leftArm.zRot = -0.04F;
+        model.rightArm.xRot = -0.34F + idleWave * 0.02F;
+        model.leftArm.xRot = -0.34F - idleWave * 0.02F;
+        model.rightArm.yRot = -0.10F;
+        model.leftArm.yRot = 0.10F;
+        model.rightArm.zRot = 0.02F;
+        model.leftArm.zRot = -0.02F;
         model.body.xRot += 0.08F;
     }
 
@@ -127,35 +129,39 @@ public final class PolenGesturePoseApplier {
         model.body.xRot += 0.02F;
     }
 
-    private static void applyApproachingPose(HumanoidModel<PolenEntity> model, float walkCycle, float walkAmount) {
+    private static void applyApproachingPose(HumanoidModel<PolenEntity> model, float walkAmount) {
         model.head.xRot -= 0.03F;
-        model.rightArm.xRot += walkCycle * 0.18F * walkAmount;
-        model.leftArm.xRot -= walkCycle * 0.18F * walkAmount;
-        model.rightArm.zRot = 0.03F;
-        model.leftArm.zRot = -0.03F;
+        model.rightArm.xRot -= 0.04F * (1.0F - walkAmount);
+        model.leftArm.xRot -= 0.02F * (1.0F - walkAmount);
+        model.rightArm.yRot *= 0.2F;
+        model.leftArm.yRot *= 0.2F;
+        model.rightArm.zRot *= 0.2F;
+        model.leftArm.zRot *= 0.2F;
         model.body.xRot += 0.03F;
     }
 
-    private static void applyWithdrawnPose(HumanoidModel<PolenEntity> model, float idleWave) {
+    private static void applyWithdrawnPose(HumanoidModel<PolenEntity> model, float idleWave, float walkAmount) {
         model.head.xRot += 0.08F;
-        model.rightArm.xRot = -0.18F + idleWave * 0.02F;
-        model.leftArm.xRot = -0.18F - idleWave * 0.02F;
-        model.rightArm.yRot = -0.10F;
-        model.leftArm.yRot = 0.10F;
-        model.rightArm.zRot = 0.10F;
-        model.leftArm.zRot = -0.10F;
+        float guardedBias = 0.08F * (1.0F - walkAmount);
+        model.rightArm.xRot += guardedBias + idleWave * 0.01F;
+        model.leftArm.xRot += guardedBias - idleWave * 0.01F;
+        model.rightArm.yRot = -0.04F;
+        model.leftArm.yRot = 0.04F;
+        model.rightArm.zRot = 0.02F;
+        model.leftArm.zRot = -0.02F;
         model.body.xRot += 0.04F;
     }
 
-    private static void applyStartledPose(HumanoidModel<PolenEntity> model, float ageInTicks) {
+    private static void applyStartledPose(HumanoidModel<PolenEntity> model, float ageInTicks, float walkAmount) {
         float pulse = Mth.sin(ageInTicks * 0.45F) * 0.04F;
         model.head.xRot -= 0.06F;
-        model.rightArm.xRot = -0.50F + pulse;
-        model.leftArm.xRot = -0.50F - pulse;
-        model.rightArm.yRot = -0.10F;
-        model.leftArm.yRot = 0.10F;
-        model.rightArm.zRot = 0.12F;
-        model.leftArm.zRot = -0.12F;
+        float startledBias = 0.12F * (1.0F - walkAmount);
+        model.rightArm.xRot += startledBias + pulse;
+        model.leftArm.xRot += startledBias - pulse;
+        model.rightArm.yRot = -0.05F;
+        model.leftArm.yRot = 0.05F;
+        model.rightArm.zRot = 0.03F;
+        model.leftArm.zRot = -0.03F;
         model.body.xRot += 0.05F;
     }
 

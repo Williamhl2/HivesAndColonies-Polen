@@ -2,6 +2,8 @@ package com.hivesandcolonies.polen.entity.ai.goal;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
+import com.hivesandcolonies.polen.entity.ai.navigation.PolenSearchStatus;
+import com.hivesandcolonies.polen.entity.ai.navigation.PolenSearchType;
 import com.hivesandcolonies.polen.entity.ai.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 
@@ -46,7 +48,16 @@ public class PolenRoutineGoal extends Goal {
         this.stuckTicks = 0;
         this.blinkCooldownTicks = 0;
         this.lastDistanceSqr = Double.MAX_VALUE;
-        return this.targetPos != null && !this.polen.blockPosition().closerToCenterThan(Vec3.atCenterOf(this.targetPos), 1.5D);
+        boolean canUse = this.targetPos != null
+                && !this.polen.blockPosition().closerToCenterThan(Vec3.atCenterOf(this.targetPos), 1.5D);
+        this.polen.getAiState().setSearchState(
+                getSearchType(),
+                canUse ? PolenSearchStatus.SCANNING : PolenSearchStatus.FAILED,
+                this.targetPos,
+                this.targetPos,
+                canUse ? "routine_target_planned" : "no_routine_target"
+        );
+        return canUse;
     }
 
     @Override
@@ -58,6 +69,13 @@ public class PolenRoutineGoal extends Goal {
 
     @Override
     public void start() {
+        this.polen.getAiState().setSearchState(
+                getSearchType(),
+                PolenSearchStatus.PATHING,
+                this.targetPos,
+                this.targetPos,
+                "starting_routine_path"
+        );
         this.lastDistanceSqr = this.targetPos == null ? Double.MAX_VALUE : this.polen.distanceToSqr(Vec3.atCenterOf(this.targetPos));
         moveToTarget();
     }
@@ -72,6 +90,13 @@ public class PolenRoutineGoal extends Goal {
         if (this.polen.distanceToSqr(targetCenter) <= STOP_DISTANCE_SQR) {
             this.polen.getNavigation().stop();
             this.polen.getLookControl().setLookAt(targetCenter.x, targetCenter.y, targetCenter.z);
+            this.polen.getAiState().setSearchState(
+                    getSearchType(),
+                    PolenSearchStatus.ARRIVED,
+                    this.targetPos,
+                    this.targetPos,
+                    "routine_target_reached"
+            );
             this.waitTicks--;
             return;
         }
@@ -84,6 +109,13 @@ public class PolenRoutineGoal extends Goal {
         if (this.blinkCooldownTicks == 0
                 && (this.stuckTicks >= getStuckTicksBeforeBlink() || this.polen.getNavigation().isDone())) {
             if (PolenSafetyNavigator.tryBlinkTowardStandableSpot(this.polen, this.targetPos, getBlinkDistance())) {
+                this.polen.getAiState().setSearchState(
+                        getSearchType(),
+                        PolenSearchStatus.BLINKING,
+                        this.targetPos,
+                        this.targetPos,
+                        "blink_toward_routine_target"
+                );
                 this.blinkCooldownTicks = 40;
                 this.stuckTicks = 0;
                 this.lastDistanceSqr = this.polen.distanceToSqr(targetCenter);
@@ -95,6 +127,7 @@ public class PolenRoutineGoal extends Goal {
     @Override
     public void stop() {
         this.polen.getNavigation().stop();
+        this.polen.getAiState().clearSearchState();
         this.targetPos = null;
         this.waitTicks = 0;
         this.stuckTicks = 0;
@@ -116,9 +149,32 @@ public class PolenRoutineGoal extends Goal {
 
         if (!pathStarted && this.blinkCooldownTicks == 0) {
             if (PolenSafetyNavigator.tryBlinkTowardStandableSpot(this.polen, this.targetPos, getBlinkDistance())) {
+                this.polen.getAiState().setSearchState(
+                        getSearchType(),
+                        PolenSearchStatus.BLINKING,
+                        this.targetPos,
+                        this.targetPos,
+                        "blink_after_routine_path_fail"
+                );
                 this.blinkCooldownTicks = 40;
                 this.stuckTicks = 0;
+            } else {
+                this.polen.getAiState().setSearchState(
+                        getSearchType(),
+                        PolenSearchStatus.FAILED,
+                        this.targetPos,
+                        this.targetPos,
+                        "routine_path_failed"
+                );
             }
+        } else if (pathStarted) {
+            this.polen.getAiState().setSearchState(
+                    getSearchType(),
+                    PolenSearchStatus.PATHING,
+                    this.targetPos,
+                    this.targetPos,
+                    "following_routine_path"
+            );
         }
     }
 
@@ -145,5 +201,11 @@ public class PolenRoutineGoal extends Goal {
         }
 
         this.lastDistanceSqr = distanceSqr;
+    }
+
+    private PolenSearchType getSearchType() {
+        return this.polen.getCurrentIntent() == PolenIntent.SEEK_REST
+                ? PolenSearchType.REST
+                : PolenSearchType.QUIET_CREATION;
     }
 }

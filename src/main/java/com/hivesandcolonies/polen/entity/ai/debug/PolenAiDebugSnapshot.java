@@ -2,6 +2,8 @@ package com.hivesandcolonies.polen.entity.ai.debug;
 
 import com.hivesandcolonies.polen.entity.ai.mood.PolenMood;
 import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
+import com.hivesandcolonies.polen.entity.ai.navigation.PolenSearchStatus;
+import com.hivesandcolonies.polen.entity.ai.navigation.PolenSearchType;
 import com.hivesandcolonies.polen.entity.ai.need.PolenNeed;
 import net.minecraft.core.BlockPos;
 
@@ -20,6 +22,11 @@ public record PolenAiDebugSnapshot(
         boolean unsafeArea,
         boolean shouldSeekSafety,
         boolean shouldUseUnsafeDialogue,
+        PolenSearchType searchType,
+        PolenSearchStatus searchStatus,
+        String searchNote,
+        BlockPos searchTarget,
+        BlockPos observedPos,
         boolean nearRememberedInterest,
         BlockPos flowerSpot,
         BlockPos hiveSpot,

@@ -2,130 +2,94 @@
 
 ## Objetivo
 
-La Residencia de Polen es una estructura narrativa única asociada a Polen.
+La residencia de Polen es una estructura narrativa unica.
 
-No es una vivienda común de MineColonies.
+No es una vivienda comun de MineColonies.
+No debe tratarse como alojamiento generico.
 
-No puede asignarse a ciudadanos normales.
+Su funcion es marcar que Polen ya no solo sobrevive cerca de la colonia:
+ahora pertenece a ella.
 
-Existe una sola por mundo.
+## Sentido jugable actual
 
-Su función es servir como hogar narrativo de Polen y como marcador visible de su pertenencia a la colonia.
+Aunque el sistema completo de residencia todavia esta en crecimiento, la fantasia actual ya se apoya en varias piezas reales:
 
----
+- `restingPos` dentro del estado de IA
+- `settlement_charm` como item de colonia
+- busqueda de refugio y seguridad contextual
+- uso de lugares recordados por parte de Polen
 
-## Polen Core
+Eso significa que la residencia ya no debe pensarse solo como lore.
+Debe ser tambien un ancla para:
 
-La residencia se identifica mediante un bloque especial:
+- descanso
+- seguridad
+- pertenencia
+- expansion futura de autonomia
 
-```text
-Polen Core
-```
+## Requisitos narrativos
 
-El `Polen Core` representa la presencia simbólica de Polen dentro de la colonia.
+Una residencia valida debe comunicar:
 
-Solo puede existir uno por mundo.
-
----
-
-## Validación de Residencia
-
-Una residencia válida requiere:
-
-- `Polen Core`
+- techo real
 - cama
-- puerta
-- techo
-- espacio interior habitable
+- acceso claro
+- espacio habitable
+- sensacion de lugar propio
 
-Cuando estas condiciones se cumplen:
+No basta con "un cuarto cualquiera".
+Debe sentirse como un lugar pensado para ella.
 
-```text
-PolenShelterDetector
-↓
-Polen Residence Established
-↓
-POLEN_RESIDENCE_ESTABLISHED
-```
+## Relacion con MineColonies
 
-La validación no debe dispararse demasiado temprano. Narrativamente, la residencia solo tiene sentido cuando Polen ya dejó de sentirse una visitante temporal.
-
----
-
-## Relación con MineColonies
-
-La residencia puede construirse con apoyo de MineColonies, pero no forma parte del sistema estándar de viviendas.
+La residencia puede construirse junto a la colonia, pero su propiedad sigue siendo narrativa.
 
 Reglas:
 
-- no es una `Residence` común
-- no puede ser reclamada por colonos
-- no entra en la lógica normal de alojamiento
-- su propiedad pertenece exclusivamente al sistema narrativo de Polen
+- no es una casa generica para colonos
+- no debe ser reclamada por ciudadanos comunes
+- su sentido principal es Polen, no la poblacion
 
-La estructura existe para reforzar historia y pertenencia, no para sumar población.
+## Relacion con la IA
 
----
+Cuando la residencia exista de forma mas completa, debe integrarse con:
 
-## Persistencia
+- `restingPos`
+- busqueda de refugio bajo lluvia
+- retorno a zonas seguras
+- momentos de calma y reflexion
+- futura autonomia ligada a hogar y accesorios
 
-World Story Data sugerido:
+La residencia ideal no es solo un punto de spawn.
+Debe convertirse en el lugar donde Polen:
 
-```java
-BlockPos polenResidencePos;
+- descansa
+- se recompone
+- deja objetos
+- expresa pertenencia
 
-boolean polenResidenceEstablished;
-```
+## Evolucion narrativa sugerida
 
-Opcionalmente puede guardarse también un nivel narrativo de la residencia:
+### Etapa 1 - Refugio prestado
 
-```java
-int polenResidenceTier;
-```
+Todavia se siente temporal.
+Cumple una funcion de seguridad, no de identidad.
 
----
+### Etapa 2 - Espacio propio
 
-## Evolución Narrativa
+Polen empieza a aceptar que ese lugar puede ser suyo.
 
-La residencia debe crecer con la historia.
+### Etapa 3 - Residencia integrada
 
-### Capítulo 1
+La casa ya habla de pertenencia a la colonia y del crecimiento de la relacion.
 
-`Refugio Prestado`
+### Etapa 4 - Archivo vivo
 
-Un espacio básico y seguro. Todavía no es su hogar definitivo.
+La residencia incorpora memoria, objetos, simbolos y rastros de historia.
 
-### Capítulo 4
+## Regla de coherencia
 
-`Casa de Polen I`
+La residencia debe crecer al mismo ritmo que Polen.
 
-El refugio deja de ser provisional y empieza a integrarse a la colonia.
-
-### Capítulo 7
-
-`Residencia de Polen`
-
-Hito principal de pertenencia. Polen acepta que ese lugar también es suyo.
-
-### Capítulo 12
-
-`Archivo Apis`
-
-La residencia incorpora memoria, registros y objetos del pasado. Ya no solo protege a Polen; también preserva historia.
-
-### Capítulo 15
-
-`Pabellón del Nuevo Comienzo`
-
-Estado final. La residencia expresa futuro compartido, no restauración nostálgica.
-
-Todas las versiones conservan el mismo `Polen Core`.
-
----
-
-## Reglas de Coherencia
-
-- No debe existir una residencia completa antes del Capítulo 7.
-- Su evolución visual debe acompañar el crecimiento emocional de Polen.
-- El estado final no debe depender de una coronación ni de un título monárquico.
-- Si el canon futuro usa imaginería real, debe aparecer como capa histórica, no como reemplazo del sentido de hogar.
+Si visualmente parece hogar final demasiado pronto, rompe la historia.
+Si nunca deja de parecer refugio improvisado, tambien rompe la historia.

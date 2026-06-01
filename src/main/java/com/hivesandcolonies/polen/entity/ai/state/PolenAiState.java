@@ -1,5 +1,7 @@
 package com.hivesandcolonies.polen.entity.ai.state;
 
+import com.hivesandcolonies.polen.entity.ai.navigation.PolenSearchStatus;
+import com.hivesandcolonies.polen.entity.ai.navigation.PolenSearchType;
 import com.hivesandcolonies.polen.entity.ai.intent.PolenIntentState;
 import com.hivesandcolonies.polen.entity.ai.need.PolenNeedState;
 import com.hivesandcolonies.polen.util.PolenNbtHelper;
@@ -14,9 +16,14 @@ public final class PolenAiState {
     private BlockPos restingPos;
     private BlockPos dangerousSpotPos;
     private BlockPos activeLightPos;
+    private BlockPos searchTargetPos;
+    private BlockPos observedPos;
     private long dangerousSpotUntilGameTime;
     private long activeLightUntilGameTime;
     private long lastAmbientDialogueGameTime;
+    private PolenSearchType searchType = PolenSearchType.IDLE;
+    private PolenSearchStatus searchStatus = PolenSearchStatus.IDLE;
+    private String searchNote = "";
     private final PolenNeedState needState = new PolenNeedState();
     private final PolenIntentState intentState = new PolenIntentState();
 
@@ -134,6 +141,44 @@ public final class PolenAiState {
 
     public void setLastAmbientDialogueGameTime(long lastAmbientDialogueGameTime) {
         this.lastAmbientDialogueGameTime = lastAmbientDialogueGameTime;
+    }
+
+    public BlockPos getSearchTargetPos() {
+        return this.searchTargetPos;
+    }
+
+    public BlockPos getObservedPos() {
+        return this.observedPos;
+    }
+
+    public PolenSearchType getSearchType() {
+        return this.searchType;
+    }
+
+    public PolenSearchStatus getSearchStatus() {
+        return this.searchStatus;
+    }
+
+    public String getSearchNote() {
+        return this.searchNote;
+    }
+
+    public void setSearchState(
+            PolenSearchType searchType,
+            PolenSearchStatus searchStatus,
+            BlockPos searchTargetPos,
+            BlockPos observedPos,
+            String searchNote
+    ) {
+        this.searchType = searchType == null ? PolenSearchType.IDLE : searchType;
+        this.searchStatus = searchStatus == null ? PolenSearchStatus.IDLE : searchStatus;
+        this.searchTargetPos = searchTargetPos;
+        this.observedPos = observedPos;
+        this.searchNote = searchNote == null ? "" : searchNote;
+    }
+
+    public void clearSearchState() {
+        setSearchState(PolenSearchType.IDLE, PolenSearchStatus.IDLE, null, null, "");
     }
 
     public PolenNeedState getNeedState() {

@@ -81,6 +81,16 @@ public final class PolenDebugCommands {
                                                             + snapshot.shouldSeekSafety()
                                                             + ", unsafeDialogue="
                                                             + snapshot.shouldUseUnsafeDialogue()
+                                                            + ", searchType="
+                                                            + snapshot.searchType()
+                                                            + ", searchStatus="
+                                                            + snapshot.searchStatus()
+                                                            + ", searchNote="
+                                                            + snapshot.searchNote()
+                                                            + ", searchTarget="
+                                                            + formatPos(snapshot.searchTarget())
+                                                            + ", observedPos="
+                                                            + formatPos(snapshot.observedPos())
                                                             + ", nearRememberedInterest="
                                                             + snapshot.nearRememberedInterest()
                                                             + ", flowerSpot="

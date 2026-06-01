@@ -6,17 +6,22 @@ import com.hivesandcolonies.polen.entity.ai.interest.PolenInterestLocator;
 import com.hivesandcolonies.polen.entity.ai.interest.PolenInterestTarget;
 import com.hivesandcolonies.polen.entity.ai.interest.PolenInterestType;
 import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
+import com.hivesandcolonies.polen.entity.ai.navigation.PolenScoredSpot;
+import com.hivesandcolonies.polen.entity.ai.navigation.PolenSpotSelectionHelper;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 
+import java.util.List;
+
 public final class PolenRoutinePlanner {
 
     private static final int DEFAULT_SAFE_SPOT_RADIUS = 10;
     private static final int LIGHT_MAGIC_SEARCH_RADIUS = 6;
     private static final int LIGHT_MAGIC_SURFACE_RADIUS = 12;
+    private static final int LIGHT_MAGIC_BLINK_DISTANCE = 8;
     private static final int DARK_LIGHT_THRESHOLD = 4;
     private static final int MIN_INTEREST_BRIGHTNESS = 8;
     private static final int[] LIGHT_SPOT_Y_OFFSETS = {0, 1, -1, 2, -2};
@@ -63,10 +68,9 @@ public final class PolenRoutinePlanner {
         }
 
         BlockPos origin = polen.blockPosition();
-        BlockPos bestPos = null;
-        double bestScore = Double.MAX_VALUE;
 
         for (int radius = 1; radius <= LIGHT_MAGIC_SEARCH_RADIUS; radius++) {
+            List<PolenScoredSpot> shortlist = PolenSpotSelectionHelper.createShortlist();
             for (int dx = -radius; dx <= radius; dx++) {
                 for (int dz = -radius; dz <= radius; dz++) {
                     if (Math.max(Math.abs(dx), Math.abs(dz)) != radius) {
@@ -80,16 +84,19 @@ public final class PolenRoutinePlanner {
                         }
 
                         double score = candidate.distSqr(origin) + polen.level().getMaxLocalRawBrightness(candidate) * 0.5D;
-                        if (score < bestScore) {
-                            bestScore = score;
-                            bestPos = candidate.immutable();
-                        }
+                        PolenSpotSelectionHelper.offerCandidate(shortlist, candidate, score);
                     }
                 }
             }
 
-            if (bestPos != null) {
-                return bestPos;
+            BlockPos resolved = PolenSpotSelectionHelper.resolveBestReachable(
+                    polen,
+                    shortlist,
+                    LIGHT_MAGIC_BLINK_DISTANCE,
+                    false
+            );
+            if (resolved != null) {
+                return resolved;
             }
         }
 
@@ -168,10 +175,9 @@ public final class PolenRoutinePlanner {
     private static BlockPos findSurfaceLightMagicTarget(PolenEntity polen) {
         Level level = polen.level();
         BlockPos origin = polen.blockPosition();
-        BlockPos bestPos = null;
-        double bestScore = Double.MAX_VALUE;
 
         for (int searchRadius : new int[] {8, LIGHT_MAGIC_SURFACE_RADIUS}) {
+            List<PolenScoredSpot> shortlist = PolenSpotSelectionHelper.createShortlist();
             for (int dx = -searchRadius; dx <= searchRadius; dx++) {
                 for (int dz = -searchRadius; dz <= searchRadius; dz++) {
                     int x = origin.getX() + dx;
@@ -192,16 +198,19 @@ public final class PolenRoutinePlanner {
                             score -= 6.0D;
                         }
 
-                        if (score < bestScore) {
-                            bestScore = score;
-                            bestPos = candidate.immutable();
-                        }
+                        PolenSpotSelectionHelper.offerCandidate(shortlist, candidate, score);
                     }
                 }
             }
 
-            if (bestPos != null) {
-                return bestPos;
+            BlockPos resolved = PolenSpotSelectionHelper.resolveBestReachable(
+                    polen,
+                    shortlist,
+                    LIGHT_MAGIC_BLINK_DISTANCE,
+                    false
+            );
+            if (resolved != null) {
+                return resolved;
             }
         }
 

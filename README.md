@@ -1,52 +1,78 @@
 # Hives And Colonies: Polen
 
-Mod narrativo en NeoForge centrado en Polen, una NPC con progresión de afinidad, capítulos de historia y comportamiento propio.
+Narrative NeoForge mod for Minecraft 1.21.1 centered on Polen, a persistent companion character with memory, moods, autonomous behavior, relationship progression, and story-driven growth.
 
-Estado actual: desarrollo temprano.
+Current status: active early development.
 
-## Que incluye hoy
+## What the mod already includes
 
-- Polen como entidad persistente con nombre revelado por progreso.
-- Sistema base de afinidad por jugador.
-- Sistema base de capítulos y flags de historia por mundo.
-- Ítems narrativos iniciales.
-- Diálogos y eventos de historia tempranos.
-- IA inicial de personalidad para Polen:
-  - timidez ante desconocidos
-  - curiosidad por flores y colmenas
-  - hobbies pasivos de dibujo y canto
-  - mood básico, rutina contextual y memoria simple de lugares
+- Polen as a persistent entity with story-based name reveal.
+- Per-player affinity and relationship tracking.
+- World-level chapter and story flag progression.
+- Contextual dialogue and early story events.
+- Autonomous AI built around needs, intent, quiet actions, and safety.
+- Soft magic behaviors:
+  - blink escapes
+  - source attunement
+  - reflective quiet moments
+  - night lighting with a managed `polen_lantern`
+- Gesture-driven player-like animation layer.
+- Early item families for story, material, focus, colony, and accessory growth.
 
-## Documentacion
+## Design direction
 
-- [Indice de documentacion](docs/README.md)
-- [Vision narrativa en español](docs/es/STORY.md)
-- [Capitulos narrativos](docs/es/NARRATIVE_CHAPTERS.md)
-- [Arquitectura tecnica](docs/dev/PROJECT_OVERVIEW.md)
-- [IA de Polen](docs/dev/POLEN_AI.md)
+The goal is not to build "a villager with dialogue".
 
-## Estructura rapida
+The goal is to build a readable companion whose:
+
+- behavior
+- emotional state
+- progression
+- narrative role
+
+all feel connected.
+
+Polen should increasingly feel like another player in the world, not a static quest NPC.
+
+## Documentation
+
+- [Documentation index](docs/README.md)
+- [Technical overview](docs/dev/PROJECT_OVERVIEW.md)
+- [Polen AI architecture](docs/dev/POLEN_AI.md)
+- [Codebase map](docs/dev/CODEBASE_MAP.md)
+- [Spanish story bible](docs/es/STORY.md)
+- [English story overview](docs/en/STORY.md)
+
+## Quick structure
 
 - `src/main/java/com/hivesandcolonies/polen`
-  - entrada del mod, registros, cliente, entidad, progresión, historia y comandos debug
+  - mod entrypoint, entity, AI, progression, story, items, registries, commands
 - `src/main/resources/assets/polen`
-  - `lang`, texturas, modelos e identificadores visuales
+  - lang, models, blockstates, textures
 - `src/main/resources/data/polen`
-  - advancements y contenido de datos
-- `docs/es`
-  - canon narrativo y estructura de capítulos
+  - recipes, tags, loot, advancements
 - `docs/dev`
-  - documentación técnica para desarrolladores
+  - technical documentation
+- `docs/es`
+  - narrative docs in Spanish
+- `docs/en`
+  - narrative docs in English
 
-## Desarrollo
+## Build
 
-Compilar:
+Compile:
 
 ```powershell
 ./gradlew.bat compileJava
 ```
 
-Comandos debug útiles en juego:
+Run tests:
+
+```powershell
+./gradlew.bat test
+```
+
+## Useful debug commands
 
 ```text
 /polen affinity get
@@ -57,8 +83,9 @@ Comandos debug útiles en juego:
 /polen ai get
 ```
 
-## Objetivo del proyecto
+## Current implementation notes
 
-La meta no es crear un aldeano con diálogos.
-
-La meta es construir un personaje persistente, legible y expandible, cuya narrativa, comportamiento y progresión se sientan conectados.
+- Polen now differentiates between generic danger, rain shelter, and night-light relocation.
+- Quiet activities already include singing, drawing, attuning, illuminating, and reflecting.
+- AI structure is split into `core`, `need`, `intent`, `action`, `activity`, `goal`, `gesture`, `magic`, `routine`, and `safety`.
+- The animation layer already uses a `PlayerModel`-based setup so future richer animation systems can hook into gestures cleanly.

@@ -3,18 +3,25 @@ package com.hivesandcolonies.polen.entity.ai.safety;
 import com.hivesandcolonies.polen.entity.PolenDangerMemoryTracker;
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.ai.magic.PolenMagicController;
+import com.hivesandcolonies.polen.entity.ai.navigation.PolenScoredSpot;
+import com.hivesandcolonies.polen.entity.ai.navigation.PolenSpotSelectionHelper;
 import com.hivesandcolonies.polen.entity.ai.routine.PolenRoutinePlanner;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.phys.Vec3;
 
-public final class PolenSafetyNavigator {
+import java.util.List;
 
+public final class PolenSafetyNavigator {
+    private static final double MIN_RELOCATION_DISTANCE_SQR = 4.0D;
     private static final int LOCAL_ESCAPE_VERTICAL_RANGE = 6;
     private static final int[] LOCAL_Y_OFFSETS = {1, 2, 0, 3, -1, 4, 5, -2, 6};
     private static final int[] SURFACE_Y_OFFSETS = {0, -1, 1, 2, -2};
     private static final int[] EMERGENCY_RELOCATION_RADII = {32, 64, 96};
+    private static final int SAFE_BLINK_DISTANCE = 8;
+    private static final int STANDABLE_BLINK_DISTANCE = 7;
+    private static final int SHELTER_BLINK_DISTANCE = 9;
 
     private PolenSafetyNavigator() {
     }
@@ -82,11 +89,19 @@ public final class PolenSafetyNavigator {
     }
 
     public static BlockPos findNearbyShelteredSpot(PolenEntity polen, int radius) {
+        BlockPos restingPos = polen.getAiState().getRestingPos();
+        if (restingPos != null
+                && restingPos.distSqr(polen.blockPosition()) >= MIN_RELOCATION_DISTANCE_SQR
+                && PolenSafetyEvaluator.isSafeStandingSpot(polen, restingPos)
+                && PolenSafetyEvaluator.isRainShelteredStandingSpot(polen.level(), restingPos)
+                && !PolenDangerMemoryTracker.isDangerousMemorySpot(polen, restingPos)) {
+            return restingPos;
+        }
+
         BlockPos origin = polen.blockPosition();
-        BlockPos bestPos = null;
-        double bestScore = Double.MAX_VALUE;
 
         for (int searchRadius : new int[] {Math.max(6, radius / 2), Math.max(8, radius)}) {
+            List<PolenScoredSpot> shortlist = PolenSpotSelectionHelper.createShortlist();
             for (int dx = -searchRadius; dx <= searchRadius; dx++) {
                 for (int dz = -searchRadius; dz <= searchRadius; dz++) {
                     for (int yOffset : LOCAL_Y_OFFSETS) {
@@ -96,20 +111,23 @@ public final class PolenSafetyNavigator {
 
                         BlockPos candidate = origin.offset(dx, yOffset, dz);
                         double score = scoreShelterCandidate(polen, origin, candidate);
-                        if (score < bestScore) {
-                            bestScore = score;
-                            bestPos = candidate.immutable();
-                        }
+                        PolenSpotSelectionHelper.offerCandidate(shortlist, candidate, score);
                     }
                 }
             }
 
-            if (bestPos != null) {
-                return bestPos;
+            BlockPos resolved = PolenSpotSelectionHelper.resolveBestReachable(
+                    polen,
+                    shortlist,
+                    SHELTER_BLINK_DISTANCE,
+                    true
+            );
+            if (resolved != null) {
+                return resolved;
             }
         }
 
-        return findSurfaceShelteredSpot(polen, radius);
+        return findSurfaceShelteredSpot(polen, Math.max(12, radius * 2));
     }
 
     public static BlockPos findNearbyNightLightSpot(PolenEntity polen, int radius) {
@@ -155,10 +173,9 @@ public final class PolenSafetyNavigator {
 
     private static BlockPos findBestReachableLocalEscapeSpot(PolenEntity polen, int radius) {
         BlockPos origin = polen.blockPosition();
-        BlockPos bestPos = null;
-        double bestScore = Double.MAX_VALUE;
 
         for (int searchRadius : new int[] {Math.max(6, radius / 2), radius}) {
+            List<PolenScoredSpot> shortlist = PolenSpotSelectionHelper.createShortlist();
             for (int dx = -searchRadius; dx <= searchRadius; dx++) {
                 for (int dz = -searchRadius; dz <= searchRadius; dz++) {
                     for (int yOffset : LOCAL_Y_OFFSETS) {
@@ -168,16 +185,19 @@ public final class PolenSafetyNavigator {
 
                         BlockPos candidate = origin.offset(dx, yOffset, dz);
                         double candidateScore = scoreCandidate(polen, origin, candidate);
-                        if (candidateScore < bestScore) {
-                            bestScore = candidateScore;
-                            bestPos = candidate.immutable();
-                        }
+                        PolenSpotSelectionHelper.offerCandidate(shortlist, candidate, candidateScore);
                     }
                 }
             }
 
-            if (bestPos != null) {
-                return bestPos;
+            BlockPos resolved = PolenSpotSelectionHelper.resolveBestReachable(
+                    polen,
+                    shortlist,
+                    SAFE_BLINK_DISTANCE,
+                    true
+            );
+            if (resolved != null) {
+                return resolved;
             }
         }
 
@@ -187,10 +207,9 @@ public final class PolenSafetyNavigator {
     private static BlockPos findBestReachableSurfaceSpot(PolenEntity polen, int radius) {
         Level level = polen.level();
         BlockPos origin = polen.blockPosition();
-        BlockPos bestPos = null;
-        double bestScore = Double.MAX_VALUE;
 
         for (int searchRadius : new int[] {radius, radius * 2, radius * 3}) {
+            List<PolenScoredSpot> shortlist = PolenSpotSelectionHelper.createShortlist();
             for (int dx = -searchRadius; dx <= searchRadius; dx++) {
                 for (int dz = -searchRadius; dz <= searchRadius; dz++) {
                     int x = origin.getX() + dx;
@@ -204,16 +223,19 @@ public final class PolenSafetyNavigator {
                     for (int yOffset : SURFACE_Y_OFFSETS) {
                         BlockPos candidate = new BlockPos(x, surfaceY + yOffset, z);
                         double candidateScore = scoreCandidate(polen, origin, candidate);
-                        if (candidateScore < bestScore) {
-                            bestScore = candidateScore;
-                            bestPos = candidate.immutable();
-                        }
+                        PolenSpotSelectionHelper.offerCandidate(shortlist, candidate, candidateScore);
                     }
                 }
             }
 
-            if (bestPos != null) {
-                return bestPos;
+            BlockPos resolved = PolenSpotSelectionHelper.resolveBestReachable(
+                    polen,
+                    shortlist,
+                    SAFE_BLINK_DISTANCE,
+                    true
+            );
+            if (resolved != null) {
+                return resolved;
             }
         }
 
@@ -222,26 +244,28 @@ public final class PolenSafetyNavigator {
 
     private static BlockPos findBestReachableExplorationSpot(PolenEntity polen, int radius) {
         BlockPos origin = polen.blockPosition();
-        BlockPos bestPos = null;
-        double bestScore = Double.MAX_VALUE;
 
         for (int searchRadius : new int[] {radius / 2, radius, radius * 2}) {
             int effectiveRadius = Math.max(8, searchRadius);
+            List<PolenScoredSpot> shortlist = PolenSpotSelectionHelper.createShortlist();
             for (int dx = -effectiveRadius; dx <= effectiveRadius; dx++) {
                 for (int dz = -effectiveRadius; dz <= effectiveRadius; dz++) {
                     for (int yOffset : LOCAL_Y_OFFSETS) {
                         BlockPos candidate = origin.offset(dx, yOffset, dz);
                         double candidateScore = scoreExplorationCandidate(polen, origin, candidate);
-                        if (candidateScore < bestScore) {
-                            bestScore = candidateScore;
-                            bestPos = candidate.immutable();
-                        }
+                        PolenSpotSelectionHelper.offerCandidate(shortlist, candidate, candidateScore);
                     }
                 }
             }
 
-            if (bestPos != null) {
-                return bestPos;
+            BlockPos resolved = PolenSpotSelectionHelper.resolveBestReachable(
+                    polen,
+                    shortlist,
+                    STANDABLE_BLINK_DISTANCE,
+                    false
+            );
+            if (resolved != null) {
+                return resolved;
             }
         }
 
@@ -295,10 +319,9 @@ public final class PolenSafetyNavigator {
     private static BlockPos findSurfaceShelteredSpot(PolenEntity polen, int radius) {
         Level level = polen.level();
         BlockPos origin = polen.blockPosition();
-        BlockPos bestPos = null;
-        double bestScore = Double.MAX_VALUE;
 
         for (int searchRadius : new int[] {radius, radius * 2}) {
+            List<PolenScoredSpot> shortlist = PolenSpotSelectionHelper.createShortlist();
             for (int dx = -searchRadius; dx <= searchRadius; dx++) {
                 for (int dz = -searchRadius; dz <= searchRadius; dz++) {
                     int x = origin.getX() + dx;
@@ -312,16 +335,19 @@ public final class PolenSafetyNavigator {
                     for (int yOffset : SURFACE_Y_OFFSETS) {
                         BlockPos candidate = new BlockPos(x, surfaceY + yOffset, z);
                         double score = scoreShelterCandidate(polen, origin, candidate);
-                        if (score < bestScore) {
-                            bestScore = score;
-                            bestPos = candidate.immutable();
-                        }
+                        PolenSpotSelectionHelper.offerCandidate(shortlist, candidate, score);
                     }
                 }
             }
 
-            if (bestPos != null) {
-                return bestPos;
+            BlockPos resolved = PolenSpotSelectionHelper.resolveBestReachable(
+                    polen,
+                    shortlist,
+                    SHELTER_BLINK_DISTANCE,
+                    true
+            );
+            if (resolved != null) {
+                return resolved;
             }
         }
 
@@ -330,7 +356,8 @@ public final class PolenSafetyNavigator {
 
     private static double scoreCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
         if (!PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)
-                || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)) {
+                || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)
+                || candidate.distSqr(origin) < MIN_RELOCATION_DISTANCE_SQR) {
             return Double.MAX_VALUE;
         }
 
@@ -353,7 +380,8 @@ public final class PolenSafetyNavigator {
 
     private static double scoreExplorationCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
         if (!PolenSafetyEvaluator.isStandableSpot(polen, candidate)
-                || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)) {
+                || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)
+                || candidate.distSqr(origin) < MIN_RELOCATION_DISTANCE_SQR) {
             return Double.MAX_VALUE;
         }
 
@@ -372,8 +400,9 @@ public final class PolenSafetyNavigator {
 
     private static double scoreShelterCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
         if (!PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)
-                || !PolenSafetyEvaluator.isShelteredStandingSpot(polen.level(), candidate)
-                || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)) {
+                || !PolenSafetyEvaluator.isRainShelteredStandingSpot(polen.level(), candidate)
+                || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)
+                || candidate.distSqr(origin) < MIN_RELOCATION_DISTANCE_SQR) {
             return Double.MAX_VALUE;
         }
 

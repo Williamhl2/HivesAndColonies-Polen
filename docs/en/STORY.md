@@ -1,81 +1,114 @@
-# Polen Story Bible
+# Polen Story Overview
 
 ## Premise
 
-The player discovers a mysterious girl living alone near the wilderness.
+The player discovers a quiet girl living near the wilderness.
 
-She refuses to reveal her identity.
+She hides her identity, keeps emotional distance, and carries fragments of an older legacy tied to bees, memory, and subtle magic.
 
-Over time, the player gains her trust and learns that her name is Polen.
+The early story is not about saving a kingdom.
+It is about becoming someone she can trust.
 
-Eventually it is revealed that she is the missing heir of the Bee Kingdom.
+## Narrative direction
 
-The Queen disappeared under mysterious circumstances.
+The mod grows along three lines at the same time:
 
-As the colony grows, Polen slowly develops from a frightened and insecure girl into a capable leader.
+1. the player's relationship with Polen
+2. the growth of a settlement that can become a home
+3. the gradual recovery of a lost historical legacy
 
-The player's journey is not simply about automation and resource production.
+The intended emotional order is:
 
-It is about helping Polen rebuild the Bee Kingdom and accept her destiny.
+```text
+intimacy
+-> belonging
+-> shared curiosity
+-> responsibility
+-> legacy
+```
 
----
+Epic meaning should emerge from companionship, not replace it.
 
-## Story Structure
+## Polen's role
 
-### Chapter 0 - Prologue
+Polen is the emotional axis of the project.
 
-The Girl in the Clearing
+She should feel human because:
 
-Player meets an unknown girl.
+- she has boundaries
+- she changes slowly
+- she reacts to comfort and danger
+- she remembers places
+- she does things on her own
 
-Identity remains secret.
+That includes player-facing behavior already present in the mod:
 
-### Chapter 1 - Foundation
+- caution toward strangers
+- approach toward trusted players
+- quiet singing and drawing
+- instinctive source-linked magic
+- blink escapes
+- shelter seeking in bad conditions
+- placing her own light at night
 
-A Safe Place
+## System pillars
 
-The player establishes the first colony.
+### Polen
 
-Polen begins to trust the player.
+Represents:
 
-### Chapter 2 - The Source
+- identity
+- memory
+- trust
+- emotional continuity
 
-Arcane Discoveries
+### MineColonies
 
-Polen becomes interested in magic.
+Represents:
 
-### Chapter 3 - Beekeeping Industry
+- belonging
+- structure
+- future
+- shared place-making
 
-The Forgotten Heritage
+### Productive Bees
 
-The connection between Polen and the bees becomes increasingly obvious.
+Represents:
 
-### Chapter 4 - Logistics
+- continuity
+- inherited practice
+- material culture
 
-Building a Kingdom
+### Ars Nouveau
 
-The colony begins to resemble a real settlement.
+Represents:
 
-### Chapter 5 - Exploration
+- curiosity
+- hidden knowledge
+- soft power
+- remembered magic
 
-Searching for Answers
+In Polen's case, Ars should feel intimate first.
+She is not designed as a combat wizard.
 
-Evidence regarding the missing Queen begins to appear.
+## Themes
 
-### Chapter 6 - Arcane Industry
+- identity
+- belonging
+- memory
+- community
+- responsibility
+- transformation
 
-Power and Responsibility
+## Current chapter direction
 
-Polen starts acting as a leader.
+The long-form outline still spans prologue plus multiple acts, but implementation is intentionally earlier and more focused right now.
 
-### Chapter 7 - The Lost Kingdom
+The current playable fantasy is centered on:
 
-Truths Revealed
+- meeting Polen
+- building trust
+- giving her safety
+- seeing her become more present and autonomous
 
-The history of the Bee Kingdom is uncovered.
-
-### Chapter 8 - Coronation
-
-The Queen's Successor
-
-Polen accepts her role and becomes Queen.
+Later political and royal layers should grow out of that foundation.

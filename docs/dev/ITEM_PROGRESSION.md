@@ -2,75 +2,92 @@
 
 ## Objective
 
-Create item growth without turning every new mechanic into "one more random item".
+Grow the content layer without turning every new mechanic into "one more random item".
 
-The item layer should support:
+The item system should support:
 
 - story pacing
 - colony progression
-- Ars Nouveau integration
-- future crafting and ritual systems
+- soft Ars-linked magic
+- future equipment and accessory systems
 
-It should not become a second quest log or a dumping ground for logic that belongs elsewhere.
+It should not become:
 
-## Core Rules
+- a second quest log
+- a dumping ground for AI logic
+- a misc folder with no taxonomy
 
-### 1. Every item needs a single primary role
+## Current families
 
-Allowed primary roles:
-
-- `story`
-- `material`
-- `focus`
-- `colony`
-
-If an item tries to be all of them at once, split it.
-
-### 2. Behavior does not belong inside the item by default
-
-The item can:
-
-- carry metadata
-- display tooltip and flavor
-- trigger an intent on use
-
-The item should not own:
-
-- chapter logic
-- affinity progression logic
-- memory unlock rules
-- colony state rules
-- safety or AI behavior
-
-Those belong in dedicated managers/controllers.
-
-### 3. Not every item needs its own concrete class
-
-Use a dedicated class only when the item has behavior.
-
-If the item only needs:
-
-- localization
-- tooltips
-- progression metadata
-
-then a reusable base item is enough.
-
-## Families
-
-Implemented item families:
+Implemented families:
 
 - `STORY`
 - `MATERIAL`
 - `FOCUS`
 - `COLONY`
+- `ACCESSORY`
 
-Current base classes:
+Current reusable item foundations live under:
+
+- `item/base`
+- `item/meta`
+- `item/story`
+- `item/material`
+- `item/focus`
+- `item/colony`
+- `item/accessory`
+
+## Core rules
+
+### 1. Every item needs one primary role
+
+Allowed primary roles:
+
+- story
+- material
+- focus
+- colony
+- accessory
+
+If an item tries to be all of them at once, split it.
+
+### 2. Behavior should not live inside the item by default
+
+The item may:
+
+- carry metadata
+- show tooltip and flavor
+- trigger a simple interaction
+
+The item should not own:
+
+- chapter logic
+- affinity progression
+- AI state transitions
+- residence validation
+- safety logic
+
+Those belong in managers, controllers, planners, or registries.
+
+### 3. Not every item needs a unique class
+
+Only create a dedicated class when the item has meaningful behavior.
+If it only needs:
+
+- lang
+- tooltip
+- family
+- progression stage
+
+then a reusable base class is enough.
+
+## Current bases
 
 - `PolenLoreItem`
 - `PolenMaterialItem`
 - `PolenUsableFocusItem`
 - `PolenColonyItem`
+- `PolenAccessoryItem`
 
 These sit on top of `PolenTypedItem`, which stores:
 
@@ -78,19 +95,60 @@ These sit on top of `PolenTypedItem`, which stores:
 - progression stage
 - unique vs repeatable intent
 
-Current package split:
+## Accessory groundwork
 
-- `item/base`
-- `item/meta`
-- `item/story`
-- `item/material`
+Accessory support is now a real part of the item layer.
 
-Future behavior-heavy items should add:
+Current support classes:
 
-- `item/focus`
-- `item/colony`
+- `PolenAccessorySlot`
+- `PolenAccessoryTarget`
+- `PolenAccessoryBonusType`
+- `PolenAccessoryBonus`
+- `PolenAccessoryItem`
 
-## Stages
+This is the base for:
+
+- rings
+- necklaces
+- belts
+- Polen-only accessories
+- player-wearable accessories
+
+The intended rule is:
+
+- equipment identity belongs in `item/accessory`
+- effect logic can be delegated elsewhere if it grows complex
+
+## Current mapping
+
+### Story
+
+- `princess_seal`
+- `princess_letter`
+- `polen_journal`
+
+### Material
+
+- `royal_pollen`
+- `source_touched_petal`
+- `resonant_wax`
+
+### Focus
+
+- `bloom_focus`
+
+### Colony
+
+- `settlement_charm`
+
+### Utility block/item
+
+- `polen_lantern`
+  - managed by Polen's night-light behavior
+  - still belongs to content, even though AI places and removes it
+
+## Progression stages
 
 Implemented stages:
 
@@ -101,184 +159,45 @@ Implemented stages:
 - `ACT_IV_RESTORATION`
 - `POSTGAME`
 
-This stage metadata is not meant to hard-lock the player by itself.
-
-Its purpose is to:
+Stage metadata is not a hard lock by itself.
+It exists to:
 
 - organize content
-- drive future loot tables and rewards
-- prevent late-game item pollution in early chapters
-- keep writers and coders aligned
+- guide balancing
+- keep narrative and implementation aligned
+- prevent late-stage item sprawl in early progression
 
-## Current Item Mapping
+## Registration rules
 
-### Story
+`ModItems` should stay grouped by family and purpose, not by accidental insertion order.
 
-- `princess_seal`
-  - stage: `PROLOGUE`
-  - unique: yes
-  - role: identity clue
-- `princess_letter`
-  - stage: `PROLOGUE`
-  - unique: yes
-  - role: fragmented memory/lore bridge
-- `polen_journal`
-  - stage: `ACT_I_FOUNDATION`
-  - unique: yes
-  - role: intimate record and future reading anchor
+`ModBlocks` should follow the same rule for persistent companion-facing blocks such as `polen_lantern`.
 
-### Material
+When new accessories arrive:
 
-- `royal_pollen`
-  - stage: `ACT_II_DISCOVERY`
-  - unique: no
-  - role: rare material for future rituals, crafting or symbolic exchange
-- `source_touched_petal`
-  - stage: `ACT_II_DISCOVERY`
-  - unique: no
-  - role: soft Ars-linked ingredient
-- `resonant_wax`
-  - stage: `ACT_II_DISCOVERY`
-  - unique: no
-  - role: bee-linked ritual and crafting base
+- group them clearly in `ModItems`
+- expose them through tags
+- document slot and target expectations
 
-### Focus
+## Tags
 
-- `bloom_focus`
-  - stage: `ACT_II_DISCOVERY`
-  - unique: no
-  - role: helps Polen lock flowers, hives, and source-like resonances into memory
+Families should remain queryable through datapack tags.
 
-### Colony
-
-- `settlement_charm`
-  - stage: `ACT_I_FOUNDATION`
-  - unique: no
-  - role: lets the player propose a safe resting place for Polen inside a real settlement
-
-## Planned Escalation
-
-### Prologue / Act I
-
-Focus:
-
-- intimacy
-- trust
-- clues
-- non-industrial objects
-
-Recommended item types:
-
-- letters
-- seals
-- sketches
-- pressed flowers
-- wax fragments
-- simple keepsakes
-
-### Act II
-
-Focus:
-
-- observation
-- source
-- early Ars resonance
-- first colony-linked materials
-
-Recommended item types:
-
-- source-touched petals
-- resonant wax
-- marked comb fragments
-- memory sketches
-- simple magical foci
-
-### Act III
-
-Focus:
-
-- active participation
-- colony integration
-- bee/magic synthesis
-
-Recommended item types:
-
-- colony tokens
-- ritual chalk
-- focus charms
-- recovery fragments
-
-### Act IV and Postgame
-
-Focus:
-
-- restoration
-- legacy
-- intentional magic
-- long-term systems
-
-Recommended item types:
-
-- royal relics
-- restoration seals
-- advanced foci
-- late-game symbolic materials
-
-## Registration Rules
-
-`ModItems` should stay grouped by family, not by accidental creation order.
-
-Current grouping:
-
-- story items
-- material items
-- debug/spawn support
-
-When focus and colony items are added later, they should get their own grouped blocks and helper registrations.
-
-## Data Tags
-
-Item families are also exposed as datapack tags:
+Current examples include:
 
 - `polen:story_items`
 - `polen:material_items`
 - `polen:focus_items`
 - `polen:colony_items`
+- `polen:accessory_items`
 
-That gives future systems a stable lookup surface without hardcoding individual item ids.
+This gives future systems a stable lookup surface without hardcoding ids.
 
-## First Survival Recipes
+## Practical next additions
 
-The first functional wave now has simple base recipes so the system can be tested in survival:
+The next safe batch should remain small and structured:
 
-- `royal_pollen`
-  - honeycomb + dandelion + glowstone dust
-- `source_touched_petal`
-  - poppy + amethyst shard
-- `resonant_wax`
-  - honeycomb + royal pollen
-- `bloom_focus`
-  - amethyst shard + source-touched petals + royal pollen + stick
-- `settlement_charm`
-  - string + paper + resonant wax + royal pollen
-
-These are intentionally provisional.
-
-The goal is to make the item layer playable now, then tune balance after in-game testing.
-
-## Practical Next Additions
-
-The next safe batch should be small:
-
-1. Two `story` items
-   - one memory clue
-   - one colony-adjacent keepsake
-2. Two `material` items
-   - one bee-linked
-   - one Ars-linked
-3. One `focus` item
-   - low-power, intimate, non-combat
-4. One `colony` item
-   - settlement/social meaning, not just crafting filler
-
-This keeps progression readable and avoids item inflation.
+1. One or two accessories with clear slot identity.
+2. One colony-adjacent item that interacts with residence or belonging.
+3. One focus or material item tied to source or bee memory.
+4. No new item should be added without deciding its family first.

@@ -1,133 +1,112 @@
-# NARRATIVE_CHAPTERS.md
+# Estructura narrativa
 
-# Estructura General
+## Nota de estado
 
-La historia principal de Hives And Colonies: Polen se divide en un prólogo y cuatro actos.
+La vision larga de la historia sigue organizada como prologo mas varios actos.
 
-Cada acto representa una etapa en:
+Pero la implementacion jugable actual aun esta mas cerca de:
 
-- La relación entre Polen y el jugador.
-- El crecimiento de la colonia.
-- El descubrimiento del pasado.
+- prologo
+- confianza temprana
+- refugio
+- pertenencia inicial
 
----
+Este documento debe leerse como direccion narrativa, no como lista de contenido ya implementado al 100%.
 
-# Prólogo
+## Prologo
 
-## La Chica del Claro
+### La chica del claro
 
-Tema principal:
+Tema:
 
-Primer encuentro.
-
-Objetivo:
-
-Presentar a Polen como una persona antes que como un misterio.
-
-Documento:
-
-PROLOGUE.md
-
----
-
-# Acto I — La Desconocida
-
-Capítulos:
-
-0 - Primer Encuentro
-
-1 - Un Lugar Seguro
-
-2 - Los Primeros Colonos
-
-3 - El Source
-
-Tema principal:
-
-Confianza.
+- primer encuentro
 
 Objetivo:
 
-Transformar una desconocida en una amiga.
+- presentar a Polen como persona antes que como misterio
 
-Documento:
+## Acto I - La desconocida
 
-ACT_1_THE_UNKNOWN.md
+Tema:
 
----
-
-# Acto II — Los Cimientos
-
-Capítulos:
-
-4 - Ecos del Pasado
-
-5 - Las Abejas y Ella
-
-6 - Voces del Pasado
-
-7 - Un Lugar Propio
-
-Tema principal:
-
-Pertenencia.
+- confianza
 
 Objetivo:
 
-Construir una comunidad.
+- transformar a una desconocida en una companera posible
 
-Documento:
+Capitulos orientativos:
 
-ACT_2_FOUNDATIONS.md
+- primer encuentro
+- un lugar seguro
+- primeros colonos
+- primer contacto serio con source
 
----
+## Acto II - Los cimientos
 
-# Acto III — Los Secretos Perdidos
+Tema:
 
-Capítulos:
-
-8 - Caminos Lejanos
-
-9 - Buscando Respuestas
-
-10 - Industria Arcana
-
-11 - El Consejo Perdido
-
-Tema principal:
-
-Descubrimiento.
+- pertenencia
 
 Objetivo:
 
-Comprender el pasado.
+- construir comunidad, rutina y espacios propios
 
-Documento:
+Capitulos orientativos:
 
-ACT_3_LOST_SECRETS.md
+- ecos del pasado
+- abejas y memoria
+- voces antiguas
+- un lugar propio para Polen
 
----
+## Acto III - Los secretos perdidos
 
-# Acto IV — El Despertar
+Tema:
 
-Capítulos:
-
-12 - El Reino Perdido
-
-13 - La Heredera
-
-14 - La Elección
-
-15 - Un Nuevo Comienzo
-
-Tema principal:
-
-Legado.
+- descubrimiento
 
 Objetivo:
 
-Decidir el futuro.
+- comprender el pasado sin perder la escala humana de la historia
 
-Documento:
+Capitulos orientativos:
 
-ACT_4_AWAKENING.md
+- caminos lejanos
+- buscando respuestas
+- industria arcana
+- consejo perdido
+
+## Acto IV - El despertar
+
+Tema:
+
+- legado
+
+Objetivo:
+
+- decidir que futuro construir con todo lo recuperado
+
+Capitulos orientativos:
+
+- el reino perdido
+- la heredera
+- la eleccion
+- un nuevo comienzo
+
+## Regla de lectura
+
+Cada acto debe crecer desde el anterior.
+
+No se debe saltar de:
+
+- timidez
+- refugio
+- compania
+
+directo a:
+
+- realeza
+- destino
+- gran revelacion
+
+si la base emocional aun no fue construida en juego.
