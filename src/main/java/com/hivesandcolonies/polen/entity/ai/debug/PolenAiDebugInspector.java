@@ -11,6 +11,7 @@ import com.hivesandcolonies.polen.entity.ai.brain.need.PolenNeedController;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskSnapshot;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.polen.entity.ai.world.interests.PolenAffinityBehaviorHooks;
 
 public final class PolenAiDebugInspector {
 
@@ -38,6 +39,11 @@ public final class PolenAiDebugInspector {
                 taskSnapshot.recoverUntilGameTime(),
                 polen.getQuietActivityName(),
                 polen.getEquippedAffinityCharm(),
+                PolenAffinityBehaviorHooks.affinityReason(polen.getEquippedAffinityCharm()),
+                PolenAffinityBehaviorHooks.describeActiveTarget(
+                        polen.getAiState().getObservationAffordanceType(),
+                        polen.getAiState().getObservationContext()
+                ),
                 needSnapshot.dominantNeed(),
                 needSnapshot.safety(),
                 needSnapshot.social(),

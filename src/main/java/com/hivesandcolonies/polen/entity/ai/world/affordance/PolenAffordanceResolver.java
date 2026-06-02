@@ -14,6 +14,7 @@ import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyEvaluat
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.polen.entity.ai.world.home.PolenHomeManager;
 import com.hivesandcolonies.polen.entity.ai.world.home.PolenResidenceTarget;
+import com.hivesandcolonies.polen.entity.ai.world.interests.PolenAffinityBehaviorHooks;
 import net.minecraft.core.BlockPos;
 
 public final class PolenAffordanceResolver {
@@ -120,6 +121,11 @@ public final class PolenAffordanceResolver {
     }
 
     public static PolenAffordanceTarget findBestInterest(PolenEntity polen, boolean includeSource) {
+        PolenAffordanceTarget affinityTarget = PolenAffinityBehaviorHooks.findAffinityInterestTarget(polen);
+        if (affinityTarget != null) {
+            return affinityTarget;
+        }
+
         PolenInterestTarget target = PolenInterestLocator.findPreferredInterest(polen, includeSource);
         return target == null ? null : fromInterestTarget(target);
     }

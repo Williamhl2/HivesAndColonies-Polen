@@ -81,6 +81,10 @@ public final class PolenDebugCommands {
                                                             + snapshot.quietActivity()
                                                             + ", equippedAffinityCharm="
                                                             + snapshot.equippedAffinityCharm()
+                                                            + ", affinityReason="
+                                                            + snapshot.affinityReason()
+                                                            + ", activeInterestTarget="
+                                                            + snapshot.activeInterestTarget()
                                                             + ", dominantNeed="
                                                             + snapshot.dominantNeed()
                                                             + ", safetyNeed="

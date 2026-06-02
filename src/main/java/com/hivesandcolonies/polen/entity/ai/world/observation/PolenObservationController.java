@@ -8,6 +8,7 @@ import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskType;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceResolver;
 import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceTarget;
+import com.hivesandcolonies.polen.entity.ai.world.identity.PolenWorldAffinity;
 
 public final class PolenObservationController {
     private PolenObservationController() {
@@ -78,9 +79,10 @@ public final class PolenObservationController {
 
     private static boolean shouldObserveInterest(PolenEntity polen) {
         PolenNeedSnapshot needs = PolenNeedController.inspect(polen);
+        boolean hasAffinityCharm = polen.getEquippedAffinityCharm() != PolenWorldAffinity.NONE;
         return polen.getCurrentTask() == PolenTaskType.INVESTIGATE_INTEREST
                 || polen.getCurrentIntent() == PolenIntent.INVESTIGATE_INTEREST
-                || needs.curiosity() >= 30
+                || needs.curiosity() >= (hasAffinityCharm ? 24 : 30)
                 || needs.magic() >= 42;
     }
 

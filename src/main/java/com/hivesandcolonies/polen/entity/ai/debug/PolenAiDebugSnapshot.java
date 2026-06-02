@@ -29,6 +29,8 @@ public record PolenAiDebugSnapshot(
         long taskRecoverUntil,
         String quietActivity,
         PolenWorldAffinity equippedAffinityCharm,
+        String affinityReason,
+        String activeInterestTarget,
         PolenNeed dominantNeed,
         int safetyNeed,
         int socialNeed,

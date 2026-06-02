@@ -6,6 +6,7 @@ import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyEvaluat
 import com.hivesandcolonies.polen.entity.ai.navigation.search.shelter.PolenShelterContextResolver;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.shelter.PolenShelterKind;
 import com.hivesandcolonies.polen.registry.ModBlocks;
+import com.hivesandcolonies.polen.entity.ai.world.interests.PolenAffinityBehaviorHooks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
@@ -25,7 +26,8 @@ final class PolenComfortRules {
             PolenComfortRules::collectLight,
             PolenComfortRules::collectSpace,
             PolenComfortRules::collectNearbyBlocks,
-            PolenComfortRules::collectModdedSignals
+            PolenComfortRules::collectModdedSignals,
+            PolenComfortRules::collectAffinitySignals
     );
 
     private static void collectSafety(
@@ -183,6 +185,16 @@ final class PolenComfortRules {
         if (hasFlower) {
             signals.add(new PolenComfortSignal(PolenComfortCategory.NATURE, "near_flowers", 5));
         }
+    }
+
+    private static void collectAffinitySignals(
+            PolenEntity polen,
+            Level level,
+            BlockPos origin,
+            PolenComfortProfile profile,
+            List<PolenComfortSignal> signals
+    ) {
+        PolenAffinityBehaviorHooks.collectComfortSignals(polen, level, origin, profile, signals);
     }
 
     private static void collectModdedSignals(
