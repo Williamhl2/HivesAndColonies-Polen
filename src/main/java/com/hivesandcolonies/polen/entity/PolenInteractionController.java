@@ -20,7 +20,12 @@ public final class PolenInteractionController {
     }
 
     public static InteractionResult handleMobInteract(PolenEntity polen, Player player, InteractionHand hand) {
-        if (polen.level().isClientSide || hand != InteractionHand.MAIN_HAND) {
+        if (hand != InteractionHand.MAIN_HAND) {
+            return InteractionResult.SUCCESS;
+        }
+
+        if (polen.level().isClientSide) {
+            openClientProfile(polen);
             return InteractionResult.SUCCESS;
         }
 
@@ -56,6 +61,15 @@ public final class PolenInteractionController {
 
         polen.refreshDisplayName();
         return InteractionResult.SUCCESS;
+    }
+
+    private static void openClientProfile(PolenEntity polen) {
+        try {
+            Class<?> opener = Class.forName("com.hivesandcolonies.polen.client.PolenClientProfileOpener");
+            opener.getMethod("open", PolenEntity.class).invoke(null, polen);
+        } catch (ReflectiveOperationException ignored) {
+            // Client-only profile UI failed to load; keep interaction gameplay-safe.
+        }
     }
 
     private static boolean shouldRevealName(Player player, int affinity) {
