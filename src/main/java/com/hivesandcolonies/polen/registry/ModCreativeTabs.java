@@ -36,6 +36,12 @@ public class ModCreativeTabs {
                         output.accept(ModItems.RESIDENCE_CHARM.get());
                         output.accept(ModItems.POLEN_LANTERN.get());
 
+                        // Curios-compatible accessories.
+                        output.accept(ModItems.HONEY_SIGNET_RING.get());
+                        output.accept(ModItems.SOURCE_PETAL_NECKLACE.get());
+                        output.accept(ModItems.WAYFINDER_BELT.get());
+                        output.accept(ModItems.HIVEHEART_CHARM.get());
+
                         // Debug / spawn support.
                         output.accept(ModItems.POLEN_SPAWN_EGG.get());
 

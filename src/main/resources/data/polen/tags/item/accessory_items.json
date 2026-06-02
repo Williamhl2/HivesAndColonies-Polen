@@ -1,4 +1,9 @@
 {
   "replace": false,
-  "values": []
+  "values": [
+    "polen:honey_signet_ring",
+    "polen:source_petal_necklace",
+    "polen:wayfinder_belt",
+    "polen:hiveheart_charm"
+  ]
 }

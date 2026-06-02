@@ -8,11 +8,13 @@ import com.hivesandcolonies.polen.entity.ai.brain.mood.PolenMood;
 import com.hivesandcolonies.polen.entity.ai.brain.state.PolenAiState;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskStatus;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskType;
+import com.hivesandcolonies.polen.item.accessory.PolenAccessorySlot;
 import com.hivesandcolonies.polen.progression.PolenAffinityLevels;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -30,6 +32,9 @@ import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 public class PolenEntity extends PathfinderMob {
     private static final String UNKNOWN_GIRL_KEY = "entity.polen.unknown_girl";
     private static final String POLEN_KEY = "entity.polen.polen";
@@ -45,6 +50,7 @@ public class PolenEntity extends PathfinderMob {
     private static final String TAG_DANGEROUS_SPOT_UNTIL = "DangerousSpotUntil";
     private static final String TAG_ACTIVE_LIGHT_POS = "ActiveLightPos";
     private static final String TAG_ACTIVE_LIGHT_UNTIL = "ActiveLightUntil";
+    private static final String TAG_ACCESSORIES = "PolenAccessories";
     private static final String TAG_NEEDS = "NeedState";
     private static final String TAG_INTENT = "IntentState";
     private static final double DANGEROUS_SPOT_AVOID_RADIUS = 5.0D;
@@ -61,6 +67,7 @@ public class PolenEntity extends PathfinderMob {
             SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
 
     private final PolenAiState aiState = new PolenAiState();
+    private final Map<PolenAccessorySlot, ResourceLocation> equippedAccessories = new EnumMap<>(PolenAccessorySlot.class);
 
     public PolenEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -132,6 +139,7 @@ public class PolenEntity extends PathfinderMob {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
+        saveEquippedAccessories(tag);
         this.aiState.save(
                 tag,
                 TAG_FAVORITE_FLOWER_POS,
@@ -154,6 +162,7 @@ public class PolenEntity extends PathfinderMob {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        loadEquippedAccessories(tag);
         this.aiState.load(
                 tag,
                 TAG_FAVORITE_FLOWER_POS,
@@ -208,6 +217,51 @@ public class PolenEntity extends PathfinderMob {
 
     public PolenAiState getAiState() {
         return this.aiState;
+    }
+
+    public boolean equipAccessory(PolenAccessorySlot slot, ResourceLocation itemId) {
+        if (slot == null || itemId == null) {
+            return false;
+        }
+
+        this.equippedAccessories.put(slot, itemId);
+        return true;
+    }
+
+    public ResourceLocation getEquippedAccessory(PolenAccessorySlot slot) {
+        return this.equippedAccessories.get(slot);
+    }
+
+    public boolean hasEquippedAccessory(PolenAccessorySlot slot) {
+        return this.equippedAccessories.containsKey(slot);
+    }
+
+    private void saveEquippedAccessories(CompoundTag tag) {
+        CompoundTag accessoriesTag = new CompoundTag();
+        for (Map.Entry<PolenAccessorySlot, ResourceLocation> entry : this.equippedAccessories.entrySet()) {
+            accessoriesTag.putString(entry.getKey().name(), entry.getValue().toString());
+        }
+        tag.put(TAG_ACCESSORIES, accessoriesTag);
+    }
+
+    private void loadEquippedAccessories(CompoundTag tag) {
+        this.equippedAccessories.clear();
+        if (!tag.contains(TAG_ACCESSORIES)) {
+            return;
+        }
+
+        CompoundTag accessoriesTag = tag.getCompound(TAG_ACCESSORIES);
+        for (PolenAccessorySlot slot : PolenAccessorySlot.values()) {
+            if (!accessoriesTag.contains(slot.name())) {
+                continue;
+            }
+
+            try {
+                this.equippedAccessories.put(slot, ResourceLocation.parse(accessoriesTag.getString(slot.name())));
+            } catch (IllegalArgumentException ignored) {
+                // Ignore invalid legacy data instead of preventing Polen from loading.
+            }
+        }
     }
 
     public int pickQuietActivity() {
