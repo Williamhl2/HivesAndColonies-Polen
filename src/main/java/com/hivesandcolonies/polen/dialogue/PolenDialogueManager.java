@@ -15,6 +15,12 @@ public final class PolenDialogueManager {
     public static final String AMBIENT_MAGIC = "ambient_magic";
     public static final String AMBIENT_ILLUMINATION = "ambient_illumination";
     public static final String AMBIENT_REFLECTION = "ambient_reflection";
+    public static final String AMBIENT_RAIN_TREE = "ambient_rain_tree";
+    public static final String AMBIENT_RAIN_HOUSE = "ambient_rain_house";
+    public static final String AMBIENT_RAIN_ROOF = "ambient_rain_roof";
+    public static final String AMBIENT_NIGHT_TREE = "ambient_night_tree";
+    public static final String AMBIENT_NIGHT_HOUSE = "ambient_night_house";
+    public static final String AMBIENT_NIGHT_ROOF = "ambient_night_roof";
 
     private PolenDialogueManager() {}
 

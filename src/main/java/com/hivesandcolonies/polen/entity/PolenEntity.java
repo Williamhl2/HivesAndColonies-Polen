@@ -1,11 +1,13 @@
 package com.hivesandcolonies.polen.entity;
 
-import com.hivesandcolonies.polen.entity.ai.action.PolenAutonomousActionPlan;
+import com.hivesandcolonies.polen.entity.ai.brain.action.PolenAutonomousActionPlan;
 import com.hivesandcolonies.polen.entity.ai.core.PolenAiFacade;
-import com.hivesandcolonies.polen.entity.ai.gesture.PolenGesture;
-import com.hivesandcolonies.polen.entity.ai.intent.PolenIntent;
-import com.hivesandcolonies.polen.entity.ai.mood.PolenMood;
-import com.hivesandcolonies.polen.entity.ai.state.PolenAiState;
+import com.hivesandcolonies.polen.entity.ai.expression.gesture.PolenGesture;
+import com.hivesandcolonies.polen.entity.ai.brain.intent.PolenIntent;
+import com.hivesandcolonies.polen.entity.ai.brain.mood.PolenMood;
+import com.hivesandcolonies.polen.entity.ai.brain.state.PolenAiState;
+import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskStatus;
+import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskType;
 import com.hivesandcolonies.polen.progression.PolenAffinityLevels;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
@@ -209,6 +211,22 @@ public class PolenEntity extends PathfinderMob {
 
     public String getCurrentIntentReason() {
         return this.aiState.getIntentState().currentReason();
+    }
+
+    public PolenTaskType getCurrentTask() {
+        return this.aiState.getTaskState().getCurrentTask();
+    }
+
+    public PolenTaskStatus getCurrentTaskStatus() {
+        return this.aiState.getTaskState().getStatus();
+    }
+
+    public String getCurrentTaskReason() {
+        return this.aiState.getTaskState().getReason();
+    }
+
+    public String getCurrentTaskNote() {
+        return this.aiState.getTaskState().getNote();
     }
 
     public void setMood(PolenMood mood) {

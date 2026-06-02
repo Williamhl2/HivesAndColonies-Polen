@@ -10,7 +10,7 @@ Current status: active early development.
 - Per-player affinity and relationship tracking.
 - World-level chapter and story flag progression.
 - Contextual dialogue and early story events.
-- Autonomous AI built around needs, intent, quiet actions, and safety.
+- Autonomous AI built around needs, intent, task arbitration, quiet actions, search, and safety.
 - Soft magic behaviors:
   - blink escapes
   - source attunement
@@ -87,5 +87,6 @@ Run tests:
 
 - Polen now differentiates between generic danger, rain shelter, and night-light relocation.
 - Quiet activities already include singing, drawing, attuning, illuminating, and reflecting.
-- AI structure is split into `core`, `need`, `intent`, `action`, `activity`, `goal`, `gesture`, `magic`, `routine`, and `safety`.
+- AI structure is split into `core`, `brain`, `navigation`, `expression`, and `ability`, with reusable search profiles inside navigation and a task layer between intent and goals.
+- `/polen ai get` now exposes intent, task, search state, and recent task failure recovery so in-world debugging is much less blind.
 - The animation layer already uses a `PlayerModel`-based setup so future richer animation systems can hook into gestures cleanly.

@@ -1,14 +1,16 @@
 package com.hivesandcolonies.polen.entity.ai.debug;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
-import com.hivesandcolonies.polen.entity.ai.intent.PolenIntentSnapshot;
-import com.hivesandcolonies.polen.entity.ai.intent.PolenIntentController;
-import com.hivesandcolonies.polen.entity.ai.memory.PolenMemoryHandler;
-import com.hivesandcolonies.polen.entity.ai.mood.PolenMoodAnalysis;
-import com.hivesandcolonies.polen.entity.ai.mood.PolenMoodController;
-import com.hivesandcolonies.polen.entity.ai.need.PolenNeedSnapshot;
-import com.hivesandcolonies.polen.entity.ai.need.PolenNeedController;
-import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.polen.entity.ai.brain.intent.PolenIntentSnapshot;
+import com.hivesandcolonies.polen.entity.ai.brain.intent.PolenIntentController;
+import com.hivesandcolonies.polen.entity.ai.brain.memory.PolenMemoryHandler;
+import com.hivesandcolonies.polen.entity.ai.brain.mood.PolenMoodAnalysis;
+import com.hivesandcolonies.polen.entity.ai.brain.mood.PolenMoodController;
+import com.hivesandcolonies.polen.entity.ai.brain.need.PolenNeedSnapshot;
+import com.hivesandcolonies.polen.entity.ai.brain.need.PolenNeedController;
+import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskController;
+import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskSnapshot;
+import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 
 public final class PolenAiDebugInspector {
 
@@ -19,12 +21,21 @@ public final class PolenAiDebugInspector {
         PolenMoodAnalysis moodAnalysis = PolenMoodController.analyzeMood(polen);
         PolenNeedSnapshot needSnapshot = PolenNeedController.inspect(polen);
         PolenIntentSnapshot intentSnapshot = PolenIntentController.inspect(polen);
+        PolenTaskSnapshot taskSnapshot = PolenTaskController.inspect(polen);
 
         return new PolenAiDebugSnapshot(
                 moodAnalysis.mood(),
                 moodAnalysis.reason(),
                 intentSnapshot.intent(),
                 intentSnapshot.reason(),
+                taskSnapshot.currentTask(),
+                taskSnapshot.desiredTask(),
+                taskSnapshot.status(),
+                taskSnapshot.reason(),
+                taskSnapshot.note(),
+                taskSnapshot.recentFailedTask(),
+                taskSnapshot.recentFailureCount(),
+                taskSnapshot.recoverUntilGameTime(),
                 polen.getQuietActivityName(),
                 needSnapshot.dominantNeed(),
                 needSnapshot.safety(),

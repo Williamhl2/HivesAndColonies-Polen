@@ -2,12 +2,12 @@ package com.hivesandcolonies.polen.entity.ai.core;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.PolenGoalRegistry;
-import com.hivesandcolonies.polen.entity.ai.activity.PolenQuietActivityController;
-import com.hivesandcolonies.polen.entity.ai.action.PolenAutonomousActionPlan;
-import com.hivesandcolonies.polen.entity.ai.autonomy.PolenAutonomyController;
-import com.hivesandcolonies.polen.entity.ai.gesture.PolenGestureController;
-import com.hivesandcolonies.polen.entity.ai.magic.PolenMagicController;
-import com.hivesandcolonies.polen.entity.ai.memory.PolenMemoryHandler;
+import com.hivesandcolonies.polen.entity.ai.expression.activity.PolenQuietActivityController;
+import com.hivesandcolonies.polen.entity.ai.brain.action.PolenAutonomousActionPlan;
+import com.hivesandcolonies.polen.entity.ai.core.PolenAutonomyController;
+import com.hivesandcolonies.polen.entity.ai.expression.gesture.PolenGestureController;
+import com.hivesandcolonies.polen.entity.ai.ability.magic.PolenMagicController;
+import com.hivesandcolonies.polen.entity.ai.brain.memory.PolenMemoryHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 

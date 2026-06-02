@@ -3,7 +3,7 @@ package com.hivesandcolonies.polen.item.interaction;
 import com.hivesandcolonies.polen.dialogue.PolenDialogueManager;
 import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.polen.entity.PolenEntity;
-import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyEvaluator;
+import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
@@ -131,7 +131,8 @@ public final class PolenItemInteractionController {
         }
 
         polen.rememberRestingSpot(targetPos);
-        if (polen.getAiState().getRestingPos() == null || !polen.getAiState().getRestingPos().equals(targetPos)) {
+        if (polen.getAiState().getRestingPos() == null
+                || polen.getAiState().getRestingPos().distSqr(targetPos) > 4.0D) {
             sendStatus(player, "message.polen.item.settlement_charm.spot_not_safe");
             return InteractionResult.FAIL;
         }

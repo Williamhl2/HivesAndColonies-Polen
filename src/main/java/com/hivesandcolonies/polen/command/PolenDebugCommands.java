@@ -61,6 +61,22 @@ public final class PolenDebugCommands {
                                                             + snapshot.intent()
                                                             + ", intentReason="
                                                             + snapshot.intentReason()
+                                                            + ", task="
+                                                            + snapshot.task()
+                                                            + ", desiredTask="
+                                                            + snapshot.desiredTask()
+                                                            + ", taskStatus="
+                                                            + snapshot.taskStatus()
+                                                            + ", taskReason="
+                                                            + snapshot.taskReason()
+                                                            + ", taskNote="
+                                                            + snapshot.taskNote()
+                                                            + ", recentFailedTask="
+                                                            + snapshot.recentFailedTask()
+                                                            + ", recentFailureCount="
+                                                            + snapshot.recentFailureCount()
+                                                            + ", taskRecoverUntil="
+                                                            + snapshot.taskRecoverUntil()
                                                             + ", quietActivity="
                                                             + snapshot.quietActivity()
                                                             + ", dominantNeed="
@@ -108,6 +124,62 @@ public final class PolenDebugCommands {
                                     );
                                     return 1;
                                 })))
+                        .then(Commands.literal("thoughts")
+                                .then(Commands.literal("on")
+                                        .executes(context -> {
+                                            ServerPlayer player = context.getSource().getPlayerOrException();
+                                            PolenEntity polen = findNearbyPolen(player);
+
+                                            if (polen == null) {
+                                                context.getSource().sendFailure(Component.literal("No nearby Polen entity found."));
+                                                return 0;
+                                            }
+
+                                            polen.getAiState().setDebugThoughtsEnabled(true);
+                                            polen.getAiState().setLastThoughtDebugSignature("");
+                                            polen.getAiState().setLastThoughtDebugGameTime(0L);
+                                            context.getSource().sendSuccess(
+                                                    () -> Component.literal("Polen thought debug enabled."),
+                                                    false
+                                            );
+                                            return 1;
+                                        }))
+                                .then(Commands.literal("off")
+                                        .executes(context -> {
+                                            ServerPlayer player = context.getSource().getPlayerOrException();
+                                            PolenEntity polen = findNearbyPolen(player);
+
+                                            if (polen == null) {
+                                                context.getSource().sendFailure(Component.literal("No nearby Polen entity found."));
+                                                return 0;
+                                            }
+
+                                            polen.getAiState().setDebugThoughtsEnabled(false);
+                                            context.getSource().sendSuccess(
+                                                    () -> Component.literal("Polen thought debug disabled."),
+                                                    false
+                                            );
+                                            return 1;
+                                        }))
+                                .then(Commands.literal("get")
+                                        .executes(context -> {
+                                            ServerPlayer player = context.getSource().getPlayerOrException();
+                                            PolenEntity polen = findNearbyPolen(player);
+
+                                            if (polen == null) {
+                                                context.getSource().sendFailure(Component.literal("No nearby Polen entity found."));
+                                                return 0;
+                                            }
+
+                                            context.getSource().sendSuccess(
+                                                    () -> Component.literal(
+                                                            "Polen thought debug: "
+                                                                    + (polen.getAiState().isDebugThoughtsEnabled() ? "enabled" : "disabled")
+                                                    ),
+                                                    false
+                                            );
+                                            return 1;
+                                        })))
                 .then(Commands.literal("relationship")
                         .then(Commands.literal("get")
                                 .executes(context -> {

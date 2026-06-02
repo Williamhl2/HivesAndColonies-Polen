@@ -70,62 +70,70 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 - `PolenAiFacade`
   - fachada central del wiring de IA
 
-### `entity/ai/state`
+### `entity/ai/brain/state`
 
 - `PolenAiState`
   - memoria espacial, needs, intent y estado de luz
 
-### `entity/ai/autonomy`
+### `entity/ai/core`
 
 - `PolenAutonomyController`
   - tick lento de autonomia
 
-### `entity/ai/need`
+### `entity/ai/brain/need`
 
 - `PolenNeed`
 - `PolenNeedState`
 - `PolenNeedSnapshot`
 - `PolenNeedController`
 
-### `entity/ai/intent`
+### `entity/ai/brain/intent`
 
 - `PolenIntent`
 - `PolenIntentState`
 - `PolenIntentSnapshot`
 - `PolenIntentController`
 
-### `entity/ai/mood`
+### `entity/ai/brain/task`
+
+- `PolenTaskType`
+- `PolenTaskStatus`
+- `PolenTaskState`
+- `PolenTaskSnapshot`
+- `PolenTaskController`
+
+### `entity/ai/brain/mood`
 
 - `PolenMood`
 - `PolenMoodAnalysis`
 - `PolenMoodController`
 
-### `entity/ai/action`
+### `entity/ai/brain/action`
 
 - `PolenAutonomousActionType`
 - `PolenAutonomousActionPlan`
 - `PolenAutonomousActionPlanner`
 
-### `entity/ai/activity`
+### `entity/ai/expression/activity`
 
 - `PolenQuietActivityController`
 
-### `entity/ai/gesture`
+### `entity/ai/expression/gesture`
 
 - `PolenGesture`
 - `PolenGestureController`
 
-### `entity/ai/interest`
+### `entity/ai/brain/interest`
 
 - `PolenInterestType`
 - `PolenInterestTarget`
 - `PolenInterestLocator`
 
-### `entity/ai/memory`
+### `entity/ai/brain/memory`
 
 - `PolenMemoryHandler`
 
-### `entity/ai/magic`
+### `entity/ai/ability/magic`
 
 - `PolenMagicController`
   - blink
@@ -133,18 +141,28 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
   - reflection
   - managed light
 
-### `entity/ai/routine`
+### `entity/ai/brain/routine`
 
 - `PolenRoutinePlanner`
   - targets de rutina y quiet creation
 
-### `entity/ai/safety`
+### `entity/ai/navigation/search`
+
+- `PolenSearchPlanner`
+- `PolenSearchProfile`
+- `PolenSearchDomain`
+- `PolenSearchType`
+- `PolenSearchStatus`
+- `PolenSpotSelectionHelper`
+- `light/PolenLightSpotHelper`
+
+### `entity/ai/navigation/safety`
 
 - `PolenSafetyEvaluator`
 - `PolenSafetyNavigator`
 - `PolenDangerMemoryMath`
 
-### `entity/ai/goal`
+### `entity/ai/navigation/goal`
 
 - `PolenKeepDistanceGoal`
 - `PolenApproachTrustedPlayerGoal`
@@ -272,7 +290,7 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 
 ### Acciones
 
-- hobbies y microconductas nuevas entran por `entity/ai/action`
+- hobbies y microconductas nuevas entran por `entity/ai/brain/action`
 - ejecucion visible entra por `activity`, `magic`, `gesture` o `goal`
 
 ### Accesorios

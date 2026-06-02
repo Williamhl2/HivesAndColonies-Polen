@@ -1,7 +1,7 @@
 package com.hivesandcolonies.polen.client.animation;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
-import com.hivesandcolonies.polen.entity.ai.gesture.PolenGesture;
+import com.hivesandcolonies.polen.entity.ai.expression.gesture.PolenGesture;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.util.Mth;
 
@@ -25,9 +25,8 @@ public final class PolenGesturePoseApplier {
         float breathe = idleWave * 0.025F;
         float shoulderSway = Mth.sin(ageInTicks * 0.16F) * 0.04F;
         float walkAmount = Mth.clamp(limbSwingAmount, 0.0F, 1.0F);
-        float walkCycle = Mth.sin(limbSwing * 0.6F);
 
-        stabilizeBasePose(model, breathe, shoulderSway);
+        stabilizeBasePose(model, breathe, shoulderSway, limbSwing, walkAmount);
 
         switch (polen.getGesture()) {
             case SINGING -> applySingingPose(model, idleWave, shoulderSway);
@@ -45,16 +44,42 @@ public final class PolenGesturePoseApplier {
         clampHead(model);
     }
 
-    private static void stabilizeBasePose(HumanoidModel<PolenEntity> model, float breathe, float shoulderSway) {
+    private static void stabilizeBasePose(
+            HumanoidModel<PolenEntity> model,
+            float breathe,
+            float shoulderSway,
+            float limbSwing,
+            float walkAmount
+    ) {
         model.head.zRot = 0.0F;
         model.body.zRot = 0.0F;
         model.body.xRot += breathe;
+        preserveNaturalWalkSwing(model, limbSwing, walkAmount);
         model.rightArm.zRot *= 0.35F;
         model.leftArm.zRot *= 0.35F;
         model.rightArm.yRot *= 0.55F;
         model.leftArm.yRot *= 0.55F;
         model.rightArm.xRot += shoulderSway;
         model.leftArm.xRot -= shoulderSway;
+    }
+
+    private static void preserveNaturalWalkSwing(
+            HumanoidModel<PolenEntity> model,
+            float limbSwing,
+            float walkAmount
+    ) {
+        if (walkAmount <= 0.02F) {
+            return;
+        }
+
+        float rightSwing = Mth.cos(limbSwing * 0.6662F + Mth.PI) * 1.3F * walkAmount;
+        float leftSwing = Mth.cos(limbSwing * 0.6662F) * 1.3F * walkAmount;
+        float blend = Mth.clamp(walkAmount * 0.85F, 0.18F, 0.82F);
+
+        model.rightArm.xRot = Mth.lerp(blend, model.rightArm.xRot, rightSwing);
+        model.leftArm.xRot = Mth.lerp(blend, model.leftArm.xRot, leftSwing);
+        model.rightArm.yRot = Mth.lerp(blend * 0.45F, model.rightArm.yRot, 0.0F);
+        model.leftArm.yRot = Mth.lerp(blend * 0.45F, model.leftArm.yRot, 0.0F);
     }
 
     private static void applyIdlePose(HumanoidModel<PolenEntity> model, float idleWave, float walkAmount) {

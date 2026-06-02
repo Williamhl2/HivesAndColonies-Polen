@@ -63,21 +63,18 @@ Responsibilities:
 ### AI and autonomy
 
 - `entity/ai/core/*`
-- `entity/ai/state/*`
-- `entity/ai/need/*`
-- `entity/ai/intent/*`
-- `entity/ai/action/*`
-- `entity/ai/activity/*`
-- `entity/ai/goal/*`
-- `entity/ai/safety/*`
-- `entity/ai/magic/*`
-- `entity/ai/gesture/*`
+- `entity/ai/brain/*`
+- `entity/ai/navigation/*`
+- `entity/ai/expression/*`
+- `entity/ai/ability/*`
 
 Responsibilities:
 
 - internal pressure model
 - intent selection
+- task arbitration and short recovery after failed non-urgent behaviors
 - quiet autonomous actions
+- reusable location search profiles and reachability resolution
 - movement and reaction goals
 - safety and shelter logic
 - blink and subtle magic

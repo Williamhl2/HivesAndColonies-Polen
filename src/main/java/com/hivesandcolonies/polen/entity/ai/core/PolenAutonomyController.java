@@ -1,0 +1,30 @@
+package com.hivesandcolonies.polen.entity.ai.core;
+
+import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.ai.brain.intent.PolenIntentController;
+import com.hivesandcolonies.polen.entity.ai.brain.memory.PolenMemoryHandler;
+import com.hivesandcolonies.polen.entity.ai.brain.mood.PolenMoodController;
+import com.hivesandcolonies.polen.entity.ai.brain.need.PolenNeedController;
+import com.hivesandcolonies.polen.entity.ai.debug.PolenThoughtDebugController;
+import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskController;
+
+public final class PolenAutonomyController {
+
+    private PolenAutonomyController() {
+    }
+
+    public static void tickServer(PolenEntity polen) {
+        if (polen.tickCount % 20 == 0) {
+            polen.refreshDisplayName();
+            PolenNeedController.tick(polen);
+            PolenIntentController.tick(polen);
+            PolenTaskController.tick(polen);
+            polen.setMood(PolenMoodController.calculateMood(polen));
+            PolenThoughtDebugController.tick(polen);
+        }
+
+        if (polen.tickCount % 100 == 0) {
+            PolenMemoryHandler.seedMemoriesFromNearbyEnvironment(polen);
+        }
+    }
+}

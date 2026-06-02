@@ -1,12 +1,12 @@
 package com.hivesandcolonies.polen.entity;
 
-import com.hivesandcolonies.polen.entity.ai.goal.PolenApproachTrustedPlayerGoal;
-import com.hivesandcolonies.polen.entity.ai.goal.PolenCuriousInterestGoal;
-import com.hivesandcolonies.polen.entity.ai.goal.PolenIdleHobbyGoal;
-import com.hivesandcolonies.polen.entity.ai.goal.PolenKeepDistanceGoal;
-import com.hivesandcolonies.polen.entity.ai.goal.PolenRoutineGoal;
-import com.hivesandcolonies.polen.entity.ai.goal.PolenSafeStrollGoal;
-import com.hivesandcolonies.polen.entity.ai.goal.PolenSeekSafetyGoal;
+import com.hivesandcolonies.polen.entity.ai.navigation.goal.PolenApproachTrustedPlayerGoal;
+import com.hivesandcolonies.polen.entity.ai.navigation.goal.PolenCuriousInterestGoal;
+import com.hivesandcolonies.polen.entity.ai.navigation.goal.PolenIdleHobbyGoal;
+import com.hivesandcolonies.polen.entity.ai.navigation.goal.PolenKeepDistanceGoal;
+import com.hivesandcolonies.polen.entity.ai.navigation.goal.PolenRoutineGoal;
+import com.hivesandcolonies.polen.entity.ai.navigation.goal.PolenSafeStrollGoal;
+import com.hivesandcolonies.polen.entity.ai.navigation.goal.PolenSeekSafetyGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;

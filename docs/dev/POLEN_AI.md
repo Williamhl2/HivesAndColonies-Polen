@@ -7,9 +7,10 @@ El flujo real ahora esta separado en capas pequenas y escalables:
 
 1. `needs`
 2. `intent`
-3. `autonomous action`
-4. `goal execution`
-5. `gesture + client pose`
+3. `task arbitration`
+4. `autonomous action`
+5. `goal execution`
+6. `gesture + client pose`
 
 La idea es que cada feature nueva entre por una capa concreta en vez de inflar `PolenEntity` o la raiz de `entity/ai`.
 
@@ -18,25 +19,29 @@ La idea es que cada feature nueva entre por una capa concreta en vez de inflar `
 - `entity/ai/core/PolenAiFacade`
   - punto unico de entrada entre `PolenEntity` y la IA
   - tickea autonomia, quiet activity, magia persistente y gestos
-- `entity/ai/state/PolenAiState`
-  - memoria espacial, needs, intent, light management y danger memory
-- `entity/ai/autonomy/PolenAutonomyController`
+- `entity/ai/brain/state/PolenAiState`
+  - memoria espacial, needs, intent, task state, light management y danger memory
+- `entity/ai/core/PolenAutonomyController`
   - ordena el tick lento de autonomia
-- `entity/ai/need/*`
+- `entity/ai/brain/need/*`
   - estado y ajuste gradual de necesidades internas
-- `entity/ai/intent/*`
+- `entity/ai/brain/intent/*`
   - intencion dominante con razon y lock temporal
-- `entity/ai/action/*`
+- `entity/ai/brain/task/*`
+  - puente entre intent y goals con tarea actual, tarea deseada, estado, fallos recientes y recovery
+- `entity/ai/brain/action/*`
   - planner de acciones autonomas de bajo ruido
-- `entity/ai/activity/*`
+- `entity/ai/expression/activity/*`
   - quiet activities, particulas y puentes con magia sutil
-- `entity/ai/goal/*`
+- `entity/ai/navigation/goal/*`
   - movimiento y reaccion fisica
-- `entity/ai/safety/*`
+- `entity/ai/navigation/search/*`
+  - perfiles reutilizables de busqueda, shortlist, resolucion de alcanzabilidad y estado observable
+- `entity/ai/navigation/safety/*`
   - evaluacion de spots, rutas de escape, lluvia, noche y refugio
-- `entity/ai/magic/*`
+- `entity/ai/ability/magic/*`
   - blink, attunement, reflection y gestion de la lampara
-- `entity/ai/gesture/*`
+- `entity/ai/expression/gesture/*`
   - capa de gesto sincronizado para animacion
 - `client/model/PolenModel`
   - modelo tipo player
@@ -69,6 +74,22 @@ Son presiones internas que ayudan a que Polen mantenga continuidad entre decisio
 - `WANDER_SAFE`
 
 Cada intent se bloquea por una ventana corta de ticks para evitar jitter.
+
+## Task arbitration
+
+`PolenTaskController` toma el intent dominante y lo convierte en una tarea observable.
+
+La capa de task agrega:
+
+- `desired task`
+- `current task`
+- `status`
+- `note`
+- `recent failed task`
+- `recovery cooldown`
+
+Con eso Polen deja de insistir en la misma accion fallida cada pocos ticks cuando el problema no es urgente.
+Las tareas urgentes como `SEEK_SAFETY` y `KEEP_DISTANCE` ignoran ese cooldown.
 
 ## Autonomous actions
 
@@ -173,7 +194,7 @@ El gesto ya es una capa real de estado, no solo una pose hardcodeada.
 `PolenGestureController` resuelve:
 
 - gestos pasivos por quiet activity
-- gestos reactivos por intent o mood
+- gestos reactivos por task o mood
 - triggers cortos para goals concretos
 
 Gestos actuales:
@@ -202,6 +223,9 @@ Consecuencias:
 - poses mas compatibles con una futura integracion estilo Fresh Animations
 
 ## Goals actuales
+
+Los goals principales ya no dependen solo de `intent`.
+Ahora reportan `planned`, `active`, `completed` o `failed` a la capa de task.
 
 - `PolenKeepDistanceGoal`
   - se aleja de jugadores no confiables

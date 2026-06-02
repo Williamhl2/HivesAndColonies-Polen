@@ -1,6 +1,6 @@
 package com.hivesandcolonies.polen.entity;
 
-import com.hivesandcolonies.polen.entity.ai.safety.PolenSafetyEvaluator;
+import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.polen.util.PolenNbtHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
