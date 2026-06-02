@@ -137,6 +137,10 @@ public final class PolenDebugCommands {
                                                             + snapshot.residenceContext()
                                                             + ", residenceStage="
                                                             + snapshot.residenceStage()
+                                                            + ", currentComfort="
+                                                            + snapshot.currentComfortSummary()
+                                                            + ", residenceComfort="
+                                                            + snapshot.residenceComfortSummary()
                                                             + ", restingSpot="
                                                             + formatPos(snapshot.restingSpot())
                                                             + ", dangerousSpot="

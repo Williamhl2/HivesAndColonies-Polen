@@ -5,6 +5,9 @@ import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.shelter.PolenShelterContextResolver;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.shelter.PolenShelterKind;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
+import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortEvaluator;
+import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortProfile;
+import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortReport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
@@ -64,9 +67,14 @@ public final class PolenResidenceValidator {
                     }
                     foundHabitableSpace = true;
 
-                    PolenResidenceStage stage = determineStage(level, candidate, shelterKind, habitableSpots);
+                    PolenComfortReport comfort = PolenComfortEvaluator.evaluate(
+                            polen,
+                            candidate,
+                            PolenComfortProfile.RESIDENCE
+                    );
+                    PolenResidenceStage stage = determineStage(level, candidate, shelterKind, habitableSpots, comfort);
                     String context = shelterKind == PolenShelterKind.HOUSE ? "house" : "roof";
-                    double score = scoreCandidate(hintPos, candidate, shelterKind, stage, habitableSpots, level);
+                    double score = scoreCandidate(hintPos, candidate, shelterKind, stage, habitableSpots, level, comfort);
                     if (score < bestScore) {
                         bestScore = score;
                         bestTarget = new PolenResidenceTarget(
@@ -127,11 +135,13 @@ public final class PolenResidenceValidator {
             Level level,
             BlockPos candidate,
             PolenShelterKind shelterKind,
-            int habitableSpots
+            int habitableSpots,
+            PolenComfortReport comfort
     ) {
         if (shelterKind == PolenShelterKind.HOUSE
                 && PolenShelterContextResolver.isStrongHouseInterior(level, candidate)
-                && habitableSpots >= MIN_OWN_SPACE_HABITABLE_SPOTS) {
+                && habitableSpots >= MIN_OWN_SPACE_HABITABLE_SPOTS
+                && comfort.totalScore() >= 50) {
             return PolenResidenceStage.OWN_SPACE;
         }
 
@@ -165,11 +175,13 @@ public final class PolenResidenceValidator {
             PolenShelterKind shelterKind,
             PolenResidenceStage stage,
             int habitableSpots,
-            Level level
+            Level level,
+            PolenComfortReport comfort
     ) {
         double score = candidate.distSqr(hintPos);
         score -= habitableSpots * 2.5D;
         score -= level.getMaxLocalRawBrightness(candidate) * 1.5D;
+        score -= comfort.totalScore() * 0.75D;
 
         if (shelterKind == PolenShelterKind.HOUSE) {
             score -= 10.0D;

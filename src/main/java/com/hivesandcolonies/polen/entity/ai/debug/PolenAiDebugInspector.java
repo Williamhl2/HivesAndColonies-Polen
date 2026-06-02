@@ -11,6 +11,9 @@ import com.hivesandcolonies.polen.entity.ai.brain.need.PolenNeedController;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskSnapshot;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortEvaluator;
+import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortProfile;
+import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortReport;
 
 public final class PolenAiDebugInspector {
 
@@ -22,6 +25,18 @@ public final class PolenAiDebugInspector {
         PolenNeedSnapshot needSnapshot = PolenNeedController.inspect(polen);
         PolenIntentSnapshot intentSnapshot = PolenIntentController.inspect(polen);
         PolenTaskSnapshot taskSnapshot = PolenTaskController.inspect(polen);
+        PolenComfortReport currentComfort = PolenComfortEvaluator.evaluate(
+                polen,
+                polen.blockPosition(),
+                PolenComfortProfile.DEBUG
+        );
+        PolenComfortReport residenceComfort = polen.getAiState().getResidenceUsePos() == null
+                ? PolenComfortReport.empty(null)
+                : PolenComfortEvaluator.evaluate(
+                        polen,
+                        polen.getAiState().getResidenceUsePos(),
+                        PolenComfortProfile.RESIDENCE
+                );
 
         return new PolenAiDebugSnapshot(
                 moodAnalysis.mood(),
@@ -66,6 +81,12 @@ public final class PolenAiDebugInspector {
                 polen.getAiState().getResidenceUsePos(),
                 polen.getAiState().getResidenceContext(),
                 polen.getAiState().getResidenceStage(),
+                currentComfort.totalScore(),
+                currentComfort.rank(),
+                currentComfort.summary(),
+                residenceComfort.totalScore(),
+                residenceComfort.rank(),
+                residenceComfort.summary(),
                 polen.getAiState().getRestingPos(),
                 polen.getDangerousSpotPos()
         );

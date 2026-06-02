@@ -6,6 +6,9 @@ import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenScoredSpot;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenSpotSelectionHelper;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.polen.registry.ModBlocks;
+import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortEvaluator;
+import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortProfile;
+import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortReport;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -139,6 +142,7 @@ public final class PolenShelterSpotHelper {
         double score = candidate.distSqr(origin);
         score -= level.getMaxLocalRawBrightness(candidate) * 2.25D;
         score -= 34.0D;
+        score -= PolenComfortEvaluator.evaluate(polen, candidate, PolenComfortProfile.SHELTER).totalScore() * 0.55D;
 
         if (PolenShelterContextResolver.hasNearbyBed(level, candidate)) {
             score -= 8.0D;
@@ -159,6 +163,7 @@ public final class PolenShelterSpotHelper {
         double score = candidate.distSqr(origin);
         score -= level.getMaxLocalRawBrightness(candidate) * 2.0D;
         score -= 24.0D;
+        score -= PolenComfortEvaluator.evaluate(polen, candidate, PolenComfortProfile.SHELTER).totalScore() * 0.45D;
 
         if (PolenShelterContextResolver.hasNearbyDoor(level, candidate)) {
             score -= 8.0D;
@@ -183,8 +188,10 @@ public final class PolenShelterSpotHelper {
             return Double.MAX_VALUE;
         }
 
+        PolenComfortReport comfort = PolenComfortEvaluator.evaluate(polen, candidate, PolenComfortProfile.SHELTER);
         double score = candidate.distSqr(origin);
         score -= level.getMaxLocalRawBrightness(candidate) * 1.35D;
+        score -= comfort.totalScore() * 0.35D;
 
         if (PolenSafetyEvaluator.hasOverheadCover(level, candidate)) {
             score -= 4.0D;
