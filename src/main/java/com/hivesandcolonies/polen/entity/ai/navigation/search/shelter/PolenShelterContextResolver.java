@@ -5,11 +5,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 public final class PolenShelterContextResolver {
     private static final int DOOR_RADIUS = 3;
     private static final int LIGHT_RADIUS = 4;
+    private static final int BED_RADIUS = 4;
 
     private PolenShelterContextResolver() {
     }
@@ -73,6 +76,13 @@ public final class PolenShelterContextResolver {
                 && hasNearbyLight(level, pos);
     }
 
+    public static boolean isStrongHouseInterior(Level level, BlockPos pos) {
+        return hasNearbyDoor(level, pos)
+                && !level.canSeeSky(pos.above())
+                && countProtectiveSides(level, pos) >= 3
+                && (hasNearbyLight(level, pos) || hasNearbyBed(level, pos));
+    }
+
     public static boolean isTreeShelter(Level level, BlockPos pos) {
         for (int dy = 2; dy <= 5; dy++) {
             BlockState state = level.getBlockState(pos.above(dy));
@@ -100,11 +110,51 @@ public final class PolenShelterContextResolver {
         return false;
     }
 
+    public static boolean tryOpenNearbyDoor(Level level, BlockPos origin, int radius) {
+        if (level == null || origin == null) {
+            return false;
+        }
+
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                for (int dy = -1; dy <= 2; dy++) {
+                    BlockPos candidate = origin.offset(dx, dy, dz);
+                    BlockState state = level.getBlockState(candidate);
+                    if (!(state.getBlock() instanceof DoorBlock) || !state.hasProperty(DoorBlock.OPEN)) {
+                        continue;
+                    }
+
+                    BlockPos doorBase = normalizeDoorBase(candidate, state);
+                    BlockState baseState = level.getBlockState(doorBase);
+                    if (!baseState.getValue(DoorBlock.OPEN)) {
+                        level.setBlock(doorBase, baseState.setValue(DoorBlock.OPEN, true), 10);
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public static boolean hasNearbyLight(Level level, BlockPos origin) {
         for (int dx = -LIGHT_RADIUS; dx <= LIGHT_RADIUS; dx++) {
             for (int dz = -LIGHT_RADIUS; dz <= LIGHT_RADIUS; dz++) {
                 for (int dy = -1; dy <= 2; dy++) {
                     if (level.getBlockState(origin.offset(dx, dy, dz)).getLightEmission() >= 10) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasNearbyBed(Level level, BlockPos origin) {
+        for (int dx = -BED_RADIUS; dx <= BED_RADIUS; dx++) {
+            for (int dz = -BED_RADIUS; dz <= BED_RADIUS; dz++) {
+                for (int dy = -1; dy <= 2; dy++) {
+                    if (level.getBlockState(origin.offset(dx, dy, dz)).is(BlockTags.BEDS)) {
                         return true;
                     }
                 }
@@ -128,5 +178,15 @@ public final class PolenShelterContextResolver {
     private static boolean isProtectiveBlock(Level level, BlockPos pos) {
         BlockState state = level.getBlockState(pos);
         return !state.isAir() && (state.canOcclude() || !state.getCollisionShape(level, pos).isEmpty());
+    }
+
+    public static BlockPos normalizeDoorBase(BlockPos pos, BlockState state) {
+        if (state.getBlock() instanceof DoorBlock
+                && state.hasProperty(DoorBlock.HALF)
+                && state.getValue(DoorBlock.HALF) == DoubleBlockHalf.UPPER) {
+            return pos.below();
+        }
+
+        return pos;
     }
 }

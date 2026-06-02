@@ -26,6 +26,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
@@ -36,6 +37,10 @@ public class PolenEntity extends PathfinderMob {
     private static final String TAG_FAVORITE_HIVE_POS = "FavoriteHivePos";
     private static final String TAG_FAVORITE_SOURCE_POS = "FavoriteSourcePos";
     private static final String TAG_RESTING_POS = "RestingPos";
+    private static final String TAG_RESIDENCE_ANCHOR_POS = "ResidenceAnchorPos";
+    private static final String TAG_RESIDENCE_USE_POS = "ResidenceUsePos";
+    private static final String TAG_RESIDENCE_CONTEXT = "ResidenceContext";
+    private static final String TAG_RESIDENCE_STAGE = "ResidenceStage";
     private static final String TAG_DANGEROUS_SPOT_POS = "DangerousSpotPos";
     private static final String TAG_DANGEROUS_SPOT_UNTIL = "DangerousSpotUntil";
     private static final String TAG_ACTIVE_LIGHT_POS = "ActiveLightPos";
@@ -62,6 +67,10 @@ public class PolenEntity extends PathfinderMob {
         this.setCustomName(Component.translatable(UNKNOWN_GIRL_KEY));
         this.setCustomNameVisible(true);
         this.setPersistenceRequired();
+        if (this.getNavigation() instanceof GroundPathNavigation groundNavigation) {
+            groundNavigation.setCanOpenDoors(true);
+            groundNavigation.setCanPassDoors(true);
+        }
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -129,6 +138,10 @@ public class PolenEntity extends PathfinderMob {
                 TAG_FAVORITE_HIVE_POS,
                 TAG_FAVORITE_SOURCE_POS,
                 TAG_RESTING_POS,
+                TAG_RESIDENCE_ANCHOR_POS,
+                TAG_RESIDENCE_USE_POS,
+                TAG_RESIDENCE_CONTEXT,
+                TAG_RESIDENCE_STAGE,
                 TAG_DANGEROUS_SPOT_POS,
                 TAG_DANGEROUS_SPOT_UNTIL,
                 TAG_ACTIVE_LIGHT_POS,
@@ -147,6 +160,10 @@ public class PolenEntity extends PathfinderMob {
                 TAG_FAVORITE_HIVE_POS,
                 TAG_FAVORITE_SOURCE_POS,
                 TAG_RESTING_POS,
+                TAG_RESIDENCE_ANCHOR_POS,
+                TAG_RESIDENCE_USE_POS,
+                TAG_RESIDENCE_CONTEXT,
+                TAG_RESIDENCE_STAGE,
                 TAG_DANGEROUS_SPOT_POS,
                 TAG_DANGEROUS_SPOT_UNTIL,
                 TAG_ACTIVE_LIGHT_POS,
@@ -266,6 +283,10 @@ public class PolenEntity extends PathfinderMob {
 
     public void rememberRestingSpot(BlockPos pos) {
         PolenAiFacade.rememberRestingSpot(this, pos);
+    }
+
+    public void rememberResidence(BlockPos pos) {
+        PolenAiFacade.rememberResidence(this, pos);
     }
 
     double getDangerousSpotAvoidRadius() {

@@ -8,6 +8,9 @@ import com.hivesandcolonies.polen.entity.ai.core.PolenAutonomyController;
 import com.hivesandcolonies.polen.entity.ai.expression.gesture.PolenGestureController;
 import com.hivesandcolonies.polen.entity.ai.ability.magic.PolenMagicController;
 import com.hivesandcolonies.polen.entity.ai.brain.memory.PolenMemoryHandler;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenHomeManager;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenResidenceValidation;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenResidenceValidator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 
@@ -61,5 +64,12 @@ public final class PolenAiFacade {
 
     public static void rememberRestingSpot(PolenEntity polen, BlockPos pos) {
         PolenMemoryHandler.rememberRestingSpot(polen, pos);
+    }
+
+    public static void rememberResidence(PolenEntity polen, BlockPos pos) {
+        PolenResidenceValidation validation = PolenResidenceValidator.validate(polen, pos);
+        if (validation.isSuccess()) {
+            PolenHomeManager.rememberResidence(polen, validation.target());
+        }
     }
 }

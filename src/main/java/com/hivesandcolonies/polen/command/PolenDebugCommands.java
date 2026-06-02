@@ -107,6 +107,20 @@ public final class PolenDebugCommands {
                                                             + formatPos(snapshot.searchTarget())
                                                             + ", observedPos="
                                                             + formatPos(snapshot.observedPos())
+                                                            + ", observationFocus="
+                                                            + snapshot.observationFocus()
+                                                            + ", observationDisposition="
+                                                            + snapshot.observationDisposition()
+                                                            + ", observationAffordance="
+                                                            + snapshot.observationAffordanceType()
+                                                            + ", observationContext="
+                                                            + snapshot.observationContext()
+                                                            + ", observationNote="
+                                                            + snapshot.observationNote()
+                                                            + ", observationFocusPos="
+                                                            + formatPos(snapshot.observationFocusPos())
+                                                            + ", observationUsePos="
+                                                            + formatPos(snapshot.observationUsePos())
                                                             + ", nearRememberedInterest="
                                                             + snapshot.nearRememberedInterest()
                                                             + ", flowerSpot="
@@ -115,6 +129,14 @@ public final class PolenDebugCommands {
                                                             + formatPos(snapshot.hiveSpot())
                                                             + ", sourceSpot="
                                                             + formatPos(snapshot.sourceSpot())
+                                                            + ", residenceAnchor="
+                                                            + formatPos(snapshot.residenceAnchor())
+                                                            + ", residenceUse="
+                                                            + formatPos(snapshot.residenceUse())
+                                                            + ", residenceContext="
+                                                            + snapshot.residenceContext()
+                                                            + ", residenceStage="
+                                                            + snapshot.residenceStage()
                                                             + ", restingSpot="
                                                             + formatPos(snapshot.restingSpot())
                                                             + ", dangerousSpot="

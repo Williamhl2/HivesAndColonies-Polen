@@ -141,6 +141,7 @@ The intended rule is:
 ### Colony
 
 - `settlement_charm`
+- `residence_charm`
 
 ### Utility block/item
 
@@ -201,3 +202,8 @@ The next safe batch should remain small and structured:
 2. One colony-adjacent item that interacts with residence or belonging.
 3. One focus or material item tied to source or bee memory.
 4. No new item should be added without deciding its family first.
+
+Status update:
+
+- `residence_charm` now fills that colony-adjacent residence slot.
+- Residence validation still belongs in AI/world managers, not in the item class.

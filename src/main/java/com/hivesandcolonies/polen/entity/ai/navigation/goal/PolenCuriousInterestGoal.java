@@ -10,6 +10,9 @@ import com.hivesandcolonies.polen.entity.ai.brain.interest.PolenInterestType;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskType;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceResolver;
+import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceTarget;
+import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceType;
 import com.hivesandcolonies.polen.story.PolenMemoryManager;
 import com.hivesandcolonies.polen.story.PolenMemoryType;
 
@@ -47,7 +50,8 @@ public class PolenCuriousInterestGoal extends Goal {
             return false;
         }
 
-        this.target = PolenInterestLocator.findPreferredInterest(this.polen, true);
+        PolenAffordanceTarget affordance = PolenAffordanceResolver.findBestInterest(this.polen, true);
+        this.target = affordance == null ? null : mapAffordanceToInterest(affordance);
         this.observeTicks = 40 + this.polen.getRandom().nextInt(60);
         this.stuckTicks = 0;
         this.blinkCooldownTicks = 0;
@@ -178,5 +182,16 @@ public class PolenCuriousInterestGoal extends Goal {
         }
 
         this.lastDistanceSqr = distanceSqr;
+    }
+
+    private PolenInterestTarget mapAffordanceToInterest(PolenAffordanceTarget affordance) {
+        PolenInterestType type = switch (affordance.type()) {
+            case INTEREST_FLOWER -> PolenInterestType.FLOWER;
+            case INTEREST_HIVE -> PolenInterestType.HIVE;
+            case INTEREST_SOURCE -> PolenInterestType.SOURCE;
+            case EXISTING_LIGHT -> PolenInterestType.LIGHT;
+            default -> null;
+        };
+        return type == null ? null : new PolenInterestTarget(affordance.focusPos(), affordance.usePos(), type);
     }
 }

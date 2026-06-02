@@ -9,6 +9,7 @@ import com.hivesandcolonies.polen.entity.ai.brain.action.PolenAutonomousActionPl
 import com.hivesandcolonies.polen.entity.ai.brain.mood.PolenMood;
 import com.hivesandcolonies.polen.entity.ai.brain.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceResolver;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -72,7 +73,7 @@ public final class PolenIntentController {
             case SEEK_SAFETY -> PolenSafetyNavigator.shouldSeekSafety(polen);
             case KEEP_DISTANCE -> hasUntrustedPlayerTooClose(polen);
             case APPROACH_TRUSTED_PLAYER -> hasApproachableTrustedPlayer(polen);
-            case INVESTIGATE_INTEREST -> PolenInterestLocator.findPreferredInterest(polen, true) != null;
+            case INVESTIGATE_INTEREST -> PolenAffordanceResolver.findBestInterest(polen, true) != null;
             case SEEK_REST -> (needs.rest() >= 35 || polen.level().isNight() || polen.level().isRaining())
                     && canSeekRest(polen);
             case QUIET_CREATION -> needs.magic() >= 20 && canDoIllumination(polen)
@@ -100,7 +101,7 @@ public final class PolenIntentController {
         }
 
         if ((needs.curiosity() >= 52 || needs.magic() >= 56)
-                && PolenInterestLocator.findPreferredInterest(polen, true) != null) {
+                && PolenAffordanceResolver.findBestInterest(polen, true) != null) {
             return locked(PolenIntent.INVESTIGATE_INTEREST, "interesting_target_available", gameTime, 120L);
         }
 
@@ -116,7 +117,7 @@ public final class PolenIntentController {
             return locked(PolenIntent.APPROACH_TRUSTED_PLAYER, "social_need_rising", gameTime, 80L);
         }
 
-        if (needs.curiosity() >= 38 && PolenInterestLocator.findPreferredInterest(polen, true) != null) {
+        if (needs.curiosity() >= 38 && PolenAffordanceResolver.findBestInterest(polen, true) != null) {
             return locked(PolenIntent.INVESTIGATE_INTEREST, "curiosity_need_rising", gameTime, 100L);
         }
 

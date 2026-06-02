@@ -18,6 +18,10 @@ public enum PolenMemoryType {
     FIRST_COLONY(
             PolenStoryFlag.POLEN_MEMORY_FIRST_COLONY,
             "dialogue.polen.memory.first_colony"
+    ),
+    FIRST_RESIDENCE(
+            PolenStoryFlag.POLEN_MEMORY_FIRST_RESIDENCE,
+            "dialogue.polen.memory.first_residence"
     );
 
     private final PolenStoryFlag flag;

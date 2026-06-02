@@ -5,6 +5,10 @@ import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenSearchType;
 import com.hivesandcolonies.polen.entity.ai.brain.intent.PolenIntentState;
 import com.hivesandcolonies.polen.entity.ai.brain.need.PolenNeedState;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskState;
+import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceType;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenResidenceStage;
+import com.hivesandcolonies.polen.entity.ai.world.observation.PolenObservationDisposition;
+import com.hivesandcolonies.polen.entity.ai.world.observation.PolenObservationFocus;
 import com.hivesandcolonies.polen.util.PolenNbtHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -15,10 +19,14 @@ public final class PolenAiState {
     private BlockPos favoriteHivePos;
     private BlockPos favoriteSourcePos;
     private BlockPos restingPos;
+    private BlockPos residenceAnchorPos;
+    private BlockPos residenceUsePos;
     private BlockPos dangerousSpotPos;
     private BlockPos activeLightPos;
     private BlockPos searchTargetPos;
     private BlockPos observedPos;
+    private BlockPos observationFocusPos;
+    private BlockPos observationUsePos;
     private long dangerousSpotUntilGameTime;
     private long activeLightUntilGameTime;
     private long lastAmbientDialogueGameTime;
@@ -27,6 +35,13 @@ public final class PolenAiState {
     private PolenSearchType searchType = PolenSearchType.IDLE;
     private PolenSearchStatus searchStatus = PolenSearchStatus.IDLE;
     private String searchNote = "";
+    private PolenObservationFocus observationFocus = PolenObservationFocus.NONE;
+    private PolenObservationDisposition observationDisposition = PolenObservationDisposition.IDLE;
+    private PolenAffordanceType observationAffordanceType;
+    private PolenResidenceStage residenceStage = PolenResidenceStage.NONE;
+    private String residenceContext = "";
+    private String observationContext = "";
+    private String observationNote = "";
     private String lastThoughtDebugSignature = "";
     private boolean debugThoughtsEnabled;
     private int lastQuietActivityType;
@@ -41,6 +56,10 @@ public final class PolenAiState {
             String favoriteHiveKey,
             String favoriteSourceKey,
             String restingKey,
+            String residenceAnchorKey,
+            String residenceUseKey,
+            String residenceContextKey,
+            String residenceStageKey,
             String dangerousSpotKey,
             String dangerousSpotUntilKey,
             String activeLightKey,
@@ -52,6 +71,10 @@ public final class PolenAiState {
         PolenNbtHelper.saveBlockPos(tag, favoriteHiveKey, this.favoriteHivePos);
         PolenNbtHelper.saveBlockPos(tag, favoriteSourceKey, this.favoriteSourcePos);
         PolenNbtHelper.saveBlockPos(tag, restingKey, this.restingPos);
+        PolenNbtHelper.saveBlockPos(tag, residenceAnchorKey, this.residenceAnchorPos);
+        PolenNbtHelper.saveBlockPos(tag, residenceUseKey, this.residenceUsePos);
+        tag.putString(residenceContextKey, this.residenceContext);
+        tag.putString(residenceStageKey, this.residenceStage.name());
         PolenNbtHelper.saveBlockPos(tag, dangerousSpotKey, this.dangerousSpotPos);
         tag.putLong(dangerousSpotUntilKey, this.dangerousSpotUntilGameTime);
         PolenNbtHelper.saveBlockPos(tag, activeLightKey, this.activeLightPos);
@@ -66,6 +89,10 @@ public final class PolenAiState {
             String favoriteHiveKey,
             String favoriteSourceKey,
             String restingKey,
+            String residenceAnchorKey,
+            String residenceUseKey,
+            String residenceContextKey,
+            String residenceStageKey,
             String dangerousSpotKey,
             String dangerousSpotUntilKey,
             String activeLightKey,
@@ -77,6 +104,10 @@ public final class PolenAiState {
         this.favoriteHivePos = PolenNbtHelper.loadBlockPos(tag, favoriteHiveKey);
         this.favoriteSourcePos = PolenNbtHelper.loadBlockPos(tag, favoriteSourceKey);
         this.restingPos = PolenNbtHelper.loadBlockPos(tag, restingKey);
+        this.residenceAnchorPos = PolenNbtHelper.loadBlockPos(tag, residenceAnchorKey);
+        this.residenceUsePos = PolenNbtHelper.loadBlockPos(tag, residenceUseKey);
+        this.residenceContext = tag.getString(residenceContextKey);
+        this.residenceStage = PolenResidenceStage.fromName(tag.getString(residenceStageKey));
         this.dangerousSpotPos = PolenNbtHelper.loadBlockPos(tag, dangerousSpotKey);
         this.dangerousSpotUntilGameTime = Math.max(0L, tag.getLong(dangerousSpotUntilKey));
         this.activeLightPos = PolenNbtHelper.loadBlockPos(tag, activeLightKey);
@@ -115,6 +146,34 @@ public final class PolenAiState {
 
     public void setRestingPos(BlockPos restingPos) {
         this.restingPos = restingPos;
+    }
+
+    public BlockPos getResidenceAnchorPos() {
+        return this.residenceAnchorPos;
+    }
+
+    public BlockPos getResidenceUsePos() {
+        return this.residenceUsePos;
+    }
+
+    public String getResidenceContext() {
+        return this.residenceContext;
+    }
+
+    public PolenResidenceStage getResidenceStage() {
+        return this.residenceStage;
+    }
+
+    public void setResidenceState(
+            BlockPos residenceAnchorPos,
+            BlockPos residenceUsePos,
+            String residenceContext,
+            PolenResidenceStage residenceStage
+    ) {
+        this.residenceAnchorPos = residenceAnchorPos;
+        this.residenceUsePos = residenceUsePos;
+        this.residenceContext = residenceContext == null ? "" : residenceContext;
+        this.residenceStage = residenceStage == null ? PolenResidenceStage.NONE : residenceStage;
     }
 
     public BlockPos getDangerousSpotPos() {
@@ -219,6 +278,34 @@ public final class PolenAiState {
         return this.searchNote;
     }
 
+    public PolenObservationFocus getObservationFocus() {
+        return this.observationFocus;
+    }
+
+    public PolenObservationDisposition getObservationDisposition() {
+        return this.observationDisposition;
+    }
+
+    public PolenAffordanceType getObservationAffordanceType() {
+        return this.observationAffordanceType;
+    }
+
+    public BlockPos getObservationFocusPos() {
+        return this.observationFocusPos;
+    }
+
+    public BlockPos getObservationUsePos() {
+        return this.observationUsePos;
+    }
+
+    public String getObservationContext() {
+        return this.observationContext;
+    }
+
+    public String getObservationNote() {
+        return this.observationNote;
+    }
+
     public void setSearchState(
             PolenSearchType searchType,
             PolenSearchStatus searchStatus,
@@ -235,6 +322,26 @@ public final class PolenAiState {
 
     public void clearSearchState() {
         setSearchState(PolenSearchType.IDLE, PolenSearchStatus.IDLE, null, null, "");
+    }
+
+    public void setObservationState(
+            PolenObservationFocus observationFocus,
+            PolenObservationDisposition observationDisposition,
+            PolenAffordanceType observationAffordanceType,
+            BlockPos observationFocusPos,
+            BlockPos observationUsePos,
+            String observationContext,
+            String observationNote
+    ) {
+        this.observationFocus = observationFocus == null ? PolenObservationFocus.NONE : observationFocus;
+        this.observationDisposition = observationDisposition == null
+                ? PolenObservationDisposition.IDLE
+                : observationDisposition;
+        this.observationAffordanceType = observationAffordanceType;
+        this.observationFocusPos = observationFocusPos;
+        this.observationUsePos = observationUsePos;
+        this.observationContext = observationContext == null ? "" : observationContext;
+        this.observationNote = observationNote == null ? "" : observationNote;
     }
 
     public PolenNeedState getNeedState() {

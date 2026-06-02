@@ -11,6 +11,9 @@ import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenSearchDomain;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenSearchPlanner;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenSearchProfile;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.shelter.PolenShelterSpotHelper;
+import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceResolver;
+import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceTarget;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenHomeManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.monster.Monster;
@@ -132,7 +135,15 @@ public final class PolenSafetyNavigator {
     }
 
     public static BlockPos findNearbyShelteredSpot(PolenEntity polen, int radius) {
-        BlockPos restingPos = polen.getAiState().getRestingPos();
+        PolenAffordanceTarget preferredShelter = PolenAffordanceResolver.findBestRainShelter(polen, Math.max(8, radius));
+        if (preferredShelter != null) {
+            return preferredShelter.usePos();
+        }
+
+        BlockPos restingPos = PolenHomeManager.getValidResidenceUsePos(polen);
+        if (restingPos == null) {
+            restingPos = polen.getAiState().getRestingPos();
+        }
         if (restingPos != null
                 && restingPos.distSqr(polen.blockPosition()) >= MIN_RELOCATION_DISTANCE_SQR
                 && PolenSafetyEvaluator.isSafeStandingSpot(polen, restingPos)
@@ -170,6 +181,11 @@ public final class PolenSafetyNavigator {
 
     public static BlockPos findNearbyNightLightSpot(PolenEntity polen, int radius) {
         int effectiveRadius = polen.level().isRaining() ? Math.max(6, radius - 2) : radius;
+        PolenAffordanceTarget preferredLight = PolenAffordanceResolver.findBestNightLight(polen, effectiveRadius);
+        if (preferredLight != null) {
+            return preferredLight.usePos();
+        }
+
         PolenInterestTarget nearbyLight = PolenInterestLocator.findPreferredInterestOfType(polen, PolenInterestType.LIGHT);
         if (nearbyLight != null
                 && nearbyLight.observePos().distSqr(polen.blockPosition()) <= (double) (effectiveRadius * effectiveRadius)

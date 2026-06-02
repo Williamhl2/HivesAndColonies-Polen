@@ -145,6 +145,8 @@ public class PolenSeekSafetyGoal extends Goal {
                 this.targetSpot.getZ() + 0.5D
         );
 
+        PolenShelterContextResolver.tryOpenNearbyDoor(this.polen.level(), this.polen.blockPosition(), 2);
+
         if (this.repathCooldownTicks > 0) {
             this.repathCooldownTicks--;
         }
@@ -289,6 +291,8 @@ public class PolenSeekSafetyGoal extends Goal {
         if (this.targetSpot == null) {
             return;
         }
+
+        PolenShelterContextResolver.tryOpenNearbyDoor(this.polen.level(), this.targetSpot, 2);
 
         boolean pathStarted = this.polen.getNavigation().moveTo(
                 this.targetSpot.getX() + 0.5D,

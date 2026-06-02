@@ -1,6 +1,7 @@
 package com.hivesandcolonies.polen.registry;
 
 import com.hivesandcolonies.polen.Polen;
+import com.hivesandcolonies.polen.item.colony.ResidenceCharmItem;
 import com.hivesandcolonies.polen.item.colony.SettlementCharmItem;
 import com.hivesandcolonies.polen.item.focus.BloomFocusItem;
 import com.hivesandcolonies.polen.item.material.RoyalPollenItem;
@@ -47,6 +48,8 @@ public class ModItems {
     // Colony items: player-facing tools for integrating Polen into safe settlement spaces.
     public static final DeferredItem<Item> SETTLEMENT_CHARM =
             registerColonyItem("settlement_charm", SettlementCharmItem::new);
+    public static final DeferredItem<Item> RESIDENCE_CHARM =
+            registerColonyItem("residence_charm", ResidenceCharmItem::new);
     public static final DeferredItem<Item> POLEN_LANTERN =
             ITEMS.registerItem(
                     "polen_lantern",

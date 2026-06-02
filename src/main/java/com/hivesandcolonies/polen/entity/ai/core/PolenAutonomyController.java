@@ -7,6 +7,7 @@ import com.hivesandcolonies.polen.entity.ai.brain.mood.PolenMoodController;
 import com.hivesandcolonies.polen.entity.ai.brain.need.PolenNeedController;
 import com.hivesandcolonies.polen.entity.ai.debug.PolenThoughtDebugController;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskController;
+import com.hivesandcolonies.polen.entity.ai.world.observation.PolenObservationController;
 
 public final class PolenAutonomyController {
 
@@ -20,6 +21,7 @@ public final class PolenAutonomyController {
             PolenIntentController.tick(polen);
             PolenTaskController.tick(polen);
             polen.setMood(PolenMoodController.calculateMood(polen));
+            PolenObservationController.tick(polen);
             PolenThoughtDebugController.tick(polen);
         }
 

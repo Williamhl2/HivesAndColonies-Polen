@@ -162,6 +162,14 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 - `PolenSafetyNavigator`
 - `PolenDangerMemoryMath`
 
+### `entity/ai/world/home`
+
+- `PolenResidenceStage`
+- `PolenResidenceTarget`
+- `PolenResidenceValidation`
+- `PolenResidenceValidator`
+- `PolenHomeManager`
+
 ### `entity/ai/navigation/goal`
 
 - `PolenKeepDistanceGoal`
@@ -292,6 +300,12 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 
 - hobbies y microconductas nuevas entran por `entity/ai/brain/action`
 - ejecucion visible entra por `activity`, `magic`, `gesture` o `goal`
+
+### Hogar
+
+- residencia y pertenencia entran por `entity/ai/world/home`
+- descanso improvisado sigue en `routine` y `restingPos`
+- no mezclar ambos conceptos en `item` o `goal`
 
 ### Accesorios
 

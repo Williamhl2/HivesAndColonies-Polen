@@ -128,6 +128,7 @@ Notas:
 - `attuning` usa source recordado o local
 - `illuminating` coloca `polen_lantern`
 - `reflecting` funciona cerca de resting spot o una luz manejada por Polen
+- `restingPos` y `residence` ya no significan lo mismo
 
 ## Seguridad
 
@@ -241,6 +242,22 @@ Ahora reportan `planned`, `active`, `completed` o `failed` a la capa de task.
   - refugio, escape, repath y blink
 - `PolenSafeStrollGoal`
   - paseo ligero solo en contexto estable
+
+## Hogar y residencia
+
+`entity/ai/world/home` ahora separa hogar de descanso improvisado:
+
+- `PolenResidenceValidator`
+  - valida techo real, cama, acceso y espacio habitable
+- `PolenHomeManager`
+  - guarda la residencia elegida y la vuelve preferible para descanso y refugio
+- `PolenResidenceStage`
+  - deja preparada la progresion: `BORROWED_SHELTER`, `OWN_SPACE`, `INTEGRATED_RESIDENCE`, `LIVING_ARCHIVE`
+
+Narrativamente:
+
+- `settlement_charm` marca descanso seguro
+- `residence_charm` marca pertenencia
 
 ## Items y escalabilidad
 

@@ -7,6 +7,10 @@ import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenSearchType;
 import com.hivesandcolonies.polen.entity.ai.brain.need.PolenNeed;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskStatus;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskType;
+import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceType;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenResidenceStage;
+import com.hivesandcolonies.polen.entity.ai.world.observation.PolenObservationDisposition;
+import com.hivesandcolonies.polen.entity.ai.world.observation.PolenObservationFocus;
 import net.minecraft.core.BlockPos;
 
 public record PolenAiDebugSnapshot(
@@ -37,10 +41,21 @@ public record PolenAiDebugSnapshot(
         String searchNote,
         BlockPos searchTarget,
         BlockPos observedPos,
+        PolenObservationFocus observationFocus,
+        PolenObservationDisposition observationDisposition,
+        PolenAffordanceType observationAffordanceType,
+        BlockPos observationFocusPos,
+        BlockPos observationUsePos,
+        String observationContext,
+        String observationNote,
         boolean nearRememberedInterest,
         BlockPos flowerSpot,
         BlockPos hiveSpot,
         BlockPos sourceSpot,
+        BlockPos residenceAnchor,
+        BlockPos residenceUse,
+        String residenceContext,
+        PolenResidenceStage residenceStage,
         BlockPos restingSpot,
         BlockPos dangerousSpot
 ) {

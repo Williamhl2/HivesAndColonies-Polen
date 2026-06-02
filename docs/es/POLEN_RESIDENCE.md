@@ -16,6 +16,7 @@ Aunque el sistema completo de residencia todavia esta en crecimiento, la fantasi
 
 - `restingPos` dentro del estado de IA
 - `settlement_charm` como item de colonia
+- `residence_charm` como declaracion explicita de refugio o residencia
 - busqueda de refugio y seguridad contextual
 - uso de lugares recordados por parte de Polen
 
@@ -26,6 +27,13 @@ Debe ser tambien un ancla para:
 - seguridad
 - pertenencia
 - expansion futura de autonomia
+
+Hoy la base tecnica ya distingue dos cosas:
+
+- `settlement_charm` para marcar un lugar de descanso seguro
+- `residence_charm` para declarar que un refugio ya puede empezar a sentirse suyo
+
+Eso evita que descanso temporal y pertenencia narrativa queden mezclados en una sola marca.
 
 ## Requisitos narrativos
 

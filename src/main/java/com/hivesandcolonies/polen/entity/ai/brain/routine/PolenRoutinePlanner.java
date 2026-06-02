@@ -9,6 +9,8 @@ import com.hivesandcolonies.polen.entity.ai.brain.intent.PolenIntent;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.light.PolenLightSpotHelper;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceResolver;
+import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceTarget;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 
@@ -62,6 +64,10 @@ public final class PolenRoutinePlanner {
     }
 
     public static BlockPos findLightMagicTarget(PolenEntity polen) {
+        PolenAffordanceTarget target = PolenAffordanceResolver.findBestNightLight(polen, 12);
+        if (target != null && target.type() == com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceType.MAGIC_LIGHT) {
+            return target.usePos();
+        }
         return PolenLightSpotHelper.findLightMagicTarget(polen);
     }
 
@@ -78,14 +84,13 @@ public final class PolenRoutinePlanner {
     }
 
     private static BlockPos findRestTarget(PolenEntity polen) {
-        BlockPos normalizedRestingPos = normalizeRestingAnchor(polen, polen.getAiState().getRestingPos());
-        if (normalizedRestingPos != null) {
-            if (!normalizedRestingPos.equals(polen.getAiState().getRestingPos())) {
-                polen.getAiState().setRestingPos(normalizedRestingPos);
+        PolenAffordanceTarget restTarget = PolenAffordanceResolver.findBestRestSpot(polen, DEFAULT_SAFE_SPOT_RADIUS);
+        if (restTarget != null) {
+            if (!restTarget.usePos().equals(polen.getAiState().getRestingPos())) {
+                polen.getAiState().setRestingPos(restTarget.usePos());
             }
-            return normalizedRestingPos;
+            return restTarget.usePos();
         }
-
         return PolenSafetyNavigator.findNearbySafeSurfaceSpot(polen, DEFAULT_SAFE_SPOT_RADIUS);
     }
 

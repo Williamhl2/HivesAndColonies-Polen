@@ -30,6 +30,8 @@ public final class PolenThoughtDebugController {
                         + ", status=" + snapshot.taskStatus()
                         + ", search=" + snapshot.searchType() + "/" + snapshot.searchStatus()
                         + ", note=" + snapshot.searchNote()
+                        + ", obs=" + snapshot.observationFocus() + "/" + snapshot.observationDisposition()
+                        + "/" + snapshot.observationContext()
         );
 
         boolean sentAny = false;
@@ -58,6 +60,10 @@ public final class PolenThoughtDebugController {
                 + "|" + snapshot.searchType()
                 + "|" + snapshot.searchStatus()
                 + "|" + snapshot.searchNote()
+                + "|" + snapshot.observationFocus()
+                + "|" + snapshot.observationDisposition()
+                + "|" + snapshot.observationContext()
+                + "|" + snapshot.observationNote()
                 + "|" + snapshot.quietActivity();
     }
 }

@@ -16,6 +16,7 @@ Current status: active early development.
   - source attunement
   - reflective quiet moments
   - night lighting with a managed `polen_lantern`
+  - residence-aware refuge and rest behavior through a dedicated `residence_charm`
 - Gesture-driven player-like animation layer.
 - Early item families for story, material, focus, colony, and accessory growth.
 

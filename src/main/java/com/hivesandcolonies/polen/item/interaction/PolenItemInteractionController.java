@@ -3,12 +3,18 @@ package com.hivesandcolonies.polen.item.interaction;
 import com.hivesandcolonies.polen.dialogue.PolenDialogueManager;
 import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenHomeManager;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenResidenceStage;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenResidenceTarget;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenResidenceValidation;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenResidenceValidator;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
 import com.hivesandcolonies.polen.story.PolenMemoryManager;
 import com.hivesandcolonies.polen.story.PolenMemoryType;
+import com.hivesandcolonies.polen.story.PolenWorldEventTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -32,6 +38,7 @@ public final class PolenItemInteractionController {
     private static final double POLEN_ITEM_RANGE = 10.0D;
     private static final int BLOOM_FOCUS_COOLDOWN = 50;
     private static final int SETTLEMENT_CHARM_COOLDOWN = 60;
+    private static final int RESIDENCE_CHARM_COOLDOWN = 80;
 
     private PolenItemInteractionController() {
     }
@@ -154,6 +161,58 @@ public final class PolenItemInteractionController {
         return InteractionResult.SUCCESS;
     }
 
+    public static InteractionResult useResidenceCharmOnBlock(UseOnContext context) {
+        Level level = context.getLevel();
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
+
+        Player player = context.getPlayer();
+        if (player == null || !(level instanceof ServerLevel serverLevel)) {
+            return InteractionResult.FAIL;
+        }
+
+        PolenEntity polen = findNearestPolen(player, serverLevel);
+        if (polen == null) {
+            sendStatus(player, "message.polen.item.no_nearby_polen");
+            return InteractionResult.FAIL;
+        }
+
+        if (!PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.PLAYER_HAS_SHELTER)) {
+            sendStatus(player, "message.polen.item.residence_charm.requires_shelter");
+            return InteractionResult.FAIL;
+        }
+
+        BlockPos targetPos = context.getClickedPos().relative(context.getClickedFace());
+        PolenResidenceValidation validation = PolenResidenceValidator.validate(polen, targetPos);
+        if (!validation.isSuccess()) {
+            sendStatus(player, validation.failureTranslationKey());
+            return InteractionResult.FAIL;
+        }
+
+        PolenResidenceTarget residenceTarget = validation.target();
+        PolenHomeManager.rememberResidence(polen, residenceTarget);
+        if (PolenHomeManager.getValidResidenceUsePos(polen) == null) {
+            sendStatus(player, "message.polen.item.residence_charm.invalid_place");
+            return InteractionResult.FAIL;
+        }
+
+        PolenAffinityManager.addAffinity(player, 3);
+        PolenWorldEventTriggers.onFirstResidenceClaimed(serverLevel, residenceTarget.usePos());
+        spawnResidenceBurst(serverLevel, residenceTarget.usePos());
+        spawnPolenResponse(serverLevel, polen);
+        PolenAmbientDialogueController.tryPlay(polen, PolenDialogueManager.AMBIENT_REFLECTION);
+        damageUtilityItem(context.getItemInHand());
+        player.getCooldowns().addCooldown(context.getItemInHand().getItem(), RESIDENCE_CHARM_COOLDOWN);
+        sendStatus(
+                player,
+                residenceTarget.stage() == PolenResidenceStage.OWN_SPACE
+                        ? "message.polen.item.residence_charm.marked_own_space"
+                        : "message.polen.item.residence_charm.marked_borrowed_shelter"
+        );
+        return InteractionResult.SUCCESS;
+    }
+
     private static PolenEntity findNearestPolen(Player player, ServerLevel level) {
         return level.getEntitiesOfClass(
                         PolenEntity.class,
@@ -268,6 +327,32 @@ public final class PolenItemInteractionController {
                 0.01D
         );
         level.playSound(null, pos, SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 0.55F, 1.0F);
+    }
+
+    private static void spawnResidenceBurst(ServerLevel level, BlockPos pos) {
+        level.sendParticles(
+                ParticleTypes.HEART,
+                pos.getX() + 0.5D,
+                pos.getY() + 1.05D,
+                pos.getZ() + 0.5D,
+                6,
+                0.22D,
+                0.18D,
+                0.22D,
+                0.02D
+        );
+        level.sendParticles(
+                ParticleTypes.HAPPY_VILLAGER,
+                pos.getX() + 0.5D,
+                pos.getY() + 0.95D,
+                pos.getZ() + 0.5D,
+                6,
+                0.24D,
+                0.18D,
+                0.24D,
+                0.03D
+        );
+        level.playSound(null, pos, SoundEvents.AMETHYST_CLUSTER_HIT, SoundSource.PLAYERS, 0.55F, 1.2F);
     }
 
     private static void spawnPolenResponse(ServerLevel level, PolenEntity polen) {
