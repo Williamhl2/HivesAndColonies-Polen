@@ -20,6 +20,7 @@ public class PolenRenderer extends MobRenderer<PolenEntity, PolenModel> {
                 new PolenModel(context.bakeLayer(ModelLayers.PLAYER)),
                 0.5F
         );
+        this.addLayer(new PolenAffinityCharmLayer(this));
     }
 
     @Override

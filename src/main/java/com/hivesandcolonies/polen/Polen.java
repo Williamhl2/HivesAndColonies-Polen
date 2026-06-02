@@ -7,6 +7,7 @@ import com.hivesandcolonies.polen.registry.ModBlocks;
 import com.hivesandcolonies.polen.registry.ModCreativeTabs;
 import com.hivesandcolonies.polen.registry.ModEntities;
 import com.hivesandcolonies.polen.registry.ModItems;
+import com.hivesandcolonies.polen.progression.world.singularity.PolenSingularityManager;
 import com.mojang.logging.LogUtils;
 
 import net.neoforged.bus.api.IEventBus;
@@ -27,5 +28,6 @@ public class Polen {
         ModEntities.ENTITY_TYPES.register(modEventBus);
 
         NeoForge.EVENT_BUS.addListener(PolenDebugCommands::register);
+        NeoForge.EVENT_BUS.addListener(PolenSingularityManager::onEntityJoinLevel);
     }
 }

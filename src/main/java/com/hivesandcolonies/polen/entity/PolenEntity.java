@@ -13,6 +13,7 @@ import com.hivesandcolonies.polen.progression.PolenAffinityLevels;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
+import com.hivesandcolonies.polen.progression.world.PolenWorldStateManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
@@ -126,6 +127,10 @@ public class PolenEntity extends PathfinderMob {
         if (this.level().isClientSide) {
             PolenAiFacade.tickClient(this);
             return;
+        }
+
+        if (this.level() instanceof ServerLevel serverLevel) {
+            PolenWorldStateManager.ensureFor(serverLevel, this);
         }
 
         PolenAiFacade.tickServer(this);

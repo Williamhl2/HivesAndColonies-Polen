@@ -4,6 +4,7 @@ import com.hivesandcolonies.polen.Polen;
 import com.hivesandcolonies.polen.item.accessory.PolenAccessoryBonus;
 import com.hivesandcolonies.polen.item.accessory.PolenAccessoryBonusType;
 import com.hivesandcolonies.polen.item.accessory.PolenAccessoryItem;
+import com.hivesandcolonies.polen.item.accessory.PolenAffinityCharmItem;
 import com.hivesandcolonies.polen.item.accessory.PolenAccessorySlot;
 import com.hivesandcolonies.polen.item.accessory.PolenAccessoryTarget;
 import com.hivesandcolonies.polen.item.base.TranslatableTooltipItem;
@@ -17,6 +18,7 @@ import com.hivesandcolonies.polen.item.story.PolenJournalItem;
 import com.hivesandcolonies.polen.item.story.PrincessLetterItem;
 import com.hivesandcolonies.polen.item.story.PrincessSealItem;
 import com.hivesandcolonies.polen.item.meta.PolenProgressionStage;
+import com.hivesandcolonies.polen.entity.ai.world.identity.PolenAffinity;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.item.BlockItem;
@@ -119,6 +121,50 @@ public class ModItems {
                     )
             );
 
+
+    // Affinity charms: one of these is equipped by the unique Polen when the world identity is created.
+    public static final DeferredItem<Item> APIARIST_CHARM =
+            registerAffinityCharmItem(
+                    "apiarist_charm",
+                    PolenAffinity.APIARIST,
+                    new PolenAccessoryBonus(PolenAccessoryBonusType.SOCIAL, 1)
+            );
+
+    public static final DeferredItem<Item> ARCANE_CHARM =
+            registerAffinityCharmItem(
+                    "arcane_charm",
+                    PolenAffinity.ARCANE,
+                    new PolenAccessoryBonus(PolenAccessoryBonusType.MAGIC, 1)
+            );
+
+    public static final DeferredItem<Item> COLONIAL_CHARM =
+            registerAffinityCharmItem(
+                    "colonial_charm",
+                    PolenAffinity.COLONIAL,
+                    new PolenAccessoryBonus(PolenAccessoryBonusType.SAFETY, 1)
+            );
+
+    public static final DeferredItem<Item> HARVEST_CHARM =
+            registerAffinityCharmItem(
+                    "harvest_charm",
+                    PolenAffinity.HARVEST,
+                    new PolenAccessoryBonus(PolenAccessoryBonusType.REST, 1)
+            );
+
+    public static final DeferredItem<Item> ARTISAN_CHARM =
+            registerAffinityCharmItem(
+                    "artisan_charm",
+                    PolenAffinity.ARTISAN,
+                    new PolenAccessoryBonus(PolenAccessoryBonusType.SAFETY, 1)
+            );
+
+    public static final DeferredItem<Item> WAYFARER_CHARM =
+            registerAffinityCharmItem(
+                    "wayfarer_charm",
+                    PolenAffinity.WAYFARER,
+                    new PolenAccessoryBonus(PolenAccessoryBonusType.CURIOSITY, 1)
+            );
+
     public static final DeferredItem<DeferredSpawnEggItem> POLEN_SPAWN_EGG =
         ITEMS.registerItem(
                 "polen_spawn_egg",
@@ -130,6 +176,26 @@ public class ModItems {
                 )
         );
 
+
+
+    private static DeferredItem<Item> registerAffinityCharmItem(
+            String name,
+            PolenAffinity affinity,
+            PolenAccessoryBonus bonus
+    ) {
+        return registerTypedItem(
+                name,
+                properties -> new PolenAffinityCharmItem(
+                        properties,
+                        affinity,
+                        bonus,
+                        new TranslatableTooltipItem.TooltipLine("tooltip.polen." + name + ".line1", ChatFormatting.GOLD),
+                        new TranslatableTooltipItem.TooltipLine("tooltip.polen." + name + ".line2", ChatFormatting.GRAY),
+                        new TranslatableTooltipItem.TooltipLine("tooltip.polen." + name + ".line3", ChatFormatting.DARK_GRAY)
+                ),
+                new Item.Properties().stacksTo(1)
+        );
+    }
 
     private static DeferredItem<Item> registerAccessoryItem(
             String name,
