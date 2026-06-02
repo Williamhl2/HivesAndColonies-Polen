@@ -79,6 +79,8 @@ public final class PolenDebugCommands {
                                                             + snapshot.taskRecoverUntil()
                                                             + ", quietActivity="
                                                             + snapshot.quietActivity()
+                                                            + ", equippedAffinityCharm="
+                                                            + snapshot.equippedAffinityCharm()
                                                             + ", dominantNeed="
                                                             + snapshot.dominantNeed()
                                                             + ", safetyNeed="
@@ -137,26 +139,6 @@ public final class PolenDebugCommands {
                                                             + snapshot.residenceContext()
                                                             + ", residenceStage="
                                                             + snapshot.residenceStage()
-                                                            + ", currentComfort="
-                                                            + snapshot.currentComfortSummary()
-                                                            + ", residenceComfort="
-                                                            + snapshot.residenceComfortSummary()
-                                                            + ", worldIdentity="
-                                                            + snapshot.worldIdentityId()
-                                                            + ", boundEntity="
-                                                            + snapshot.boundEntityUuid()
-                                                            + ", storyStage="
-                                                            + snapshot.storyStage()
-                                                            + ", dominantInterest="
-                                                            + snapshot.dominantInterest()
-                                                            + ", affinity="
-                                                            + snapshot.affinity()
-                                                            + ", equippedCharm="
-                                                            + snapshot.equippedAffinityCharm()
-                                                            + ", interests="
-                                                            + snapshot.interestSummary()
-                                                            + ", worldMemories="
-                                                            + snapshot.worldMemorySummary()
                                                             + ", restingSpot="
                                                             + formatPos(snapshot.restingSpot())
                                                             + ", dangerousSpot="
@@ -261,18 +243,6 @@ public final class PolenDebugCommands {
                                                             + worldData.getPolenEntityUuid()
                                                             + ", polenSpawned="
                                                             + worldData.isPolenSpawned()
-                                                            + ", identity="
-                                                            + (worldData.getIdentity() == null ? null : worldData.getIdentity().identityId())
-                                                            + ", storyStage="
-                                                            + worldData.getStoryStage()
-                                                            + ", dominantInterest="
-                                                            + worldData.getInterestProfile().dominantInterest()
-                                                            + ", affinity="
-                                                            + com.hivesandcolonies.polen.entity.ai.world.identity.PolenAffinityFactory.fromProfile(worldData.getInterestProfile())
-                                                            + ", interests="
-                                                            + worldData.getInterestProfile().summary()
-                                                            + ", worldMemories="
-                                                            + worldData.getWorldMemories()
                                             ),
                                             false
                                     );

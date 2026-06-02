@@ -1,9 +1,9 @@
-package com.hivesandcolonies.polen.client;
+package com.hivesandcolonies.polen.client.layer;
 
 import com.hivesandcolonies.polen.Polen;
 import com.hivesandcolonies.polen.client.model.PolenModel;
 import com.hivesandcolonies.polen.entity.PolenEntity;
-import com.hivesandcolonies.polen.item.accessory.PolenAccessorySlot;
+import com.hivesandcolonies.polen.entity.ai.world.identity.PolenWorldAffinity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -15,21 +15,20 @@ import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
 /**
- * Renders Polen's innate affinity charm as a small visible badge on her chest.
+ * Visible charm layer for Polen's Curios charm slot.
  *
- * The charm is still an internal Polen accessory, not a Nest Core and not a
- * vanilla armor slot. This layer only makes the already-equipped charm visible
- * to the player from the first moment of the world.
+ * The actual item is registered as a Curios charm and mirrored into Polen's Curios inventory server-side. This layer is
+ * only the entity-specific visual anchor, because Curios does not know how Polen's custom model should wear it.
  */
 public class PolenAffinityCharmLayer extends RenderLayer<PolenEntity, PolenModel> {
-    private static final float MIN = -3.0F / 16.0F;
-    private static final float MAX = 3.0F / 16.0F;
-    private static final float TOP = 2.0F / 16.0F;
-    private static final float BOTTOM = 8.0F / 16.0F;
-    private static final float FRONT_Z = -2.35F / 16.0F;
+    private static final float LEFT = -1.65F / 16.0F;
+    private static final float RIGHT = 1.65F / 16.0F;
+    private static final float TOP = 2.2F / 16.0F;
+    private static final float BOTTOM = 5.5F / 16.0F;
+    private static final float FRONT_Z = -2.08F / 16.0F;
 
-    public PolenAffinityCharmLayer(RenderLayerParent<PolenEntity, PolenModel> parent) {
-        super(parent);
+    public PolenAffinityCharmLayer(RenderLayerParent<PolenEntity, PolenModel> renderer) {
+        super(renderer);
     }
 
     @Override
@@ -45,14 +44,14 @@ public class PolenAffinityCharmLayer extends RenderLayer<PolenEntity, PolenModel
             float netHeadYaw,
             float headPitch
     ) {
-        ResourceLocation charmId = polen.getEquippedAccessory(PolenAccessorySlot.CHARM);
-        if (charmId == null) {
+        PolenWorldAffinity affinity = polen.getEquippedAffinityCharm();
+        if (affinity == PolenWorldAffinity.NONE) {
             return;
         }
 
         ResourceLocation texture = ResourceLocation.fromNamespaceAndPath(
                 Polen.MODID,
-                "textures/entity/accessory/" + charmId.getPath() + ".png"
+                "textures/entity/accessory/" + affinity.getSerializedName() + "_charm.png"
         );
 
         poseStack.pushPose();
@@ -62,10 +61,10 @@ public class PolenAffinityCharmLayer extends RenderLayer<PolenEntity, PolenModel
         Matrix4f matrix = pose.pose();
         VertexConsumer consumer = buffer.getBuffer(RenderType.entityCutoutNoCull(texture));
 
-        vertex(consumer, matrix, pose, MIN, BOTTOM, FRONT_Z, 0.0F, 1.0F, packedLight);
-        vertex(consumer, matrix, pose, MAX, BOTTOM, FRONT_Z, 1.0F, 1.0F, packedLight);
-        vertex(consumer, matrix, pose, MAX, TOP, FRONT_Z, 1.0F, 0.0F, packedLight);
-        vertex(consumer, matrix, pose, MIN, TOP, FRONT_Z, 0.0F, 0.0F, packedLight);
+        vertex(consumer, matrix, pose, LEFT, BOTTOM, FRONT_Z, 0.0F, 1.0F, packedLight);
+        vertex(consumer, matrix, pose, RIGHT, BOTTOM, FRONT_Z, 1.0F, 1.0F, packedLight);
+        vertex(consumer, matrix, pose, RIGHT, TOP, FRONT_Z, 1.0F, 0.0F, packedLight);
+        vertex(consumer, matrix, pose, LEFT, TOP, FRONT_Z, 0.0F, 0.0F, packedLight);
 
         poseStack.popPose();
     }

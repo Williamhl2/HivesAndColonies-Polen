@@ -8,14 +8,15 @@ import com.hivesandcolonies.polen.entity.ai.brain.mood.PolenMood;
 import com.hivesandcolonies.polen.entity.ai.brain.state.PolenAiState;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskStatus;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskType;
-import com.hivesandcolonies.polen.item.accessory.PolenAccessorySlot;
+import com.hivesandcolonies.polen.entity.ai.world.identity.PolenAffinityFactory;
+import com.hivesandcolonies.polen.entity.ai.world.identity.PolenWorldAffinity;
+import com.hivesandcolonies.polen.compat.curios.PolenCuriosBridge;
+import com.hivesandcolonies.polen.entity.equipment.PolenEquipmentInventory;
 import com.hivesandcolonies.polen.progression.PolenAffinityLevels;
 import com.hivesandcolonies.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.polen.progression.PolenStoryFlagsManager;
-import com.hivesandcolonies.polen.progression.world.PolenWorldStateManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -33,9 +34,6 @@ import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 
-import java.util.EnumMap;
-import java.util.Map;
-
 public class PolenEntity extends PathfinderMob {
     private static final String UNKNOWN_GIRL_KEY = "entity.polen.unknown_girl";
     private static final String POLEN_KEY = "entity.polen.polen";
@@ -51,9 +49,9 @@ public class PolenEntity extends PathfinderMob {
     private static final String TAG_DANGEROUS_SPOT_UNTIL = "DangerousSpotUntil";
     private static final String TAG_ACTIVE_LIGHT_POS = "ActiveLightPos";
     private static final String TAG_ACTIVE_LIGHT_UNTIL = "ActiveLightUntil";
-    private static final String TAG_ACCESSORIES = "PolenAccessories";
     private static final String TAG_NEEDS = "NeedState";
     private static final String TAG_INTENT = "IntentState";
+    private static final String TAG_EQUIPMENT = "PolenEquipment";
     private static final double DANGEROUS_SPOT_AVOID_RADIUS = 5.0D;
 
     private static final EntityDataAccessor<Integer> QUIET_ACTIVITY =
@@ -66,9 +64,11 @@ public class PolenEntity extends PathfinderMob {
             SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> CURRENT_GESTURE_TICKS =
             SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> EQUIPPED_AFFINITY_CHARM =
+            SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
 
     private final PolenAiState aiState = new PolenAiState();
-    private final Map<PolenAccessorySlot, ResourceLocation> equippedAccessories = new EnumMap<>(PolenAccessorySlot.class);
+    private final PolenEquipmentInventory equipmentInventory = new PolenEquipmentInventory();
 
     public PolenEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -97,6 +97,7 @@ public class PolenEntity extends PathfinderMob {
         builder.define(CURRENT_MOOD, PolenMood.CALM.getId());
         builder.define(CURRENT_GESTURE, PolenGesture.IDLE.getId());
         builder.define(CURRENT_GESTURE_TICKS, 0);
+        builder.define(EQUIPPED_AFFINITY_CHARM, PolenWorldAffinity.NONE.getId());
     }
 
     public void refreshDisplayName() {
@@ -129,10 +130,10 @@ public class PolenEntity extends PathfinderMob {
             return;
         }
 
-        if (this.level() instanceof ServerLevel serverLevel) {
-            PolenWorldStateManager.ensureFor(serverLevel, this);
+        this.ensureInitialAffinityCharm();
+        if (this.tickCount % 100 == 0) {
+            PolenCuriosBridge.syncAffinityCharmToCurios(this);
         }
-
         PolenAiFacade.tickServer(this);
     }
 
@@ -144,7 +145,10 @@ public class PolenEntity extends PathfinderMob {
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        saveEquippedAccessories(tag);
+        CompoundTag equipmentTag = new CompoundTag();
+        this.equipmentInventory.save(equipmentTag);
+        tag.put(TAG_EQUIPMENT, equipmentTag);
+
         this.aiState.save(
                 tag,
                 TAG_FAVORITE_FLOWER_POS,
@@ -167,7 +171,11 @@ public class PolenEntity extends PathfinderMob {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        loadEquippedAccessories(tag);
+        if (tag.contains(TAG_EQUIPMENT)) {
+            this.equipmentInventory.load(tag.getCompound(TAG_EQUIPMENT));
+            this.syncEquipmentState();
+        }
+
         this.aiState.load(
                 tag,
                 TAG_FAVORITE_FLOWER_POS,
@@ -224,57 +232,46 @@ public class PolenEntity extends PathfinderMob {
         return this.aiState;
     }
 
-    public boolean equipAccessory(PolenAccessorySlot slot, ResourceLocation itemId) {
-        if (slot == null || itemId == null) {
-            return false;
-        }
-
-        this.equippedAccessories.put(slot, itemId);
-        return true;
-    }
-
-    public ResourceLocation getEquippedAccessory(PolenAccessorySlot slot) {
-        return this.equippedAccessories.get(slot);
-    }
-
-    public boolean hasEquippedAccessory(PolenAccessorySlot slot) {
-        return this.equippedAccessories.containsKey(slot);
-    }
-
-    private void saveEquippedAccessories(CompoundTag tag) {
-        CompoundTag accessoriesTag = new CompoundTag();
-        for (Map.Entry<PolenAccessorySlot, ResourceLocation> entry : this.equippedAccessories.entrySet()) {
-            accessoriesTag.putString(entry.getKey().name(), entry.getValue().toString());
-        }
-        tag.put(TAG_ACCESSORIES, accessoriesTag);
-    }
-
-    private void loadEquippedAccessories(CompoundTag tag) {
-        this.equippedAccessories.clear();
-        if (!tag.contains(TAG_ACCESSORIES)) {
-            return;
-        }
-
-        CompoundTag accessoriesTag = tag.getCompound(TAG_ACCESSORIES);
-        for (PolenAccessorySlot slot : PolenAccessorySlot.values()) {
-            if (!accessoriesTag.contains(slot.name())) {
-                continue;
-            }
-
-            try {
-                this.equippedAccessories.put(slot, ResourceLocation.parse(accessoriesTag.getString(slot.name())));
-            } catch (IllegalArgumentException ignored) {
-                // Ignore invalid legacy data instead of preventing Polen from loading.
-            }
-        }
-    }
-
     public int pickQuietActivity() {
         return PolenAiFacade.pickQuietActivity(this);
     }
 
     public PolenAutonomousActionPlan pickQuietActionPlan() {
         return PolenAiFacade.pickQuietActionPlan(this);
+    }
+
+
+    public PolenEquipmentInventory getPolenEquipmentInventory() {
+        return this.equipmentInventory;
+    }
+
+    public PolenWorldAffinity getEquippedAffinityCharm() {
+        return PolenWorldAffinity.fromId(this.entityData.get(EQUIPPED_AFFINITY_CHARM));
+    }
+
+    public void equipAffinityCharm(PolenWorldAffinity affinity) {
+        PolenWorldAffinity safeAffinity = affinity == null ? PolenWorldAffinity.NONE : affinity;
+        this.equipmentInventory.setAffinityCharm(safeAffinity);
+        this.entityData.set(EQUIPPED_AFFINITY_CHARM, safeAffinity.getId());
+        PolenCuriosBridge.syncAffinityCharmToCurios(this);
+    }
+
+    public void ensureInitialAffinityCharm() {
+        if (this.getEquippedAffinityCharm() != PolenWorldAffinity.NONE) {
+            return;
+        }
+
+        if (this.equipmentInventory.hasAffinityCharm()) {
+            this.syncEquipmentState();
+            return;
+        }
+
+        this.equipAffinityCharm(PolenAffinityFactory.createInitialAffinity(this));
+    }
+
+    private void syncEquipmentState() {
+        this.entityData.set(EQUIPPED_AFFINITY_CHARM, this.equipmentInventory.getAffinityCharm().getId());
+        PolenCuriosBridge.syncAffinityCharmToCurios(this);
     }
 
     public String getQuietActivityName() {

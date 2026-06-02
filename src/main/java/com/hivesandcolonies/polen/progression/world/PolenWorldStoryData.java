@@ -2,7 +2,6 @@ package com.hivesandcolonies.polen.progression.world;
 
 import com.hivesandcolonies.polen.entity.ai.world.identity.PolenIdentity;
 import com.hivesandcolonies.polen.entity.ai.world.interests.PolenInterest;
-import com.hivesandcolonies.polen.entity.ai.world.interests.PolenInterestGenerator;
 import com.hivesandcolonies.polen.entity.ai.world.interests.PolenInterestProfile;
 import com.hivesandcolonies.polen.entity.ai.world.story.PolenStoryStage;
 import com.hivesandcolonies.polen.entity.ai.world.story.PolenWorldMemory;
@@ -73,28 +72,20 @@ public final class PolenWorldStoryData {
         this.polenSpawned = polenSpawned;
     }
 
+    public boolean hasIdentity() {
+        return this.identity != null;
+    }
+
     public PolenIdentity getIdentity() {
-        return identity;
+        return this.identity;
     }
 
     public void setIdentity(PolenIdentity identity) {
         this.identity = identity;
-        if (identity != null && interestProfile == null) {
-            this.interestProfile = PolenInterestGenerator.generate(identity.personalitySeed());
-        }
-    }
-
-    public boolean hasIdentity() {
-        return identity != null;
     }
 
     public PolenInterestProfile getInterestProfile() {
-        if (interestProfile == null) {
-            interestProfile = identity == null
-                    ? new PolenInterestProfile()
-                    : PolenInterestGenerator.generate(identity.personalitySeed());
-        }
-        return interestProfile;
+        return this.interestProfile;
     }
 
     public void setInterestProfile(PolenInterestProfile interestProfile) {
@@ -102,34 +93,30 @@ public final class PolenWorldStoryData {
     }
 
     public int getInterestScore(PolenInterest interest) {
-        return getInterestProfile().get(interest);
+        return this.interestProfile.get(interest);
     }
 
     public void adjustInterest(PolenInterest interest, int amount) {
-        getInterestProfile().add(interest, amount);
+        this.interestProfile.add(interest, amount);
     }
 
     public PolenStoryStage getStoryStage() {
-        return storyStage == null ? PolenStoryStage.AWAKENING : storyStage;
+        return this.storyStage;
     }
 
     public void setStoryStage(PolenStoryStage storyStage) {
         this.storyStage = storyStage == null ? PolenStoryStage.AWAKENING : storyStage;
     }
 
-    public EnumSet<PolenWorldMemory> getWorldMemories() {
-        return EnumSet.copyOf(worldMemories);
-    }
-
-    public boolean hasMemory(PolenWorldMemory memory) {
-        return worldMemories.contains(memory);
-    }
-
     public boolean remember(PolenWorldMemory memory) {
-        return worldMemories.add(memory);
+        return memory != null && this.worldMemories.add(memory);
     }
 
-    public boolean forget(PolenWorldMemory memory) {
-        return worldMemories.remove(memory);
+    public boolean remembers(PolenWorldMemory memory) {
+        return this.worldMemories.contains(memory);
+    }
+
+    public EnumSet<PolenWorldMemory> getWorldMemories() {
+        return EnumSet.copyOf(this.worldMemories);
     }
 }

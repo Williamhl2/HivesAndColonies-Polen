@@ -1,7 +1,6 @@
 package com.hivesandcolonies.polen.progression.world;
 
 import com.hivesandcolonies.polen.entity.PolenEntity;
-import com.hivesandcolonies.polen.entity.ai.world.identity.PolenAffinity;
 import com.hivesandcolonies.polen.entity.ai.world.identity.PolenAffinityFactory;
 import com.hivesandcolonies.polen.entity.ai.world.identity.PolenIdentity;
 import com.hivesandcolonies.polen.entity.ai.world.interests.PolenInterest;
@@ -9,7 +8,7 @@ import com.hivesandcolonies.polen.entity.ai.world.interests.PolenInterestGenerat
 import com.hivesandcolonies.polen.entity.ai.world.interests.PolenInterestProfile;
 import com.hivesandcolonies.polen.entity.ai.world.story.PolenStoryStage;
 import com.hivesandcolonies.polen.entity.ai.world.story.PolenWorldMemory;
-import com.hivesandcolonies.polen.item.accessory.PolenAccessorySlot;
+import com.hivesandcolonies.polen.entity.ai.world.identity.PolenWorldAffinity;
 
 import net.minecraft.server.level.ServerLevel;
 
@@ -64,12 +63,11 @@ public final class PolenWorldStateManager {
         }
 
         // Do not overwrite a later charm the player or story systems may equip.
-        if (polen.hasEquippedAccessory(PolenAccessorySlot.CHARM)) {
+        if (polen.getEquippedAffinityCharm() != PolenWorldAffinity.NONE) {
             return;
         }
 
-        PolenAffinity affinity = PolenAffinityFactory.fromProfile(data.getInterestProfile());
-        polen.equipAccessory(PolenAccessorySlot.CHARM, affinity.itemId());
+        polen.equipAffinityCharm(PolenAffinityFactory.fromProfile(data.getInterestProfile()));
     }
 
     public static PolenInterestProfile interests(ServerLevel level) {

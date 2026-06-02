@@ -1,13 +1,8 @@
 package com.hivesandcolonies.polen.registry;
 
 import com.hivesandcolonies.polen.Polen;
-import com.hivesandcolonies.polen.item.accessory.PolenAccessoryBonus;
-import com.hivesandcolonies.polen.item.accessory.PolenAccessoryBonusType;
-import com.hivesandcolonies.polen.item.accessory.PolenAccessoryItem;
-import com.hivesandcolonies.polen.item.accessory.PolenAffinityCharmItem;
-import com.hivesandcolonies.polen.item.accessory.PolenAccessorySlot;
-import com.hivesandcolonies.polen.item.accessory.PolenAccessoryTarget;
-import com.hivesandcolonies.polen.item.base.TranslatableTooltipItem;
+import com.hivesandcolonies.polen.entity.ai.world.identity.PolenWorldAffinity;
+import com.hivesandcolonies.polen.item.affinity.AffinityCharmItem;
 import com.hivesandcolonies.polen.item.colony.ResidenceCharmItem;
 import com.hivesandcolonies.polen.item.colony.SettlementCharmItem;
 import com.hivesandcolonies.polen.item.focus.BloomFocusItem;
@@ -17,10 +12,7 @@ import com.hivesandcolonies.polen.item.material.SourceTouchedPetalItem;
 import com.hivesandcolonies.polen.item.story.PolenJournalItem;
 import com.hivesandcolonies.polen.item.story.PrincessLetterItem;
 import com.hivesandcolonies.polen.item.story.PrincessSealItem;
-import com.hivesandcolonies.polen.item.meta.PolenProgressionStage;
-import com.hivesandcolonies.polen.entity.ai.world.identity.PolenAffinity;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
@@ -28,7 +20,6 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.List;
 import java.util.function.Function;
 
 public class ModItems {
@@ -56,6 +47,20 @@ public class ModItems {
     public static final DeferredItem<Item> BLOOM_FOCUS =
             registerFocusItem("bloom_focus", BloomFocusItem::new);
 
+    // Affinity charms: unique visual equipment generated from Polen's world affinity.
+    public static final DeferredItem<Item> APIARIST_CHARM =
+            registerTypedItem("apiarist_charm", properties -> new AffinityCharmItem(properties, PolenWorldAffinity.APIARIST), new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> ARCANE_CHARM =
+            registerTypedItem("arcane_charm", properties -> new AffinityCharmItem(properties, PolenWorldAffinity.ARCANE), new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> COLONIAL_CHARM =
+            registerTypedItem("colonial_charm", properties -> new AffinityCharmItem(properties, PolenWorldAffinity.COLONIAL), new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> HARVEST_CHARM =
+            registerTypedItem("harvest_charm", properties -> new AffinityCharmItem(properties, PolenWorldAffinity.HARVEST), new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> ARTISAN_CHARM =
+            registerTypedItem("artisan_charm", properties -> new AffinityCharmItem(properties, PolenWorldAffinity.ARTISAN), new Item.Properties().stacksTo(1));
+    public static final DeferredItem<Item> WAYFARER_CHARM =
+            registerTypedItem("wayfarer_charm", properties -> new AffinityCharmItem(properties, PolenWorldAffinity.WAYFARER), new Item.Properties().stacksTo(1));
+
     // Colony items: player-facing tools for integrating Polen into safe settlement spaces.
     public static final DeferredItem<Item> SETTLEMENT_CHARM =
             registerColonyItem("settlement_charm", SettlementCharmItem::new);
@@ -65,104 +70,6 @@ public class ModItems {
             ITEMS.registerItem(
                     "polen_lantern",
                     properties -> new BlockItem(ModBlocks.POLEN_LANTERN.get(), properties)
-            );
-
-
-    // Accessory items: Curios-compatible equipment for the player and future Polen equipment logic.
-    public static final DeferredItem<Item> HONEY_SIGNET_RING =
-            registerAccessoryItem(
-                    "honey_signet_ring",
-                    PolenAccessorySlot.RING,
-                    PolenAccessoryTarget.BOTH,
-                    PolenProgressionStage.ACT_I_FOUNDATION,
-                    false,
-                    List.of(
-                            new PolenAccessoryBonus(PolenAccessoryBonusType.SAFETY, 1),
-                            new PolenAccessoryBonus(PolenAccessoryBonusType.SOCIAL, 1)
-                    )
-            );
-
-    public static final DeferredItem<Item> SOURCE_PETAL_NECKLACE =
-            registerAccessoryItem(
-                    "source_petal_necklace",
-                    PolenAccessorySlot.NECKLACE,
-                    PolenAccessoryTarget.BOTH,
-                    PolenProgressionStage.ACT_I_FOUNDATION,
-                    false,
-                    List.of(
-                            new PolenAccessoryBonus(PolenAccessoryBonusType.MAGIC, 1),
-                            new PolenAccessoryBonus(PolenAccessoryBonusType.SOURCE_ATTUNEMENT, 1)
-                    )
-            );
-
-    public static final DeferredItem<Item> WAYFINDER_BELT =
-            registerAccessoryItem(
-                    "wayfinder_belt",
-                    PolenAccessorySlot.BELT,
-                    PolenAccessoryTarget.PLAYER,
-                    PolenProgressionStage.ACT_I_FOUNDATION,
-                    false,
-                    List.of(
-                            new PolenAccessoryBonus(PolenAccessoryBonusType.LIGHT_REACH, 1),
-                            new PolenAccessoryBonus(PolenAccessoryBonusType.CURIOSITY, 1)
-                    )
-            );
-
-    public static final DeferredItem<Item> HIVEHEART_CHARM =
-            registerAccessoryItem(
-                    "hiveheart_charm",
-                    PolenAccessorySlot.CHARM,
-                    PolenAccessoryTarget.POLEN,
-                    PolenProgressionStage.ACT_I_FOUNDATION,
-                    true,
-                    List.of(
-                            new PolenAccessoryBonus(PolenAccessoryBonusType.REST, 2),
-                            new PolenAccessoryBonus(PolenAccessoryBonusType.SAFETY, 1)
-                    )
-            );
-
-
-    // Affinity charms: one of these is equipped by the unique Polen when the world identity is created.
-    public static final DeferredItem<Item> APIARIST_CHARM =
-            registerAffinityCharmItem(
-                    "apiarist_charm",
-                    PolenAffinity.APIARIST,
-                    new PolenAccessoryBonus(PolenAccessoryBonusType.SOCIAL, 1)
-            );
-
-    public static final DeferredItem<Item> ARCANE_CHARM =
-            registerAffinityCharmItem(
-                    "arcane_charm",
-                    PolenAffinity.ARCANE,
-                    new PolenAccessoryBonus(PolenAccessoryBonusType.MAGIC, 1)
-            );
-
-    public static final DeferredItem<Item> COLONIAL_CHARM =
-            registerAffinityCharmItem(
-                    "colonial_charm",
-                    PolenAffinity.COLONIAL,
-                    new PolenAccessoryBonus(PolenAccessoryBonusType.SAFETY, 1)
-            );
-
-    public static final DeferredItem<Item> HARVEST_CHARM =
-            registerAffinityCharmItem(
-                    "harvest_charm",
-                    PolenAffinity.HARVEST,
-                    new PolenAccessoryBonus(PolenAccessoryBonusType.REST, 1)
-            );
-
-    public static final DeferredItem<Item> ARTISAN_CHARM =
-            registerAffinityCharmItem(
-                    "artisan_charm",
-                    PolenAffinity.ARTISAN,
-                    new PolenAccessoryBonus(PolenAccessoryBonusType.SAFETY, 1)
-            );
-
-    public static final DeferredItem<Item> WAYFARER_CHARM =
-            registerAffinityCharmItem(
-                    "wayfarer_charm",
-                    PolenAffinity.WAYFARER,
-                    new PolenAccessoryBonus(PolenAccessoryBonusType.CURIOSITY, 1)
             );
 
     public static final DeferredItem<DeferredSpawnEggItem> POLEN_SPAWN_EGG =
@@ -175,52 +82,6 @@ public class ModItems {
                         properties
                 )
         );
-
-
-
-    private static DeferredItem<Item> registerAffinityCharmItem(
-            String name,
-            PolenAffinity affinity,
-            PolenAccessoryBonus bonus
-    ) {
-        return registerTypedItem(
-                name,
-                properties -> new PolenAffinityCharmItem(
-                        properties,
-                        affinity,
-                        bonus,
-                        new TranslatableTooltipItem.TooltipLine("tooltip.polen." + name + ".line1", ChatFormatting.GOLD),
-                        new TranslatableTooltipItem.TooltipLine("tooltip.polen." + name + ".line2", ChatFormatting.GRAY),
-                        new TranslatableTooltipItem.TooltipLine("tooltip.polen." + name + ".line3", ChatFormatting.DARK_GRAY)
-                ),
-                new Item.Properties().stacksTo(1)
-        );
-    }
-
-    private static DeferredItem<Item> registerAccessoryItem(
-            String name,
-            PolenAccessorySlot slot,
-            PolenAccessoryTarget target,
-            PolenProgressionStage progressionStage,
-            boolean unique,
-            List<PolenAccessoryBonus> bonuses
-    ) {
-        return registerTypedItem(
-                name,
-                properties -> new PolenAccessoryItem(
-                        properties,
-                        progressionStage,
-                        slot,
-                        target,
-                        unique,
-                        bonuses,
-                        new TranslatableTooltipItem.TooltipLine("tooltip.polen." + name + ".line1", ChatFormatting.GOLD),
-                        new TranslatableTooltipItem.TooltipLine("tooltip.polen." + name + ".line2", ChatFormatting.GRAY),
-                        new TranslatableTooltipItem.TooltipLine("tooltip.polen." + name + ".line3", ChatFormatting.DARK_GRAY)
-                ),
-                new Item.Properties().stacksTo(1)
-        );
-    }
 
     private static DeferredItem<Item> registerStoryItem(
             String name,

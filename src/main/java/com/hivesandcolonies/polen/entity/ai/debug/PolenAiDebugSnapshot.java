@@ -9,15 +9,10 @@ import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskStatus;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskType;
 import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceType;
 import com.hivesandcolonies.polen.entity.ai.world.home.PolenResidenceStage;
-import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortRank;
-import com.hivesandcolonies.polen.entity.ai.world.identity.PolenAffinity;
-import com.hivesandcolonies.polen.entity.ai.world.interests.PolenInterest;
-import com.hivesandcolonies.polen.entity.ai.world.story.PolenStoryStage;
+import com.hivesandcolonies.polen.entity.ai.world.identity.PolenWorldAffinity;
 import com.hivesandcolonies.polen.entity.ai.world.observation.PolenObservationDisposition;
 import com.hivesandcolonies.polen.entity.ai.world.observation.PolenObservationFocus;
 import net.minecraft.core.BlockPos;
-
-import java.util.UUID;
 
 public record PolenAiDebugSnapshot(
         PolenMood mood,
@@ -33,6 +28,7 @@ public record PolenAiDebugSnapshot(
         int recentFailureCount,
         long taskRecoverUntil,
         String quietActivity,
+        PolenWorldAffinity equippedAffinityCharm,
         PolenNeed dominantNeed,
         int safetyNeed,
         int socialNeed,
@@ -62,20 +58,6 @@ public record PolenAiDebugSnapshot(
         BlockPos residenceUse,
         String residenceContext,
         PolenResidenceStage residenceStage,
-        int currentComfortScore,
-        PolenComfortRank currentComfortRank,
-        String currentComfortSummary,
-        int residenceComfortScore,
-        PolenComfortRank residenceComfortRank,
-        String residenceComfortSummary,
-        UUID worldIdentityId,
-        UUID boundEntityUuid,
-        PolenStoryStage storyStage,
-        PolenInterest dominantInterest,
-        PolenAffinity affinity,
-        String equippedAffinityCharm,
-        String interestSummary,
-        String worldMemorySummary,
         BlockPos restingSpot,
         BlockPos dangerousSpot
 ) {

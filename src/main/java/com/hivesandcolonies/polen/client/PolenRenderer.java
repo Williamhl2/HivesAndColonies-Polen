@@ -2,6 +2,7 @@ package com.hivesandcolonies.polen.client;
 
 import com.hivesandcolonies.polen.Polen;
 import com.hivesandcolonies.polen.client.model.PolenModel;
+import com.hivesandcolonies.polen.client.layer.PolenAffinityCharmLayer;
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 
