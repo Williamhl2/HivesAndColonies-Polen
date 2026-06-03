@@ -39,6 +39,18 @@ La idea es que cada feature nueva entre por una capa concreta en vez de inflar `
   - perfiles reutilizables de busqueda, shortlist, resolucion de alcanzabilidad y estado observable
 - `entity/ai/navigation/safety/*`
   - evaluacion de spots, rutas de escape, lluvia, noche y refugio
+- `entity/ai/world/affordance/*`
+  - traduce lugares concretos a ideas usables como `REST`, `RESIDENCE`, `SHELTER`, `LIGHT` o `INTEREST`
+- `entity/ai/world/observation/*`
+  - guarda que esta mirando o evaluando Polen antes de actuar
+- `entity/ai/world/comfort/*`
+  - puntua sitios por comodidad semantica, no solo por distancia o un bloque valido
+- `entity/ai/world/identity/*`
+  - afinidad base de Polen y sesgos suaves del mundo
+- `entity/ai/world/interests/*`
+  - genera intereses desde afinidad y contexto
+- `entity/ai/world/home/*`
+  - residencia, pertenencia y uso del hogar
 - `entity/ai/ability/magic/*`
   - blink, attunement, reflection y gestion de la lampara
 - `entity/ai/expression/gesture/*`
@@ -130,6 +142,28 @@ Notas:
 - `reflecting` funciona cerca de resting spot o una luz manejada por Polen
 - `restingPos` y `residence` ya no significan lo mismo
 
+## Lectura del mundo
+
+La IA ya no deberia pensar solo en terminos de:
+
+- un `goal`
+- un `BlockPos`
+- una ruta
+
+Ahora existe una capa intermedia donde Polen interpreta el entorno:
+
+- `affordance`
+  - "esto sirve para descansar"
+  - "esto sirve como refugio"
+  - "esto parece una luz interesante"
+- `observation`
+  - "lo vi"
+  - "lo estoy evaluando"
+  - "lo estoy usando"
+  - "lo descarte"
+
+Eso prepara una IA menos rigida y mas escalable para casas, luces, muebles, colony spaces o futuros objetos modded.
+
 ## Seguridad
 
 `PolenSafetyNavigator` y `PolenSafetyEvaluator` ya no tratan todos los problemas como la misma "cueva mala".
@@ -157,6 +191,27 @@ Comportamiento esperado:
 - de noche intenta llegar a un area plana donde pueda colocar luz
 - si queda atascada puede usar `blink`
 - el planner evita reusar el mismo spot actual como falso destino de escape
+
+## Comfort, refugio y descanso
+
+La capa `world/comfort` agrega una idea simple pero importante:
+no todos los spots validos se sienten igual para Polen.
+
+`PolenComfortEvaluator` y sus perfiles permiten puntuar candidatos por:
+
+- distancia
+- techo o refugio real
+- luz
+- contexto del lugar
+- tipo de uso esperado
+
+Cambio reciente importante:
+
+- la residencia recordada ya no domina siempre la decision
+- descanso y refugio ahora comparan `residence`, `restingPos` y opciones locales con score ajustado por comfort
+- tambien hay limites de distancia para que Polen no intente volver "a casa" desde rangos absurdos cuando un lugar razonable esta cerca
+
+Eso deja a `residence` como un ancla emocional y funcional, pero no como una orden absoluta que vuelva torpe el pathing.
 
 ## Luz y magia
 
@@ -259,6 +314,13 @@ Narrativamente:
 - `settlement_charm` marca descanso seguro
 - `residence_charm` marca pertenencia
 
+En la practica actual:
+
+- `restingPos` sigue siendo memoria tactica de corto alcance
+- `residence` es un lugar semantico de hogar
+- `affordance` decide cuando conviene usar uno u otro
+- lluvia, noche y comfort cambian el peso relativo de cada opcion
+
 ## Items y escalabilidad
 
 El arbol de items ya esta preparado para crecer sin mezclar todo:
@@ -269,6 +331,9 @@ El arbol de items ya esta preparado para crecer sin mezclar todo:
 - `item/focus/*`
 - `item/colony/*`
 - `item/accessory/*`
+- `item/affinity/*`
+
+Tambien existe `compat/curios/*` para mantener la integracion de equipamiento fuera de la logica de IA.
 
 `item/accessory/*` ya contiene la base para:
 
@@ -278,6 +343,18 @@ El arbol de items ya esta preparado para crecer sin mezclar todo:
 - item reusable
 
 Esto prepara anillos, collares, cinturones y piezas que Polen pueda equipar o que el jugador pueda usar.
+
+`item/affinity/*` ya cubre amuletos iniciales como:
+
+- `apiarist_charm`
+- `arcane_charm`
+- `colonial_charm`
+- `harvest_charm`
+- `artisan_charm`
+- `wayfarer_charm`
+
+Esos charms no son solo loot cosmético.
+Tambien dejan lista la conexion entre identidad de Polen, accesorios y futuro equipamiento compartido con jugador.
 
 ## Debug
 
@@ -293,7 +370,11 @@ Sirve para inspeccionar:
 - quiet activity
 - needs
 - estado de seguridad
+- observation y affordance activos
 - memoria espacial relevante
+
+Si la IA vuelve a sentirse torpe, el objetivo no debe ser adivinar.
+Primero hay que comprobar que estaba intentando observar, elegir y resolver.
 
 ## Regla de mantenimiento
 

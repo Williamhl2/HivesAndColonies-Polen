@@ -11,6 +11,8 @@ import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyEvaluat
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceResolver;
 import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceTarget;
+import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceType;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenHomeManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 
@@ -59,7 +61,8 @@ public final class PolenRoutinePlanner {
     }
 
     public static boolean isNearRestingSpot(PolenEntity polen) {
-        return polen.getAiState().getRestingPos() != null
+        return PolenHomeManager.isNearResidence(polen)
+                || polen.getAiState().getRestingPos() != null
                 && polen.getAiState().getRestingPos().closerToCenterThan(polen.position(), 3.0D);
     }
 
@@ -86,7 +89,8 @@ public final class PolenRoutinePlanner {
     private static BlockPos findRestTarget(PolenEntity polen) {
         PolenAffordanceTarget restTarget = PolenAffordanceResolver.findBestRestSpot(polen, DEFAULT_SAFE_SPOT_RADIUS);
         if (restTarget != null) {
-            if (!restTarget.usePos().equals(polen.getAiState().getRestingPos())) {
+            if (restTarget.type() == PolenAffordanceType.REST
+                    && !restTarget.usePos().equals(polen.getAiState().getRestingPos())) {
                 polen.getAiState().setRestingPos(restTarget.usePos());
             }
             return restTarget.usePos();
@@ -117,6 +121,12 @@ public final class PolenRoutinePlanner {
         BlockPos normalizedRestingPos = normalizeRestingAnchor(polen, polen.getAiState().getRestingPos());
         if (normalizedRestingPos != null) {
             return normalizedRestingPos;
+        }
+
+        BlockPos residenceUsePos = PolenHomeManager.getValidResidenceUsePos(polen);
+        BlockPos normalizedResidencePos = normalizeQuietCreationAnchor(polen, residenceUsePos);
+        if (normalizedResidencePos != null && residenceUsePos.distSqr(polen.blockPosition()) <= 18.0D * 18.0D) {
+            return normalizedResidencePos;
         }
 
         return PolenSafetyNavigator.findNearbySafeSurfaceSpot(polen, DEFAULT_SAFE_SPOT_RADIUS);

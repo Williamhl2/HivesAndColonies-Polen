@@ -12,6 +12,17 @@ The project currently combines five layers:
 4. Companion-oriented AI, safety, and soft magic.
 5. Item and block content that supports narrative, colony, and future accessory systems.
 
+## Modpack context
+
+This project is being built as part of the `Hives & Colonies` modpack ecosystem, not as a standalone vanilla-only design exercise.
+
+That has two direct consequences:
+
+- Polen should increasingly understand modded homes, colony spaces, lights, doors, furniture, magic-adjacent areas, and apiary-oriented spaces as meaningful world signals.
+- Item and accessory planning should assume long-term integration with `Curios`, colony-oriented content, and the broader building/decor ecosystem already present in the pack.
+
+See [MODPACK_CONTEXT.md](MODPACK_CONTEXT.md) for the working integration map based on the user-provided pack snapshot from `2026-06-02`.
+
 ## Technical goal
 
 The codebase should let Polen grow as a character without turning the mod into:
@@ -67,6 +78,7 @@ Responsibilities:
 - `entity/ai/navigation/*`
 - `entity/ai/expression/*`
 - `entity/ai/ability/*`
+- `entity/ai/world/*`
 
 Responsibilities:
 
@@ -79,6 +91,7 @@ Responsibilities:
 - safety and shelter logic
 - blink and subtle magic
 - animation-facing gesture state
+- world-facing affordances, comfort, home semantics, observation, and affinity shaping
 
 ### Progression
 

@@ -10,6 +10,7 @@ import com.hivesandcolonies.polen.entity.ai.brain.mood.PolenMood;
 import com.hivesandcolonies.polen.entity.ai.brain.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceResolver;
+import com.hivesandcolonies.polen.entity.ai.world.home.PolenHomeManager;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
@@ -160,7 +161,7 @@ public final class PolenIntentController {
     }
 
     private static boolean canSeekRest(PolenEntity polen) {
-        return polen.getAiState().getRestingPos() != null
+        return (polen.getAiState().getRestingPos() != null || PolenHomeManager.getValidResidenceUsePos(polen) != null)
                 && !isAtRestSpot(polen)
                 && !PolenSafetyNavigator.isInUnsafeArea(polen);
     }
@@ -181,6 +182,10 @@ public final class PolenIntentController {
     }
 
     private static boolean isAtRestSpot(PolenEntity polen) {
+        if (PolenHomeManager.isNearResidence(polen)) {
+            return true;
+        }
+
         return polen.getAiState().getRestingPos() != null
                 && polen.distanceToSqr(Vec3.atCenterOf(polen.getAiState().getRestingPos())) <= REST_ARRIVAL_DISTANCE_SQR;
     }

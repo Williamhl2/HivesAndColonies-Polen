@@ -133,6 +133,63 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 
 - `PolenMemoryHandler`
 
+### `entity/ai/world/affordance`
+
+- `PolenAffordanceType`
+- `PolenAffordanceTarget`
+- `PolenAffordanceResolver`
+
+Responsabilidad:
+
+- traducir lugares concretos a usos semanticos como refugio, descanso, luz, interes o residencia
+
+### `entity/ai/world/observation`
+
+- `PolenObservationFocus`
+- `PolenObservationDisposition`
+- `PolenObservationController`
+
+Responsabilidad:
+
+- registrar que esta observando Polen y con que disposicion
+
+### `entity/ai/world/comfort`
+
+- `PolenComfortCategory`
+- `PolenComfortProfile`
+- `PolenComfortRank`
+- `PolenComfortRule`
+- `PolenComfortReport`
+- `PolenComfortRules`
+- `PolenComfortSignal`
+- `PolenComfortEvaluator`
+
+Responsabilidad:
+
+- puntuar lugares por comodidad semantica y no solo por distancia o navegacion
+
+### `entity/ai/world/identity`
+
+- `PolenAffinity`
+- `PolenWorldAffinity`
+- `PolenIdentity`
+- `PolenAffinityFactory`
+
+Responsabilidad:
+
+- identidad de Polen, afinidades base y sesgos suaves de comportamiento
+
+### `entity/ai/world/interests`
+
+- `PolenInterest`
+- `PolenInterestProfile`
+- `PolenInterestGenerator`
+- `PolenAffinityBehaviorHooks`
+
+Responsabilidad:
+
+- generar intereses a partir de afinidad y contexto del mundo
+
 ### `entity/ai/ability/magic`
 
 - `PolenMagicController`
@@ -169,6 +226,15 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 - `PolenResidenceValidation`
 - `PolenResidenceValidator`
 - `PolenHomeManager`
+
+### `entity/ai/world/story`
+
+- `PolenWorldMemory`
+- `PolenStoryStage`
+
+Responsabilidad:
+
+- puentes entre memoria narrativa local y lectura de etapa del mundo
 
 ### `entity/ai/navigation/goal`
 
@@ -221,6 +287,14 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 - `PolenAccessoryBonusType`
 - `PolenAccessoryBonus`
 - `PolenAccessoryItem`
+
+### `item/affinity`
+
+- `AffinityCharmItem`
+
+### `compat/curios`
+
+- `PolenCuriosBridge`
 
 ## Progression
 
@@ -307,10 +381,16 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 - descanso improvisado sigue en `routine` y `restingPos`
 - no mezclar ambos conceptos en `item` o `goal`
 
+### Mundo semantico
+
+- affordance, observation, comfort, identity e interests deben vivir en `entity/ai/world/*`
+- si una feature describe como Polen entiende un lugar, no debe caer por accidente en `goal`, `magic` o `entity`
+
 ### Accesorios
 
 - toda nueva pieza reusable debe apoyarse en `item/accessory`
 - efectos especiales de accesorios no deben vivir embebidos en el item si pueden aislarse
+- integraciones de equipamiento externo como `Curios` deben quedar en `compat/*`
 
 ### PolenEntity
 

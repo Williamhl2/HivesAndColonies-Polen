@@ -12,12 +12,17 @@ import com.hivesandcolonies.polen.entity.ai.navigation.search.shelter.PolenShelt
 import com.hivesandcolonies.polen.entity.ai.navigation.search.shelter.PolenShelterSpotHelper;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortEvaluator;
+import com.hivesandcolonies.polen.entity.ai.world.comfort.PolenComfortProfile;
 import com.hivesandcolonies.polen.entity.ai.world.home.PolenHomeManager;
 import com.hivesandcolonies.polen.entity.ai.world.home.PolenResidenceTarget;
 import com.hivesandcolonies.polen.entity.ai.world.interests.PolenAffinityBehaviorHooks;
 import net.minecraft.core.BlockPos;
 
 public final class PolenAffordanceResolver {
+    private static final int DEFAULT_REST_TRAVEL_RADIUS = 18;
+    private static final int BAD_WEATHER_REST_TRAVEL_RADIUS = 36;
+
     private PolenAffordanceResolver() {
     }
 
@@ -26,29 +31,45 @@ public final class PolenAffordanceResolver {
             return null;
         }
 
+        BlockPos origin = polen.blockPosition();
+        PolenAffordanceTarget bestTarget = null;
+        double bestScore = Double.MAX_VALUE;
+
         PolenResidenceTarget rememberedResidence = PolenHomeManager.getRememberedResidence(polen);
         if (rememberedResidence != null
                 && rememberedResidence.usePos().distSqr(polen.blockPosition()) <= (double) ((radius + 8) * (radius + 8))) {
-            return new PolenAffordanceTarget(
+            PolenAffordanceTarget target = new PolenAffordanceTarget(
                     rememberedResidence.anchorPos().immutable(),
                     rememberedResidence.usePos().immutable(),
                     PolenAffordanceType.RESIDENCE,
                     "residence_" + rememberedResidence.context()
             );
+            bestScore = scoreResidenceRestCandidate(polen, origin, target.usePos(), true);
+            bestTarget = target;
         }
 
         BlockPos houseShelter = PolenShelterSpotHelper.findNearbyHouseShelterSpot(polen, Math.max(8, radius + 4));
         if (houseShelter != null) {
-            return shelterAffordance(houseShelter, houseShelter, PolenShelterKind.HOUSE);
+            PolenAffordanceTarget candidate = shelterAffordance(houseShelter, houseShelter, PolenShelterKind.HOUSE);
+            double candidateScore = scoreShelterCandidate(polen, origin, candidate.usePos());
+            if (candidateScore < bestScore) {
+                bestScore = candidateScore;
+                bestTarget = candidate;
+            }
         }
 
         BlockPos generalShelter = PolenShelterSpotHelper.findNearbyShelterSpot(polen, radius);
         if (generalShelter != null) {
             PolenShelterKind kind = PolenShelterContextResolver.resolveShelterKind(polen.level(), generalShelter);
-            return shelterAffordance(generalShelter, generalShelter, kind);
+            PolenAffordanceTarget candidate = shelterAffordance(generalShelter, generalShelter, kind);
+            double candidateScore = scoreShelterCandidate(polen, origin, candidate.usePos());
+            if (candidateScore < bestScore) {
+                bestScore = candidateScore;
+                bestTarget = candidate;
+            }
         }
 
-        return null;
+        return bestTarget;
     }
 
     public static PolenAffordanceTarget findBestNightLight(PolenEntity polen, int radius) {
@@ -87,37 +108,53 @@ public final class PolenAffordanceResolver {
             return null;
         }
 
+        BlockPos origin = polen.blockPosition();
+        PolenAffordanceTarget bestTarget = null;
+        double bestScore = Double.MAX_VALUE;
+
         PolenResidenceTarget rememberedResidence = PolenHomeManager.getRememberedResidence(polen);
-        if (rememberedResidence != null) {
-            return new PolenAffordanceTarget(
+        if (rememberedResidence != null && shouldConsiderResidenceForRest(polen, origin, rememberedResidence.usePos(), safeRadius)) {
+            PolenAffordanceTarget target = new PolenAffordanceTarget(
                     rememberedResidence.anchorPos().immutable(),
                     rememberedResidence.usePos().immutable(),
                     PolenAffordanceType.RESIDENCE,
                     "residence_" + rememberedResidence.context()
             );
+            bestScore = scoreResidenceRestCandidate(polen, origin, target.usePos(), false);
+            bestTarget = target;
         }
 
         BlockPos normalizedRestingPos = PolenRoutinePlanner.normalizeRestingAnchor(polen, polen.getAiState().getRestingPos());
-        if (normalizedRestingPos != null) {
-            return new PolenAffordanceTarget(
+        if (normalizedRestingPos != null && shouldConsiderLocalRest(origin, normalizedRestingPos, safeRadius)) {
+            PolenAffordanceTarget target = new PolenAffordanceTarget(
                     normalizedRestingPos.immutable(),
                     normalizedRestingPos.immutable(),
                     PolenAffordanceType.REST,
                     "remembered_rest"
             );
+            double candidateScore = scoreLocalRestCandidate(polen, origin, target.usePos());
+            if (candidateScore < bestScore) {
+                bestScore = candidateScore;
+                bestTarget = target;
+            }
         }
 
         BlockPos fallbackRest = PolenSafetyNavigator.findNearbySafeSurfaceSpot(polen, safeRadius);
         if (fallbackRest != null) {
-            return new PolenAffordanceTarget(
+            PolenAffordanceTarget target = new PolenAffordanceTarget(
                     fallbackRest.immutable(),
                     fallbackRest.immutable(),
                     PolenAffordanceType.REST,
                     "fallback_rest"
             );
+            double candidateScore = scoreLocalRestCandidate(polen, origin, target.usePos());
+            if (candidateScore < bestScore) {
+                bestScore = candidateScore;
+                bestTarget = target;
+            }
         }
 
-        return null;
+        return bestTarget;
     }
 
     public static PolenAffordanceTarget findBestInterest(PolenEntity polen, boolean includeSource) {
@@ -177,5 +214,77 @@ public final class PolenAffordanceResolver {
                 type,
                 contextKey
         );
+    }
+
+    private static boolean shouldConsiderResidenceForRest(
+            PolenEntity polen,
+            BlockPos origin,
+            BlockPos residenceUsePos,
+            int safeRadius
+    ) {
+        if (origin == null || residenceUsePos == null) {
+            return false;
+        }
+
+        int maxRadius = polen.level().isNight() || polen.level().isRaining()
+                ? Math.max(BAD_WEATHER_REST_TRAVEL_RADIUS, safeRadius * 3)
+                : Math.max(DEFAULT_REST_TRAVEL_RADIUS, safeRadius * 2);
+        return residenceUsePos.distSqr(origin) <= (double) (maxRadius * maxRadius);
+    }
+
+    private static boolean shouldConsiderLocalRest(BlockPos origin, BlockPos candidate, int safeRadius) {
+        if (origin == null || candidate == null) {
+            return false;
+        }
+
+        int maxRadius = Math.max(DEFAULT_REST_TRAVEL_RADIUS, safeRadius * 2);
+        return candidate.distSqr(origin) <= (double) (maxRadius * maxRadius);
+    }
+
+    private static double scoreResidenceRestCandidate(
+            PolenEntity polen,
+            BlockPos origin,
+            BlockPos candidate,
+            boolean shelterContext
+    ) {
+        double score = PolenComfortEvaluator.comfortAdjustedDistanceScore(
+                polen,
+                origin,
+                candidate,
+                PolenComfortProfile.RESIDENCE
+        );
+        if (!shelterContext) {
+            score -= 10.0D;
+        }
+        if (polen.level().isNight() || polen.level().isRaining()) {
+            score -= 14.0D;
+        }
+        return score;
+    }
+
+    private static double scoreLocalRestCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
+        double score = PolenComfortEvaluator.comfortAdjustedDistanceScore(
+                polen,
+                origin,
+                candidate,
+                PolenComfortProfile.SHELTER
+        );
+        if (candidate.closerToCenterThan(polen.position(), 4.0D)) {
+            score -= 4.0D;
+        }
+        return score;
+    }
+
+    private static double scoreShelterCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
+        double score = PolenComfortEvaluator.comfortAdjustedDistanceScore(
+                polen,
+                origin,
+                candidate,
+                PolenComfortProfile.SHELTER
+        );
+        if (polen.level().isRaining()) {
+            score -= 6.0D;
+        }
+        return score;
     }
 }

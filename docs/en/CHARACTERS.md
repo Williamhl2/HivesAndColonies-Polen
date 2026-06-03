@@ -35,6 +35,12 @@ In the current implementation Polen already:
 
 The target feeling is "another player-like presence in the world", not "smart furniture with dialogue".
 
+That feeling also needs to remain coherent with the wider `Hives & Colonies` ecosystem:
+
+- villages and colony spaces should read as meaningful places
+- interiors should feel safer and more personal than generic outdoor cover
+- bees, magic, decoration, and home life should reinforce the same identity
+
 ### Growth direction
 
 As the story and relationship deepen, Polen should become:

@@ -2,6 +2,8 @@
 
 Narrative NeoForge mod for Minecraft 1.21.1 centered on Polen, a persistent companion character with memory, moods, autonomous behavior, relationship progression, and story-driven growth.
 
+The mod is also being built as a character-driven part of the larger `Hives & Colonies` modpack ecosystem, so Polen's future items, shelter logic, affinities, and accessories are expected to integrate with a richer colony, magic, home, and Curios-heavy environment.
+
 Current status: active early development.
 
 ## What the mod already includes
@@ -39,6 +41,7 @@ Polen should increasingly feel like another player in the world, not a static qu
 
 - [Documentation index](docs/README.md)
 - [Technical overview](docs/dev/PROJECT_OVERVIEW.md)
+- [Modpack context](docs/dev/MODPACK_CONTEXT.md)
 - [Polen AI architecture](docs/dev/POLEN_AI.md)
 - [Codebase map](docs/dev/CODEBASE_MAP.md)
 - [Spanish story bible](docs/es/STORY.md)
@@ -88,6 +91,8 @@ Run tests:
 
 - Polen now differentiates between generic danger, rain shelter, and night-light relocation.
 - Quiet activities already include singing, drawing, attuning, illuminating, and reflecting.
-- AI structure is split into `core`, `brain`, `navigation`, `expression`, and `ability`, with reusable search profiles inside navigation and a task layer between intent and goals.
+- AI structure is split into `core`, `brain`, `navigation`, `expression`, `ability`, and `world`, with comfort, home, observation, affinity, and affordance layers separated from raw goals.
+- Rest and shelter selection now balance remembered residence against local comfort and travel distance, so Polen does not blindly prefer home from impractical ranges.
 - `/polen ai get` now exposes intent, task, search state, and recent task failure recovery so in-world debugging is much less blind.
+- Early affinity charms already exist and sync through `Curios`, leaving room for future rings, necklaces, belts, and other player or companion accessories.
 - The animation layer already uses a `PlayerModel`-based setup so future richer animation systems can hook into gestures cleanly.

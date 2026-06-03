@@ -66,6 +66,12 @@ La fantasia actual del mod ya muestra a Polen como una presencia con continuidad
 
 La meta es que se sienta cada vez menos como un NPC y mas como una companera real.
 
+Tambien debe sentirse coherente con el ecosistema de `Hives & Colonies`:
+
+- colonias y aldeas como lugares habitables reales
+- interiores y refugios como espacios con valor emocional
+- magia, abejas, decoracion y hogar como partes del mismo mundo
+
 ## Los cuatro pilares
 
 ### Polen
