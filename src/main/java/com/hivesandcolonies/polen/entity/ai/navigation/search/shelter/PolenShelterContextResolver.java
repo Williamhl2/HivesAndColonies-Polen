@@ -13,6 +13,8 @@ public final class PolenShelterContextResolver {
     private static final int DOOR_RADIUS = 3;
     private static final int LIGHT_RADIUS = 4;
     private static final int BED_RADIUS = 4;
+    private static final int TREE_CONTEXT_RADIUS = 4;
+    private static final int FLOWER_CONTEXT_RADIUS = 5;
 
     private PolenShelterContextResolver() {
     }
@@ -84,17 +86,59 @@ public final class PolenShelterContextResolver {
     }
 
     public static boolean isTreeShelter(Level level, BlockPos pos) {
-        for (int dy = 2; dy <= 5; dy++) {
+        if (level == null || pos == null) {
+            return false;
+        }
+
+        boolean hasLeavesAbove = false;
+        for (int dy = 2; dy <= 6; dy++) {
             BlockState state = level.getBlockState(pos.above(dy));
             if (state.is(BlockTags.LEAVES)) {
-                return true;
+                hasLeavesAbove = true;
+                break;
+            }
+        }
+
+        return hasLeavesAbove && hasNearbyNaturalTreeContext(level, pos);
+    }
+
+    public static boolean isNaturalRainShelter(Level level, BlockPos pos) {
+        return isTreeShelter(level, pos)
+                && countProtectiveSides(level, pos) <= 2
+                && countNearbyStoneLikeBlocks(level, pos, 2) <= 9;
+    }
+
+    public static boolean isFlowerFriendlyShelter(Level level, BlockPos pos) {
+        if (level == null || pos == null) {
+            return false;
+        }
+
+        for (int dx = -FLOWER_CONTEXT_RADIUS; dx <= FLOWER_CONTEXT_RADIUS; dx++) {
+            for (int dz = -FLOWER_CONTEXT_RADIUS; dz <= FLOWER_CONTEXT_RADIUS; dz++) {
+                for (int dy = -1; dy <= 1; dy++) {
+                    if (level.getBlockState(pos.offset(dx, dy, dz)).is(BlockTags.FLOWERS)) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
     }
 
+    public static boolean isCaveLikeShelter(Level level, BlockPos pos) {
+        if (level == null || pos == null) {
+            return true;
+        }
+
+        return !level.canSeeSky(pos.above())
+                && countProtectiveSides(level, pos) >= 3
+                && countNearbyStoneLikeBlocks(level, pos, 2) >= 10
+                && !isHouseInterior(level, pos)
+                && !isTreeShelter(level, pos);
+    }
+
     public static boolean isRoofShelter(Level level, BlockPos pos) {
-        return !isTreeShelter(level, pos);
+        return !isTreeShelter(level, pos) && !isCaveLikeShelter(level, pos);
     }
 
     public static boolean hasNearbyDoor(Level level, BlockPos origin) {
@@ -163,6 +207,20 @@ public final class PolenShelterContextResolver {
         return false;
     }
 
+    private static boolean hasNearbyNaturalTreeContext(Level level, BlockPos pos) {
+        for (int dx = -TREE_CONTEXT_RADIUS; dx <= TREE_CONTEXT_RADIUS; dx++) {
+            for (int dz = -TREE_CONTEXT_RADIUS; dz <= TREE_CONTEXT_RADIUS; dz++) {
+                for (int dy = -2; dy <= 5; dy++) {
+                    BlockState state = level.getBlockState(pos.offset(dx, dy, dz));
+                    if (state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     private static int countProtectiveSides(Level level, BlockPos pos) {
         int sides = 0;
         for (Direction direction : Direction.Plane.HORIZONTAL) {
@@ -173,6 +231,24 @@ public final class PolenShelterContextResolver {
             }
         }
         return sides;
+    }
+
+    private static int countNearbyStoneLikeBlocks(Level level, BlockPos pos, int radius) {
+        int count = 0;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                for (int dy = -1; dy <= 2; dy++) {
+                    BlockState state = level.getBlockState(pos.offset(dx, dy, dz));
+                    if (state.isAir() || state.is(BlockTags.LEAVES) || state.is(BlockTags.LOGS)) {
+                        continue;
+                    }
+                    if (state.canOcclude()) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
     }
 
     private static boolean isProtectiveBlock(Level level, BlockPos pos) {

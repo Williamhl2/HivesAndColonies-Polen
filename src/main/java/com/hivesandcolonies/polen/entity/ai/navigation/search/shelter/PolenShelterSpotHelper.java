@@ -18,6 +18,7 @@ public final class PolenShelterSpotHelper {
     private static final int[] LOCAL_Y_OFFSETS = {0, 1, -1, 2, -2, 3, -3, 4};
     private static final int NEARBY_LIGHT_RADIUS = 4;
     private static final int HOUSE_SEARCH_RADIUS_BONUS = 4;
+    private static final int NATURAL_SHELTER_SEARCH_RADIUS_BONUS = 6;
 
     private PolenShelterSpotHelper() {
     }
@@ -30,6 +31,14 @@ public final class PolenShelterSpotHelper {
         BlockPos houseShelter = findNearbyHouseShelterSpot(polen, Math.max(8, radius + HOUSE_SEARCH_RADIUS_BONUS));
         if (houseShelter != null) {
             return houseShelter;
+        }
+
+        BlockPos naturalShelter = findNearbyNaturalRainShelterSpot(
+                polen,
+                Math.max(10, radius + NATURAL_SHELTER_SEARCH_RADIUS_BONUS)
+        );
+        if (naturalShelter != null) {
+            return naturalShelter;
         }
 
         BlockPos origin = polen.blockPosition();
@@ -50,6 +59,30 @@ public final class PolenShelterSpotHelper {
         }
 
         return bestSpot;
+    }
+
+    public static BlockPos findNearbyNaturalRainShelterSpot(PolenEntity polen, int radius) {
+        if (polen == null) {
+            return null;
+        }
+
+        BlockPos origin = polen.blockPosition();
+        Level level = polen.level();
+        List<PolenScoredSpot> shortlist = PolenSpotSelectionHelper.createShortlist();
+
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                for (int dy : LOCAL_Y_OFFSETS) {
+                    BlockPos candidate = origin.offset(dx, dy, dz);
+                    double score = scoreNaturalRainShelterCandidate(polen, origin, candidate);
+                    if (Double.isFinite(score)) {
+                        PolenSpotSelectionHelper.offerCandidate(shortlist, candidate, score);
+                    }
+                }
+            }
+        }
+
+        return PolenSpotSelectionHelper.resolveBestReachable(polen, shortlist, 9, true);
     }
 
     public static BlockPos findNearbyHouseShelterSpot(PolenEntity polen, int radius) {
@@ -179,7 +212,13 @@ public final class PolenShelterSpotHelper {
         Level level = polen.level();
         if (!PolenSafetyEvaluator.isRainShelteredStandingSpot(level, candidate)
                 || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)
-                || candidate.distSqr(origin) < 1.0D) {
+                || candidate.distSqr(origin) < 1.0D
+                || PolenShelterContextResolver.isCaveLikeShelter(level, candidate)) {
+            return Double.MAX_VALUE;
+        }
+
+        PolenShelterKind shelterKind = PolenShelterContextResolver.resolveShelterKind(level, candidate);
+        if (level.isRaining() && (shelterKind == PolenShelterKind.ROOF || shelterKind == PolenShelterKind.NONE)) {
             return Double.MAX_VALUE;
         }
 
@@ -194,17 +233,50 @@ public final class PolenShelterSpotHelper {
             score -= 1.5D;
         }
 
-        PolenShelterKind shelterKind = PolenShelterContextResolver.resolveShelterKind(level, candidate);
         if (shelterKind == PolenShelterKind.HOUSE) {
-            score -= 16.0D;
+            score -= 30.0D;
         } else if (shelterKind == PolenShelterKind.TREE) {
-            score -= 8.0D;
-        } else if (shelterKind == PolenShelterKind.ROOF) {
-            score -= 5.0D;
+            score -= 42.0D;
+        }
+
+        if (PolenShelterContextResolver.isFlowerFriendlyShelter(level, candidate)) {
+            score -= 12.0D;
         }
 
         if (hasNearbyInterestingLight(level, candidate)) {
             score -= 10.0D;
+        }
+
+        int verticalDelta = Math.abs(candidate.getY() - origin.getY());
+        score += verticalDelta * 10.0D;
+        if (candidate.getY() > origin.getY() + 2) {
+            score += 40.0D;
+        }
+
+        return score;
+    }
+
+    private static double scoreNaturalRainShelterCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
+        Level level = polen.level();
+        if (!PolenSafetyEvaluator.isRainShelteredStandingSpot(level, candidate)
+                || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)
+                || candidate.distSqr(origin) < 1.0D
+                || !PolenShelterContextResolver.isNaturalRainShelter(level, candidate)) {
+            return Double.MAX_VALUE;
+        }
+
+        double score = candidate.distSqr(origin);
+        score -= 55.0D;
+        score -= level.getMaxLocalRawBrightness(candidate) * 0.75D;
+
+        if (PolenShelterContextResolver.isFlowerFriendlyShelter(level, candidate)) {
+            score -= 18.0D;
+        }
+
+        int verticalDelta = Math.abs(candidate.getY() - origin.getY());
+        score += verticalDelta * 12.0D;
+        if (candidate.getY() > origin.getY() + 2) {
+            score += 45.0D;
         }
 
         return score;

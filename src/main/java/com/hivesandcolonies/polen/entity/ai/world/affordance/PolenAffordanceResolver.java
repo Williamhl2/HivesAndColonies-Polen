@@ -276,12 +276,29 @@ public final class PolenAffordanceResolver {
     }
 
     private static double scoreShelterCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
+        if (PolenShelterContextResolver.isCaveLikeShelter(polen.level(), candidate)) {
+            return Double.MAX_VALUE;
+        }
+
+        PolenShelterKind kind = PolenShelterContextResolver.resolveShelterKind(polen.level(), candidate);
+        if (polen.level().isRaining() && (kind == PolenShelterKind.ROOF || kind == PolenShelterKind.NONE)) {
+            return Double.MAX_VALUE;
+        }
+
         double score = PolenComfortEvaluator.comfortAdjustedDistanceScore(
                 polen,
                 origin,
                 candidate,
                 PolenComfortProfile.SHELTER
         );
+        if (kind == PolenShelterKind.TREE) {
+            score -= 28.0D;
+        } else if (kind == PolenShelterKind.HOUSE) {
+            score -= 22.0D;
+        }
+        if (PolenShelterContextResolver.isFlowerFriendlyShelter(polen.level(), candidate)) {
+            score -= 10.0D;
+        }
         if (polen.level().isRaining()) {
             score -= 6.0D;
         }

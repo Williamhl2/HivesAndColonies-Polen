@@ -10,6 +10,8 @@ import com.hivesandcolonies.polen.entity.ai.brain.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenSearchDomain;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenSearchPlanner;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenSearchProfile;
+import com.hivesandcolonies.polen.entity.ai.navigation.search.shelter.PolenShelterContextResolver;
+import com.hivesandcolonies.polen.entity.ai.navigation.search.shelter.PolenShelterKind;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.shelter.PolenShelterSpotHelper;
 import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceResolver;
 import com.hivesandcolonies.polen.entity.ai.world.affordance.PolenAffordanceTarget;
@@ -369,19 +371,40 @@ public final class PolenSafetyNavigator {
     }
 
     private static double scoreShelterCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
+        Level level = polen.level();
         if (!PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)
-                || !PolenSafetyEvaluator.isRainShelteredStandingSpot(polen.level(), candidate)
+                || !PolenSafetyEvaluator.isRainShelteredStandingSpot(level, candidate)
                 || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)
-                || candidate.distSqr(origin) < MIN_RELOCATION_DISTANCE_SQR) {
+                || candidate.distSqr(origin) < MIN_RELOCATION_DISTANCE_SQR
+                || PolenShelterContextResolver.isCaveLikeShelter(level, candidate)) {
+            return Double.MAX_VALUE;
+        }
+
+        PolenShelterKind kind = PolenShelterContextResolver.resolveShelterKind(level, candidate);
+        if (level.isRaining() && (kind == PolenShelterKind.ROOF || kind == PolenShelterKind.NONE)) {
             return Double.MAX_VALUE;
         }
 
         double score = candidate.distSqr(origin);
-        if (candidate.getY() > origin.getY()) {
-            score -= (candidate.getY() - origin.getY()) * 5.0D;
+
+        if (kind == PolenShelterKind.TREE) {
+            score -= 60.0D;
+        } else if (kind == PolenShelterKind.HOUSE) {
+            score -= 48.0D;
         }
-        if (PolenSafetyEvaluator.hasOverheadCover(polen.level(), candidate)) {
+
+        if (PolenShelterContextResolver.isFlowerFriendlyShelter(level, candidate)) {
+            score -= 18.0D;
+        }
+
+        if (PolenSafetyEvaluator.hasOverheadCover(level, candidate)) {
             score -= 8.0D;
+        }
+
+        int verticalDelta = Math.abs(candidate.getY() - origin.getY());
+        score += verticalDelta * 12.0D;
+        if (candidate.getY() > origin.getY() + 2) {
+            score += 45.0D;
         }
 
         return score;

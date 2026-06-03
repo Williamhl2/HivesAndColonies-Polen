@@ -84,7 +84,7 @@ public class PolenSeekSafetyGoal extends Goal {
             return true;
         }
 
-        if (planFallbackExploration(16)) {
+        if (canUseFallbackExploration() && planFallbackExploration(16)) {
             this.polen.getAiState().setSearchState(
                     PolenSearchType.SAFE_EXPLORATION,
                     PolenSearchStatus.SCANNING,
@@ -105,7 +105,9 @@ public class PolenSeekSafetyGoal extends Goal {
         this.failedGoal = true;
         PolenTaskController.markFailed(this.polen, PolenTaskType.SEEK_SAFETY, "no_escape_route_found", 0L);
         playUnsafeDialogueIfNeeded();
-        PolenSafetyNavigator.tryEmergencyRelocateToSafeSurface(this.polen);
+        if (!PolenSafetyNavigator.shouldSeekRainShelter(this.polen)) {
+            PolenSafetyNavigator.tryEmergencyRelocateToSafeSurface(this.polen);
+        }
         return false;
     }
 
@@ -215,7 +217,7 @@ public class PolenSeekSafetyGoal extends Goal {
                 );
                 moveToTargetSpot();
                 this.failedRepathAttempts = 0;
-            } else if (planFallbackExploration(16 + this.failedRepathAttempts * 6)) {
+            } else if (canUseFallbackExploration() && planFallbackExploration(16 + this.failedRepathAttempts * 6)) {
                 this.polen.getAiState().setSearchState(
                         PolenSearchType.SAFE_EXPLORATION,
                         PolenSearchStatus.PATHING,
@@ -237,7 +239,9 @@ public class PolenSeekSafetyGoal extends Goal {
                 );
                 PolenTaskController.markFailed(this.polen, PolenTaskType.SEEK_SAFETY, "repath_failed", 0L);
                 if (this.failedRepathAttempts >= MAX_FAILED_REPATHS) {
-                    PolenSafetyNavigator.tryEmergencyRelocateToSafeSurface(this.polen);
+                    if (!PolenSafetyNavigator.shouldSeekRainShelter(this.polen)) {
+                        PolenSafetyNavigator.tryEmergencyRelocateToSafeSurface(this.polen);
+                    }
                     this.targetSpot = null;
                     return;
                 }
@@ -285,6 +289,10 @@ public class PolenSeekSafetyGoal extends Goal {
         this.targetSpot = PolenSafetyNavigator.findFallbackExplorationSpot(this.polen, radius);
         this.fallbackExplorationMode = this.targetSpot != null;
         return this.targetSpot != null;
+    }
+
+    private boolean canUseFallbackExploration() {
+        return !PolenSafetyNavigator.shouldSeekRainShelter(this.polen);
     }
 
     private void moveToTargetSpot() {
