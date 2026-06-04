@@ -3,7 +3,7 @@
 ## Estado IA
 
 ```text
-/polen ai get
+/characters ai get
 ```
 
 Muestra mood, intent, task, residencia y actividad actual.

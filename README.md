@@ -1,8 +1,8 @@
-# Hives And Colonies: Polen
+# Hives & Colonies: Characters
 
-Narrative NeoForge mod for Minecraft 1.21.1 centered on Polen, a persistent companion character with memory loss, autonomous behavior, relationship progression, and story-driven recovery.
+Narrative NeoForge mod for Minecraft 1.21.1 built for a broader cast of story characters, currently led by Polen as the first persistent companion with memory loss, autonomous behavior, relationship progression, and story-driven recovery.
 
-The current codebase is still Polen-first, but the project scope is widening toward a broader cast. A future public rename such as `Hives & Colonies: Characters` is under consideration so the mod can introduce more story-relevant characters without fighting the current title.
+The current codebase is still Polen-first, but the project scope is widening toward a broader cast. The mod now uses the public title `Hives & Colonies: Characters` so more story-relevant characters can be introduced without the title fighting the scope.
 
 The mod is also being built as a character-driven part of the larger `Hives & Colonies` modpack ecosystem, so future items, shelter logic, affinities, accessories, memories, and character interactions are expected to integrate with a richer colony, magic, home, and Curios-heavy environment.
 
@@ -68,11 +68,11 @@ The playable beginning should still stay intimate and grounded even though the l
 
 ## Quick structure
 
-- `src/main/java/com/hivesandcolonies/polen`
+- `src/main/java/com/hivesandcolonies/characters`
   - mod entrypoint, entity, AI, progression, story, items, registries, commands
-- `src/main/resources/assets/polen`
+- `src/main/resources/assets/characters`
   - lang, models, blockstates, textures
-- `src/main/resources/data/polen`
+- `src/main/resources/data/characters`
   - recipes, tags, loot, advancements
 - `docs/dev`
   - technical documentation
@@ -98,13 +98,13 @@ Run tests:
 ## Useful debug commands
 
 ```text
-/polen affinity get
-/polen locate
-/polen chapter get
-/polen flag get
-/polen relationship get
-/polen worlddata get
-/polen ai get
+/characters affinity get
+/characters locate
+/characters chapter get
+/characters flag get
+/characters relationship get
+/characters worlddata get
+/characters ai get
 ```
 
 ## Current implementation notes
@@ -113,8 +113,8 @@ Run tests:
 - Quiet activities already include singing, drawing, attuning, illuminating, and reflecting.
 - AI structure is split into `core`, `brain`, `navigation`, `expression`, `ability`, and `world`, with comfort, home, observation, affinity, and affordance layers separated from raw goals.
 - Rest and shelter selection balances remembered residence against local comfort and travel distance, so Polen does not blindly prefer home from impractical ranges.
-- `/polen ai get` exposes intent, task, search state, and recent task failure recovery.
-- `/polen locate` reports where the unique living Polen currently is, even if she is far away or in another dimension.
+- `/characters ai get` exposes intent, task, search state, and recent task failure recovery.
+- `/characters locate` reports where the unique living Polen currently is, even if she is far away or in another dimension.
 - Early affinity charms already exist and sync through `Curios`, leaving room for future rings, necklaces, belts, and other character accessories.
 - The animation layer already uses a `PlayerModel`-based setup so future richer animation systems can hook into gestures cleanly.
 - Dialogue authoring now uses `lang_base/` plus split `lang_parts/` sources, merged automatically into runtime `lang/*.json` files during resource processing.

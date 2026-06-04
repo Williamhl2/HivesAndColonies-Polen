@@ -4,21 +4,21 @@
 
 Main registry files:
 
-- [ModItems.java](../../src/main/java/com/hivesandcolonies/polen/registry/ModItems.java)
-- [ModBlocks.java](../../src/main/java/com/hivesandcolonies/polen/registry/ModBlocks.java)
-- [ModEntities.java](../../src/main/java/com/hivesandcolonies/polen/registry/ModEntities.java)
-- [ModCreativeTabs.java](../../src/main/java/com/hivesandcolonies/polen/registry/ModCreativeTabs.java)
-- [ModEntityAttributes.java](../../src/main/java/com/hivesandcolonies/polen/registry/ModEntityAttributes.java)
+- [ModItems.java](../../src/main/java/com/hivesandcolonies/characters/registry/ModItems.java)
+- [ModBlocks.java](../../src/main/java/com/hivesandcolonies/characters/registry/ModBlocks.java)
+- [ModEntities.java](../../src/main/java/com/hivesandcolonies/characters/registry/ModEntities.java)
+- [ModCreativeTabs.java](../../src/main/java/com/hivesandcolonies/characters/registry/ModCreativeTabs.java)
+- [ModEntityAttributes.java](../../src/main/java/com/hivesandcolonies/characters/registry/ModEntityAttributes.java)
 
 ## Adding a new item
 
 1. Decide its family first.
 2. Create a concrete class only if it has behavior.
 3. Register it in `ModItems`.
-4. Add model data in `assets/polen/models/item`.
+4. Add model data in `assets/characters/models/item`.
 5. Add lang keys in both English and Spanish.
 6. If it belongs in creative mode, add it to `ModCreativeTabs`.
-7. If it needs tags, add the correct `data/polen/tags/item/*` entry.
+7. If it needs tags, add the correct `data/characters/tags/item/*` entry.
 
 ## Adding a new block
 
@@ -80,7 +80,7 @@ Example:
 
 ## Adding advancements
 
-1. Create the JSON in `src/main/resources/data/polen/advancement/...`
+1. Create the JSON in `src/main/resources/data/characters/advancement/...`
 2. Add the `ResourceLocation` in `PolenAdvancementManager`
 3. Add a grant method
 4. Trigger it from the correct manager or story event
@@ -89,9 +89,9 @@ Example:
 
 Current public lang files:
 
-- `src/main/resources/assets/polen/lang/en_us.json`
-- `src/main/resources/assets/polen/lang/es_es.json`
-- `src/main/resources/assets/polen/lang/es_cl.json`
+- `src/main/resources/assets/characters/lang/en_us.json`
+- `src/main/resources/assets/characters/lang/es_es.json`
+- `src/main/resources/assets/characters/lang/es_cl.json`
 
 Rule:
 

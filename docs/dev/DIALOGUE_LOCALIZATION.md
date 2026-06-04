@@ -7,22 +7,22 @@ Polen's dialogue workflow now uses split source files instead of editing one lar
 Use these files when adding or changing dialogue:
 
 ```text
-src/main/resources/assets/polen/lang_parts/<locale>/ambient.json
-src/main/resources/assets/polen/lang_parts/<locale>/chapters.json
-src/main/resources/assets/polen/lang_parts/<locale>/events.json
-src/main/resources/assets/polen/lang_parts/<locale>/memories.json
+src/main/resources/assets/characters/lang_parts/<locale>/ambient.json
+src/main/resources/assets/characters/lang_parts/<locale>/chapters.json
+src/main/resources/assets/characters/lang_parts/<locale>/events.json
+src/main/resources/assets/characters/lang_parts/<locale>/memories.json
 ```
 
 Non-dialogue translations live in:
 
 ```text
-src/main/resources/assets/polen/lang_base/<locale>.json
+src/main/resources/assets/characters/lang_base/<locale>.json
 ```
 
 The final Minecraft files still live at:
 
 ```text
-src/main/resources/assets/polen/lang/<locale>.json
+src/main/resources/assets/characters/lang/<locale>.json
 ```
 
 Minecraft and NeoForge still expect the final `lang/*.json` files at runtime.
@@ -34,7 +34,7 @@ This workflow is now wired into the build:
 - split dialogue files are the authoring source
 - `lang_base/*.json` holds non-dialogue keys
 - final `lang/*.json` files remain the runtime output
-- `mergePolenLang` regenerates those runtime files automatically
+- `mergeCharactersLang` regenerates those runtime files automatically
 
 The runtime side is also now wired:
 
@@ -46,11 +46,11 @@ The runtime side is also now wired:
 ## Build task
 
 ```text
-./gradlew mergePolenLang
+./gradlew mergeCharactersLang
 ```
 
-`processResources` depends on `mergePolenLang`, so normal builds should regenerate the final language files automatically once the workflow is fully respected by the project state.
-`processResources` depends on `mergePolenLang`, so normal builds regenerate the final language files automatically.
+`processResources` depends on `mergeCharactersLang`, so normal builds should regenerate the final language files automatically once the workflow is fully respected by the project state.
+`processResources` depends on `mergeCharactersLang`, so normal builds regenerate the final language files automatically.
 
 ## Practical rule
 

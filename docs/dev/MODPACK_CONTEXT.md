@@ -2,7 +2,7 @@
 
 ## Why this exists
 
-`Hives And Colonies: Polen` is not being designed in isolation.
+`Hives & Colonies: Characters` is not being designed in isolation.
 It is part of the broader `Hives & Colonies` modpack ecosystem:
 
 - Modpack page: `https://www.curseforge.com/minecraft/modpacks/hives-colonies`
@@ -13,14 +13,14 @@ Her items, affinities, home logic, comfort logic, memory recovery, and future in
 
 ## Scope note
 
-The repository is still Polen-first.
+The current implementation is still Polen-first, but the mod architecture now targets a broader cast.
 
 The canon is already wider than that:
 
 - Hive is a multi-species world
 - Polen carries lost memories from before the current world
 - her backstory includes war, healer training, and named relationships
-- a future rename such as `Hives & Colonies: Characters` is under consideration
+- the public mod identity is now `Hives & Colonies: Characters`
 
 So modpack-aware design should not assume that every system exists only to support a single shy companion loop forever.
 

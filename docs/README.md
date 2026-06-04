@@ -39,7 +39,7 @@ Narrative scope is now broader than that:
 - Hive is a multi-species world with no native humans
 - Polen's lost memories and future "promised queen" role are canon
 - Befsh, Cosmic, Luna, Noia, Noris, Jeff, and Vanilla are part of the active continuity
-- a future public rename such as `Hives & Colonies: Characters` is under evaluation
+- a public mod identity is now `Hives & Colonies: Characters`
 
 When updating docs, preserve the difference between:
 

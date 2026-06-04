@@ -2,9 +2,9 @@
 
 ## Que es este proyecto
 
-`Hives And Colonies: Polen` es un mod NeoForge para Minecraft 1.21.1 construido alrededor de un personaje narrativo llamado Polen.
+`Hives & Colonies: Characters` es un mod NeoForge para Minecraft 1.21.1 pensado para un elenco mas amplio de personajes narrativos, con Polen como la primera companion implementada por ahora.
 
-El repositorio y la implementacion actual siguen siendo Polen-centricos, pero el alcance narrativo ya se esta abriendo a un elenco mas amplio. Incluso se esta considerando un posible renombre publico como `Hives & Colonies: Characters`.
+El repositorio y la implementacion actual siguen siendo Polen-centricos, pero el alcance narrativo ya se esta abriendo a un elenco mas amplio. El mod ahora usa publicamente el nombre `Hives & Colonies: Characters` para poder crecer hacia varios personajes sin quedar atado a uno solo.
 
 Hoy el proyecto combina cinco capas:
 

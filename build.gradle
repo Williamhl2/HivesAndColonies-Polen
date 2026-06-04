@@ -27,8 +27,8 @@ sourceSets.main.resources {
     // Exclude common development only resources from finalized outputs
     exclude("**/*.bbmodel") // BlockBench project files
     exclude("src/generated/**/.cache") // datagen cache files
-    exclude("assets/polen/lang_base/**")
-    exclude("assets/polen/lang_parts/**")
+    exclude("assets/characters/lang_base/**")
+    exclude("assets/characters/lang_parts/**")
 }
 
 repositories {
@@ -169,10 +169,10 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
     into "build/generated/sources/modMetadata"
 }
 
-def polenLangRoot = file('src/main/resources/assets/polen')
-def polenLangDir = file("${polenLangRoot}/lang")
-def polenLangBaseDir = file("${polenLangRoot}/lang_base")
-def polenLangPartsDir = file("${polenLangRoot}/lang_parts")
+def charactersLangRoot = file('src/main/resources/assets/characters')
+def charactersLangDir = file("${charactersLangRoot}/lang")
+def charactersLangBaseDir = file("${charactersLangRoot}/lang_base")
+def charactersLangPartsDir = file("${charactersLangRoot}/lang_parts")
 
 def readJsonMap = { File source ->
     if (!source.exists()) {
@@ -205,31 +205,31 @@ def fallbackLocalesFor = { String locale, Set<String> availableLocales ->
     return fallbacks.unique().findAll { it != locale }
 }
 
-tasks.register('mergePolenLang') {
+tasks.register('mergeCharactersLang') {
     description = 'Merge lang_base and lang_parts into runtime lang JSON files.'
     group = 'build'
 
-    inputs.files(fileTree(polenLangBaseDir) { include('*.json') })
-    inputs.files(fileTree(polenLangPartsDir) { include('**/*.json') })
-    outputs.dir(polenLangDir)
+    inputs.files(fileTree(charactersLangBaseDir) { include('*.json') })
+    inputs.files(fileTree(charactersLangPartsDir) { include('**/*.json') })
+    outputs.dir(charactersLangDir)
 
     doLast {
         def locales = new TreeSet<String>()
 
-        if (polenLangBaseDir.exists()) {
-            polenLangBaseDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.json') }?.each { file ->
+        if (charactersLangBaseDir.exists()) {
+            charactersLangBaseDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.json') }?.each { file ->
                 locales.add(file.name.replaceFirst(/\.json$/, ''))
             }
         }
 
-        if (polenLangPartsDir.exists()) {
-            polenLangPartsDir.eachDir { dir ->
+        if (charactersLangPartsDir.exists()) {
+            charactersLangPartsDir.eachDir { dir ->
                 locales.add(dir.name)
             }
         }
 
         if (locales.isEmpty()) {
-            logger.lifecycle('mergePolenLang: no locale sources found.')
+            logger.lifecycle('mergeCharactersLang: no locale sources found.')
             return
         }
 
@@ -239,12 +239,12 @@ tasks.register('mergePolenLang') {
             def merged = new LinkedHashMap<String, Object>()
             def seenSources = []
 
-            File baseFile = new File(polenLangBaseDir, "${locale}.json")
+            File baseFile = new File(charactersLangBaseDir, "${locale}.json")
             if (baseFile.exists()) {
                 seenSources << baseFile
             }
 
-            File partsDir = new File(polenLangPartsDir, locale)
+            File partsDir = new File(charactersLangPartsDir, locale)
             if (partsDir.exists()) {
                 seenSources.addAll(
                         partsDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.json') }?.sort { it.name } ?: []
@@ -252,14 +252,14 @@ tasks.register('mergePolenLang') {
             }
 
             if (seenSources.isEmpty()) {
-                throw new GradleException("mergePolenLang: locale '${locale}' has no source files.")
+                throw new GradleException("mergeCharactersLang: locale '${locale}' has no source files.")
             }
 
             seenSources.each { source ->
                 def data = readJsonMap(source)
                 def overlap = merged.keySet().intersect(data.keySet())
                 if (!overlap.isEmpty()) {
-                    throw new GradleException("mergePolenLang: duplicate keys for ${locale} in ${source.name}: ${overlap.take(20)}")
+                    throw new GradleException("mergeCharactersLang: duplicate keys for ${locale} in ${source.name}: ${overlap.take(20)}")
                 }
                 merged.putAll(data)
             }
@@ -286,16 +286,16 @@ tasks.register('mergePolenLang') {
             def missing = baselineKeys.findAll { !entries.containsKey(it) }
             if (!missing.isEmpty()) {
                 throw new GradleException(
-                        "mergePolenLang: locale '${locale}' is missing ${missing.size()} keys required by '${baselineLocale}': ${missing.take(20)}"
+                        "mergeCharactersLang: locale '${locale}' is missing ${missing.size()} keys required by '${baselineLocale}': ${missing.take(20)}"
                 )
             }
         }
 
         finalByLocale.each { locale, entries ->
-            writeSortedJson(new File(polenLangDir, "${locale}.json"), entries)
+            writeSortedJson(new File(charactersLangDir, "${locale}.json"), entries)
         }
 
-        logger.lifecycle("mergePolenLang: wrote ${finalByLocale.size()} locale files to ${polenLangDir}")
+        logger.lifecycle("mergeCharactersLang: wrote ${finalByLocale.size()} locale files to ${charactersLangDir}")
     }
 }
 // Include the output of "generateModMetadata" as an input directory for the build
@@ -305,7 +305,7 @@ sourceSets.main.resources.srcDir generateModMetadata
 neoForge.ideSyncTask generateModMetadata
 
 tasks.named('processResources', ProcessResources).configure {
-    dependsOn(tasks.named('mergePolenLang'))
+    dependsOn(tasks.named('mergeCharactersLang'))
 }
 
 // Example configuration to allow publishing using the maven-publish plugin

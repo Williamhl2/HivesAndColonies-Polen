@@ -2,7 +2,7 @@
 
 ## Vision general
 
-`Hives And Colonies: Polen` sigue empezando como una historia intima.
+`Hives & Colonies: Characters` sigue empezando como una historia intima.
 
 Pero el canon ya no es solo "una chica timida en un claro".
 

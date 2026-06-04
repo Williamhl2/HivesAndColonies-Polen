@@ -15,34 +15,34 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 
 ## Paquetes principales
 
-### `com.hivesandcolonies.polen`
+### `com.hivesandcolonies.characters`
 
 - `Polen`
   - entrada principal del mod
 - `PolenClient`
   - registro cliente
 
-### `com.hivesandcolonies.polen.client`
+### `com.hivesandcolonies.characters.client`
 
 - `PolenRenderer`
   - renderer de Polen
 
-### `com.hivesandcolonies.polen.client.model`
+### `com.hivesandcolonies.characters.client.model`
 
 - `PolenModel`
   - modelo basado en `PlayerModel`
 
-### `com.hivesandcolonies.polen.client.animation`
+### `com.hivesandcolonies.characters.client.animation`
 
 - `PolenGesturePoseApplier`
   - traduce gestos a poses cliente
 
-### `com.hivesandcolonies.polen.command`
+### `com.hivesandcolonies.characters.command`
 
 - `PolenDebugCommands`
-  - comandos `/polen ...`
+  - comandos `/characters ...`
 
-### `com.hivesandcolonies.polen.dialogue`
+### `com.hivesandcolonies.characters.dialogue`
 
 - `PolenDialogueManager`
 - `PolenSpeakerResolver`
@@ -50,7 +50,7 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 - `PolenAmbientToneResolver`
 - `PolenAmbientDialogueResolver`
 
-### `com.hivesandcolonies.polen.entity`
+### `com.hivesandcolonies.characters.entity`
 
 - `PolenEntity`
   - entidad principal y estado sincronizado
@@ -336,29 +336,29 @@ Responsabilidad:
 
 ## Recursos
 
-### `assets/polen/lang`
+### `assets/characters/lang`
 
 - `es_es.json`
 - `en_us.json`
 
-### `assets/polen/blockstates`
+### `assets/characters/blockstates`
 
 - blockstates del mod
 
-### `assets/polen/models/block`
+### `assets/characters/models/block`
 
 - modelos de bloques
 
-### `assets/polen/models/item`
+### `assets/characters/models/item`
 
 - modelos de items
 
-### `data/polen/tags/item`
+### `data/characters/tags/item`
 
 - familias de item
 - incluye `accessory_items`
 
-### `data/polen/loot_table`
+### `data/characters/loot_table`
 
 - loot tables del mod
 

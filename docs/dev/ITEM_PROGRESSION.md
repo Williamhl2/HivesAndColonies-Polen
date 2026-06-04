@@ -186,11 +186,11 @@ Families should remain queryable through datapack tags.
 
 Current examples include:
 
-- `polen:story_items`
-- `polen:material_items`
-- `polen:focus_items`
-- `polen:colony_items`
-- `polen:accessory_items`
+- `characters:story_items`
+- `characters:material_items`
+- `characters:focus_items`
+- `characters:colony_items`
+- `characters:accessory_items`
 
 This gives future systems a stable lookup surface without hardcoding ids.
 

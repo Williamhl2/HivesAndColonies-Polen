@@ -7,22 +7,22 @@ El flujo de dialogos de Polen ahora usa archivos fuente separados en vez de edit
 Cuando existan, usar estos archivos como fuente de autoria:
 
 ```text
-src/main/resources/assets/polen/lang_parts/<locale>/ambient.json
-src/main/resources/assets/polen/lang_parts/<locale>/chapters.json
-src/main/resources/assets/polen/lang_parts/<locale>/events.json
-src/main/resources/assets/polen/lang_parts/<locale>/memories.json
+src/main/resources/assets/characters/lang_parts/<locale>/ambient.json
+src/main/resources/assets/characters/lang_parts/<locale>/chapters.json
+src/main/resources/assets/characters/lang_parts/<locale>/events.json
+src/main/resources/assets/characters/lang_parts/<locale>/memories.json
 ```
 
 Las traducciones no dialogadas viven en:
 
 ```text
-src/main/resources/assets/polen/lang_base/<locale>.json
+src/main/resources/assets/characters/lang_base/<locale>.json
 ```
 
 Los archivos finales que Minecraft usa en runtime siguen estando en:
 
 ```text
-src/main/resources/assets/polen/lang/<locale>.json
+src/main/resources/assets/characters/lang/<locale>.json
 ```
 
 ## Estado actual
@@ -31,7 +31,7 @@ Este flujo ya quedo conectado al build:
 
 - `lang_base/*.json` guarda claves no dialogadas
 - `lang_parts/<locale>/*.json` guarda dialogos separados
-- `mergePolenLang` fusiona todo hacia `lang/*.json`
+- `mergeCharactersLang` fusiona todo hacia `lang/*.json`
 - `processResources` depende de ese merge
 
 Tambien quedo conectado el lado runtime:

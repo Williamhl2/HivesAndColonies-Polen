@@ -18,7 +18,7 @@ All notable changes to this project will be documented in this file.
 - Polen's server-side AI now follows a compact `needs -> intent -> mood -> goals` loop.
 - Source-like locations are now remembered as first-class interests and can feed later autonomous behavior.
 - Routine, hobby, curiosity, trusted approach, and safe wandering goals now activate through explicit intent gating.
-- `/polen ai get` now exposes intent, dominant need, full need values, and remembered source data for balancing.
+- `/characters ai get` now exposes intent, dominant need, full need values, and remembered source data for balancing.
 - Fixed a movement deadlock where Polen could keep a selected intent while the matching movement goal was still blocked, causing her to look around without walking.
 
 ## Unreleased - Item Progression Foundation
@@ -65,7 +65,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Split dialogue responsibilities into dedicated resolvers for speaker, chapter lines, ambient tone, and ambient key construction.
-- Expanded `/polen ai get` to expose mood reason and safety-related debug state.
+- Expanded `/characters ai get` to expose mood reason and safety-related debug state.
 
 ### Technical
 
@@ -207,8 +207,8 @@ All notable changes to this project will be documented in this file.
   - Future spawn state support
 
 - Debug utilities
-  - /polen relationship get
-  - /polen worlddata get
+  - /characters relationship get
+  - /characters worlddata get
 
 ### Changed
 
@@ -231,7 +231,7 @@ All notable changes to this project will be documented in this file.
 - Dialogue architecture prepared for long-term chapter expansion
 
 - Advancement files moved to proper datapack location:
-  - data/polen/advancement/story
+  - data/characters/advancement/story
 
 - Advancement titles and descriptions now use translation keys
 
@@ -283,9 +283,9 @@ All notable changes to this project will be documented in this file.
 - Story event manager
 
 - Debug command framework
-  - /polen affinity
-  - /polen flag
-  - /polen chapter
+  - /characters affinity
+  - /characters flag
+  - /characters chapter
 
 - Name reveal narrative event
 

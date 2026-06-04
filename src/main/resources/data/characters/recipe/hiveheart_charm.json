@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    "WHW",
+    " R "
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:string"
+    },
+    "W": {
+      "item": "characters:resonant_wax"
+    },
+    "H": {
+      "item": "minecraft:honeycomb"
+    },
+    "R": {
+      "item": "characters:royal_pollen"
+    }
+  },
+  "result": {
+    "id": "characters:hiveheart_charm",
+    "count": 1
+  }
+}

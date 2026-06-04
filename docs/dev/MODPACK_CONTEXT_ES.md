@@ -2,7 +2,7 @@
 
 ## Por que existe este documento
 
-`Hives And Colonies: Polen` no se diseña en aislamiento.
+`Hives & Colonies: Characters` no se diseña en aislamiento.
 Forma parte del ecosistema mas amplio de `Hives & Colonies`.
 
 Eso importa porque Polen no debe crecer como si Minecraft vanilla fuera el unico entorno que existe.
@@ -17,7 +17,7 @@ Pero el canon ya es mas amplio:
 - Hive es un mundo multi-especie
 - Polen carga recuerdos perdidos de antes del mundo actual
 - su pasado incluye guerra, formacion como curandera y relaciones con personajes con nombre propio
-- se esta considerando un posible renombre futuro como `Hives & Colonies: Characters`
+- la identidad publica actual del mod es `Hives & Colonies: Characters`
 
 ## Regla de diseno
 

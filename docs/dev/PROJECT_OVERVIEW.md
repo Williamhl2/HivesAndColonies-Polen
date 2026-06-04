@@ -2,9 +2,9 @@
 
 ## What this project is
 
-`Hives And Colonies: Polen` is a NeoForge mod for Minecraft 1.21.1 built around a narrative character named Polen.
+`Hives & Colonies: Characters` is a NeoForge mod for Minecraft 1.21.1 built for a broader cast of narrative characters, with Polen currently serving as the first implemented companion.
 
-The repository and current implementation are still Polen-centric, but the narrative scope is expanding toward a wider cast. A future public rename such as `Hives & Colonies: Characters` is being considered so the project can introduce more characters without the title becoming misleading.
+The repository and current implementation are still Polen-centric, but the narrative scope is expanding toward a wider cast. The project now uses the public title `Hives & Colonies: Characters` so additional story-relevant characters can be added without the mod identity revolving around a single one.
 
 The project currently combines five layers:
 
@@ -69,10 +69,10 @@ That implies:
 
 ## Main entrypoints
 
-- [Polen.java](../../src/main/java/com/hivesandcolonies/polen/Polen.java)
+- [Characters.java](../../src/main/java/com/hivesandcolonies/characters/Characters.java)
   - mod entrypoint
   - registers items, blocks, entities, attributes, creative tabs, and commands
-- `PolenClient.java`
+- `CharactersClient.java`
   - client bootstrap
   - connects renderer and client-only behavior
 
@@ -154,8 +154,8 @@ Important status note:
 - `registry/ModCreativeTabs.java`
 - `registry/ModEntityAttributes.java`
 - `item/*`
-- `src/main/resources/assets/polen/*`
-- `src/main/resources/data/polen/*`
+- `src/main/resources/assets/characters/*`
+- `src/main/resources/data/characters/*`
 
 Responsibilities:
 

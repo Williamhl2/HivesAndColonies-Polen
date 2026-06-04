@@ -23,7 +23,7 @@
 - `PolenMemoryHandler` now treats source-like locations as first-class remembered interests.
 - `PolenMoodController` now reflects internal needs instead of only immediate context.
 - `PolenRoutineGoal`, `PolenApproachTrustedPlayerGoal`, `PolenCuriousInterestGoal`, `PolenIdleHobbyGoal` and `PolenSafeStrollGoal` now depend on high-level intent gating.
-- `/polen ai get` now exposes intent, dominant need and the full internal need snapshot for balancing.
+- `/characters ai get` now exposes intent, dominant need and the full internal need snapshot for balancing.
 - Removed internal movement deadlocks where an intent could remain selected while its concrete goal was still blocked by cooldown or over-restrictive proximity checks.
 
 ### Result
@@ -118,7 +118,7 @@ Polen's behavior now reflects Ars Nouveau directly in gameplay:
 
 `PolenDialogueManager` is now more of a facade than a container for every dialogue concern.
 
-`/polen ai get` also exposes more reasoning signal, which should make future AI balancing faster.
+`/characters ai get` also exposes more reasoning signal, which should make future AI balancing faster.
 
 ## 2026-05-30 (Entity Refactor)
 

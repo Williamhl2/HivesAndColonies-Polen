@@ -21,10 +21,10 @@ They also need to support:
 
 Files:
 
-- [PolenChapterManager.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenChapterManager.java)
-- [PolenStoryFlagsManager.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenStoryFlagsManager.java)
-- [PolenWorldStorySavedData.java](../../src/main/java/com/hivesandcolonies/polen/progression/world/PolenWorldStorySavedData.java)
-- [PolenWorldStoryData.java](../../src/main/java/com/hivesandcolonies/polen/progression/world/PolenWorldStoryData.java)
+- [PolenChapterManager.java](../../src/main/java/com/hivesandcolonies/characters/progression/PolenChapterManager.java)
+- [PolenStoryFlagsManager.java](../../src/main/java/com/hivesandcolonies/characters/progression/PolenStoryFlagsManager.java)
+- [PolenWorldStorySavedData.java](../../src/main/java/com/hivesandcolonies/characters/progression/world/PolenWorldStorySavedData.java)
+- [PolenWorldStoryData.java](../../src/main/java/com/hivesandcolonies/characters/progression/world/PolenWorldStoryData.java)
 
 Stores:
 
@@ -47,10 +47,10 @@ World progression should own shared truths such as:
 
 Files:
 
-- [PolenAffinityLevels.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenAffinityLevels.java)
-- [PolenAffinityManager.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenAffinityManager.java)
-- [PolenPlayerRelationshipManager.java](../../src/main/java/com/hivesandcolonies/polen/progression/player/PolenPlayerRelationshipManager.java)
-- [PolenPlayerRelationshipData.java](../../src/main/java/com/hivesandcolonies/polen/progression/player/PolenPlayerRelationshipData.java)
+- [PolenAffinityLevels.java](../../src/main/java/com/hivesandcolonies/characters/progression/PolenAffinityLevels.java)
+- [PolenAffinityManager.java](../../src/main/java/com/hivesandcolonies/characters/progression/PolenAffinityManager.java)
+- [PolenPlayerRelationshipManager.java](../../src/main/java/com/hivesandcolonies/characters/progression/player/PolenPlayerRelationshipManager.java)
+- [PolenPlayerRelationshipData.java](../../src/main/java/com/hivesandcolonies/characters/progression/player/PolenPlayerRelationshipData.java)
 
 Stores:
 
@@ -68,7 +68,7 @@ Player progression should own personal closeness such as:
 
 ## Story flags
 
-See [PolenStoryFlag.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenStoryFlag.java).
+See [PolenStoryFlag.java](../../src/main/java/com/hivesandcolonies/characters/progression/PolenStoryFlag.java).
 
 Current baseline includes:
 
@@ -89,7 +89,7 @@ Future flags will likely need categories such as:
 
 File:
 
-- [PolenStoryEventManager.java](../../src/main/java/com/hivesandcolonies/polen/story/PolenStoryEventManager.java)
+- [PolenStoryEventManager.java](../../src/main/java/com/hivesandcolonies/characters/story/PolenStoryEventManager.java)
 
 Responsibilities:
 
@@ -120,7 +120,7 @@ The rule is simple:
 
 File:
 
-- [PolenAdvancementManager.java](../../src/main/java/com/hivesandcolonies/polen/progression/PolenAdvancementManager.java)
+- [PolenAdvancementManager.java](../../src/main/java/com/hivesandcolonies/characters/progression/PolenAdvancementManager.java)
 
 This should remain a service layer.
 Do not move story branching logic into the advancement manager.

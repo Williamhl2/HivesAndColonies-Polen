@@ -46,8 +46,8 @@ displayName="${mod_name}" #mandatory
 
 # The description text for the mod (multi line!) (#mandatory)
 description='''
-A story-driven NeoForge mod about meeting Polen, earning her trust,
-and rebuilding the future of a lost kingdom.
+A story-driven NeoForge mod about meeting characters such as Polen,
+earning their trust, and rebuilding the future of a lost kingdom.
 '''
 
 # The [[mixins]] block allows you to declare your mixin config to FML so that it gets loaded.
