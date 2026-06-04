@@ -3,7 +3,7 @@
 ## Estado IA
 
 ```text
-/characters ai get
+/hivescolonies ai get
 ```
 
 Muestra mood, intent, task, residencia y actividad actual.

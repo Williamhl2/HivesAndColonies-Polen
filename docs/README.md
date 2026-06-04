@@ -20,6 +20,7 @@
 - [Modpack context](dev/MODPACK_CONTEXT.md)
 - [Contexto del modpack en espanol](dev/MODPACK_CONTEXT_ES.md)
 - [Codebase map](dev/CODEBASE_MAP.md)
+- [Character architecture](dev/CHARACTER_ARCHITECTURE.md)
 - [Progression system](dev/PROGRESSION_SYSTEM.md)
 - [Sistema de progresion en espanol](dev/PROGRESSION_SYSTEM_ES.md)
 - [Polen AI](dev/POLEN_AI.md)

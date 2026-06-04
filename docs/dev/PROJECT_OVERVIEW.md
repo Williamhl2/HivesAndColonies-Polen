@@ -76,6 +76,12 @@ That implies:
   - client bootstrap
   - connects renderer and client-only behavior
 
+Recommended next architecture doc:
+
+- [CHARACTER_ARCHITECTURE.md](CHARACTER_ARCHITECTURE.md)
+  - target split between shared systems and per-character implementations
+  - directory strategy for future characters like Luna and Vanilla
+
 ## Main subsystems
 
 ### Entity and presentation

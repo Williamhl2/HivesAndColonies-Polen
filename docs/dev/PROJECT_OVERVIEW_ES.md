@@ -49,6 +49,12 @@ Eso implica:
 - animacion cliente separada de la IA del servidor
 - familias de contenido que puedan crecer con el tiempo
 
+Documento recomendado para la siguiente etapa:
+
+- [CHARACTER_ARCHITECTURE.md](CHARACTER_ARCHITECTURE.md)
+  - separacion objetivo entre sistemas compartidos e implementaciones por personaje
+  - estrategia de directorios para futuros personajes como Luna y Vanilla
+
 ## Estado actual
 
 La version jugable actual sigue mucho mas cerca de:

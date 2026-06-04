@@ -2,6 +2,12 @@
 
 ## Direccion actual
 
+Este documento describe sobre todo la estructura fisica actual del codigo.
+
+La estructura objetivo pensada para varios personajes esta en:
+
+- [CHARACTER_ARCHITECTURE.md](CHARACTER_ARCHITECTURE.md)
+
 El proyecto esta migrando a una estructura donde Polen se construye por capas pequenas:
 
 - entidad y wiring
@@ -40,7 +46,7 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 ### `com.hivesandcolonies.characters.command`
 
 - `PolenDebugCommands`
-  - comandos `/characters ...`
+  - comandos `/hivescolonies ...` y alias corto `/hc ...`
 
 ### `com.hivesandcolonies.characters.dialogue`
 
