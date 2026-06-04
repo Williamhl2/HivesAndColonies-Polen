@@ -6,6 +6,7 @@ import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskType;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.polen.entity.ai.core.PolenRainRestController;
 
 import net.minecraft.world.entity.ai.goal.RandomStrollGoal;
 import net.minecraft.world.phys.Vec3;
@@ -21,6 +22,7 @@ public class PolenSafeStrollGoal extends RandomStrollGoal {
     @Override
     public boolean canUse() {
         return this.polen.getCurrentTask() == PolenTaskType.WANDER_SAFE
+                && !PolenRainRestController.shouldRestInRain(this.polen)
                 && !PolenSafetyNavigator.isInUnsafeArea(this.polen)
                 && super.canUse();
     }

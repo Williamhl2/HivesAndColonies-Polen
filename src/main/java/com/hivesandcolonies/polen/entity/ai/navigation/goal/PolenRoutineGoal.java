@@ -6,6 +6,7 @@ import com.hivesandcolonies.polen.entity.ai.brain.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskType;
 import com.hivesandcolonies.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.polen.entity.ai.core.PolenRainRestController;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenSearchStatus;
 import com.hivesandcolonies.polen.entity.ai.navigation.search.PolenSearchType;
 import net.minecraft.core.BlockPos;
@@ -40,6 +41,7 @@ public class PolenRoutineGoal extends Goal {
     @Override
     public boolean canUse() {
         if (this.polen.isDoingQuietActivity()
+                || PolenRainRestController.shouldRestInRain(this.polen)
                 || PolenSafetyNavigator.isInUnsafeArea(this.polen)
                 || getTaskType() == null) {
             return false;

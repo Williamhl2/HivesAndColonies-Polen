@@ -26,6 +26,7 @@ public final class PolenAiFacade {
     public static void tickServer(PolenEntity polen) {
         PolenGestureController.tickServer(polen);
         PolenAutonomyController.tickServer(polen);
+        PolenRainRestController.tickServer(polen);
         PolenQuietActivityController.tickServer(polen);
         PolenMagicController.tickPersistentMagic(polen);
     }
