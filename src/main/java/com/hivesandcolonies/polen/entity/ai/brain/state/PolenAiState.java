@@ -32,6 +32,7 @@ public final class PolenAiState {
     private long lastAmbientDialogueGameTime;
     private long lastThoughtDebugGameTime;
     private long nextQuietActivityAllowedGameTime;
+    private long nextInterestAllowedGameTime;
     private PolenSearchType searchType = PolenSearchType.IDLE;
     private PolenSearchStatus searchStatus = PolenSearchStatus.IDLE;
     private String searchNote = "";
@@ -46,6 +47,7 @@ public final class PolenAiState {
     private boolean debugThoughtsEnabled;
     private int lastQuietActivityType;
     private BlockPos lastQuietActivityPos;
+    private BlockPos lastInterestTargetPos;
     private final PolenNeedState needState = new PolenNeedState();
     private final PolenIntentState intentState = new PolenIntentState();
     private final PolenTaskState taskState = new PolenTaskState();
@@ -224,6 +226,26 @@ public final class PolenAiState {
 
     public void setNextQuietActivityAllowedGameTime(long nextQuietActivityAllowedGameTime) {
         this.nextQuietActivityAllowedGameTime = nextQuietActivityAllowedGameTime;
+    }
+
+    public long getNextInterestAllowedGameTime() {
+        return this.nextInterestAllowedGameTime;
+    }
+
+    public BlockPos getLastInterestTargetPos() {
+        return this.lastInterestTargetPos;
+    }
+
+    public void setInterestCooldown(BlockPos lastInterestTargetPos, long nextInterestAllowedGameTime) {
+        this.lastInterestTargetPos = lastInterestTargetPos == null ? null : lastInterestTargetPos.immutable();
+        this.nextInterestAllowedGameTime = Math.max(0L, nextInterestAllowedGameTime);
+    }
+
+    public boolean isInterestTargetOnCooldown(BlockPos pos, long gameTime) {
+        return pos != null
+                && this.lastInterestTargetPos != null
+                && gameTime < this.nextInterestAllowedGameTime
+                && this.lastInterestTargetPos.distSqr(pos) <= 4.0D;
     }
 
     public String getLastThoughtDebugSignature() {

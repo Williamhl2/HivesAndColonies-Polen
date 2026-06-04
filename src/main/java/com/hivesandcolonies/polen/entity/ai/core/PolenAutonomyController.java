@@ -1,5 +1,6 @@
 package com.hivesandcolonies.polen.entity.ai.core;
 
+import com.hivesandcolonies.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.polen.entity.PolenEntity;
 import com.hivesandcolonies.polen.entity.ai.brain.intent.PolenIntentController;
 import com.hivesandcolonies.polen.entity.ai.brain.memory.PolenMemoryHandler;
@@ -23,6 +24,7 @@ public final class PolenAutonomyController {
             polen.setMood(PolenMoodController.calculateMood(polen));
             PolenObservationController.tick(polen);
             PolenThoughtDebugController.tick(polen);
+            PolenAmbientDialogueController.tickContextualDialogue(polen);
         }
 
         if (polen.tickCount % 100 == 0) {

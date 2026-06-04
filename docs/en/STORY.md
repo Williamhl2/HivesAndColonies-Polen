@@ -2,44 +2,78 @@
 
 ## Premise
 
-The player discovers a quiet girl living near the wilderness.
+The player discovers a quiet girl living near the wilderness of a new world.
 
-She hides her identity, keeps emotional distance, and carries fragments of an older legacy tied to bees, memory, and subtle magic.
+She keeps emotional distance.
+She does not remember everything.
+She carries the afterimage of a war the player has not seen.
 
-The early story is not about saving a kingdom.
-It is about becoming someone she can trust.
+The updated canon behind that beginning is:
+
+- Hive is a planet inhabited by many species and no native humans
+- humans later arrive as invaders
+- Polen lost her memories and will recover them gradually
+- she was trained in healing magic
+- she will eventually become the "promised queen" or legendary queen of this new world
+
+The early story still should not feel like "save the kingdom now".
+It should feel like becoming someone she can trust while fragments of a much larger history return.
+
+## Backstory anchors
+
+Before the playable opening:
+
+- Befsh fell in love with Polen when they were younger, kissed her during a game, and their relationship remains canon through the whole story
+- at 23, Polen studied healing magic with Cosmic, Luna, Noris, and Noia
+- Jeff and Vanilla were professors in that healing-magic circle
+- Noris and Noia are siblings and two of Polen's closest friends
+- Luna flirted lightly with Polen, but was truly in love with Noia
+
+During the war against the human invasion of Hive:
+
+- Luna and Cosmic volunteered as soldiers
+- Polen, Noia, Noris, Jeff, and Vanilla served as healers
+- Luna died after raising a shield against the final attack
+- a reflected fragment of that strike cost Cosmic one eye
+
+Long after the war:
+
+- Polen eventually marries Befsh
+- Cosmic eventually marries Noris
+- Noia continues to remember Luna with tenderness
 
 ## Narrative direction
 
-The mod grows along three lines at the same time:
+The mod now grows along four lines at the same time:
 
 1. the player's relationship with Polen
-2. the growth of a settlement that can become a home
-3. the gradual recovery of a lost historical legacy
+2. the gradual recovery of Polen's memories
+3. the growth of a settlement that can become a home
+4. the revelation of Polen's legendary role in the new world
 
 The intended emotional order is:
 
 ```text
-intimacy
+meeting
+-> trust
 -> belonging
--> shared curiosity
--> responsibility
+-> recovered memory
+-> grief and responsibility
 -> legacy
 ```
 
-Epic meaning should emerge from companionship, not replace it.
+Epic meaning should emerge from intimacy, not replace it.
 
 ## Polen's role
 
-Polen is the emotional axis of the project.
+Polen is still the emotional axis of the current build, but she is no longer the only important person in the canon.
 
-She should feel human because:
+She should feel like:
 
-- she has boundaries
-- she changes slowly
-- she reacts to comfort and danger
-- she remembers places
-- she does things on her own
+- a survivor with memory gaps
+- a skilled healer
+- someone shaped by grief, love, and unfinished history
+- a future public figure who does not start as one
 
 That includes player-facing behavior already present in the mod:
 
@@ -51,64 +85,43 @@ That includes player-facing behavior already present in the mod:
 - shelter seeking in bad conditions
 - placing her own light at night
 
-## System pillars
+## Wider cast
 
-### Polen
+The active continuity also includes:
 
-Represents:
+- Befsh
+- Cosmic
+- Luna
+- Noia
+- Noris
+- Jeff
+- Vanilla
 
-- identity
-- memory
-- trust
-- emotional continuity
-
-### MineColonies
-
-Represents:
-
-- belonging
-- structure
-- future
-- shared place-making
-
-### Productive Bees
-
-Represents:
-
-- continuity
-- inherited practice
-- material culture
-
-### Ars Nouveau
-
-Represents:
-
-- curiosity
-- hidden knowledge
-- soft power
-- remembered magic
-
-In Polen's case, Ars should feel intimate first.
-She is not designed as a combat wizard.
+They should exist in docs, dialogue planning, and future content as real narrative anchors, not throwaway names.
 
 ## Themes
 
 - identity
 - belonging
 - memory
+- grief
 - community
 - responsibility
 - transformation
 
-## Current chapter direction
+## Current implementation note
 
-The long-form outline still spans prologue plus multiple acts, but implementation is intentionally earlier and more focused right now.
+The long-form outline still spans prologue plus multiple acts, but implementation is intentionally much earlier and smaller right now.
 
 The current playable fantasy is centered on:
 
 - meeting Polen
 - building trust
 - giving her safety
-- seeing her become more present and autonomous
+- seeing early autonomous behavior
+- uncovering only the first hints of her missing past
 
-Later political and royal layers should grow out of that foundation.
+Two important reality checks for this version:
+
+- dialogue authoring is now split into smaller files and merged into the runtime language files during the build
+- Polen's quiet-interest behavior now includes cooldowns and timeout recovery so she does not keep re-locking onto the same flower forever

@@ -24,6 +24,7 @@ public final class PolenInterestLocator {
     }
 
     public static PolenInterestTarget findPreferredInterest(PolenEntity polen, boolean includeSource) {
+        long gameTime = polen.level().getGameTime();
         if (shouldPreferLightInterest(polen)) {
             PolenInterestTarget lightTarget = findPreferredInterestOfType(polen, PolenInterestType.LIGHT);
             if (lightTarget != null) {
@@ -31,15 +32,16 @@ public final class PolenInterestLocator {
             }
         }
 
-        PolenInterestTarget remembered = findRememberedInterest(polen, includeSource);
+        PolenInterestTarget remembered = findRememberedInterest(polen, includeSource, gameTime);
         if (remembered != null) {
             return remembered;
         }
 
-        return findNearestLocalInterest(polen, DEFAULT_LOCAL_RADIUS, DEFAULT_LOCAL_HEIGHT, includeSource);
+        return findNearestLocalInterest(polen, DEFAULT_LOCAL_RADIUS, DEFAULT_LOCAL_HEIGHT, includeSource, gameTime);
     }
 
     public static PolenInterestTarget findPreferredInterestOfType(PolenEntity polen, PolenInterestType type) {
+        long gameTime = polen.level().getGameTime();
         BlockPos rememberedPos = switch (type) {
             case FLOWER -> polen.getAiState().getFavoriteFlowerPos();
             case HIVE -> polen.getAiState().getFavoriteHivePos();
@@ -47,16 +49,18 @@ public final class PolenInterestLocator {
             case LIGHT -> null;
         };
         BlockPos observePos = resolveObservationSpot(polen, rememberedPos, type);
-        if (observePos != null && isRememberedInterestStillValid(polen, rememberedPos)) {
+        if (observePos != null
+                && isRememberedInterestStillValid(polen, rememberedPos)
+                && !polen.getAiState().isInterestTargetOnCooldown(rememberedPos, gameTime)) {
             return new PolenInterestTarget(rememberedPos.immutable(), observePos, type);
         }
 
         int radius = type == PolenInterestType.LIGHT ? LIGHT_LOCAL_RADIUS : DEFAULT_LOCAL_RADIUS;
         int height = type == PolenInterestType.LIGHT ? LIGHT_LOCAL_HEIGHT : DEFAULT_LOCAL_HEIGHT;
-        return findNearestLocalInterestOfType(polen, radius, height, type);
+        return findNearestLocalInterestOfType(polen, radius, height, type, gameTime);
     }
 
-    public static PolenInterestTarget findRememberedInterest(PolenEntity polen, boolean includeSource) {
+    public static PolenInterestTarget findRememberedInterest(PolenEntity polen, boolean includeSource, long gameTime) {
         PolenInterestTarget best = null;
         double bestDistanceSqr = Double.MAX_VALUE;
 
@@ -65,7 +69,8 @@ public final class PolenInterestLocator {
                 best,
                 bestDistanceSqr,
                 polen.getAiState().getFavoriteFlowerPos(),
-                PolenInterestType.FLOWER
+                PolenInterestType.FLOWER,
+                gameTime
         );
         if (best != null) {
             bestDistanceSqr = best.observePos().distSqr(polen.blockPosition());
@@ -76,7 +81,8 @@ public final class PolenInterestLocator {
                 best,
                 bestDistanceSqr,
                 polen.getAiState().getFavoriteHivePos(),
-                PolenInterestType.HIVE
+                PolenInterestType.HIVE,
+                gameTime
         );
         if (best != null) {
             bestDistanceSqr = best.observePos().distSqr(polen.blockPosition());
@@ -88,7 +94,8 @@ public final class PolenInterestLocator {
                     best,
                     bestDistanceSqr,
                     polen.getAiState().getFavoriteSourcePos(),
-                    PolenInterestType.SOURCE
+                    PolenInterestType.SOURCE,
+                    gameTime
             );
         }
 
@@ -99,7 +106,8 @@ public final class PolenInterestLocator {
             PolenEntity polen,
             int radius,
             int height,
-            boolean includeSource
+            boolean includeSource,
+            long gameTime
     ) {
         BlockPos origin = polen.blockPosition();
         PolenInterestTarget best = null;
@@ -111,7 +119,9 @@ public final class PolenInterestLocator {
         )) {
             PolenInterestType type = classify(polen, pos, includeSource);
             BlockPos observePos = resolveObservationSpot(polen, pos, type);
-            if (type == null || observePos == null) {
+            if (type == null
+                    || observePos == null
+                    || polen.getAiState().isInterestTargetOnCooldown(pos, gameTime)) {
                 continue;
             }
 
@@ -133,7 +143,8 @@ public final class PolenInterestLocator {
             PolenEntity polen,
             int radius,
             int height,
-            PolenInterestType type
+            PolenInterestType type,
+            long gameTime
     ) {
         BlockPos origin = polen.blockPosition();
         PolenInterestTarget best = null;
@@ -145,7 +156,9 @@ public final class PolenInterestLocator {
         )) {
             PolenInterestType candidateType = classify(polen, pos, true);
             BlockPos observePos = resolveObservationSpot(polen, pos, candidateType);
-            if (candidateType != type || observePos == null) {
+            if (candidateType != type
+                    || observePos == null
+                    || polen.getAiState().isInterestTargetOnCooldown(pos, gameTime)) {
                 continue;
             }
 
@@ -200,10 +213,13 @@ public final class PolenInterestLocator {
             PolenInterestTarget currentBest,
             double currentBestDistanceSqr,
             BlockPos candidate,
-            PolenInterestType type
+            PolenInterestType type,
+            long gameTime
     ) {
         BlockPos observePos = resolveObservationSpot(polen, candidate, type);
-        if (!isRememberedInterestStillValid(polen, candidate) || observePos == null) {
+        if (!isRememberedInterestStillValid(polen, candidate)
+                || observePos == null
+                || polen.getAiState().isInterestTargetOnCooldown(candidate, gameTime)) {
             return currentBest;
         }
 

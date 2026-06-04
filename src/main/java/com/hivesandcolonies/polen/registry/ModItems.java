@@ -9,6 +9,7 @@ import com.hivesandcolonies.polen.item.focus.BloomFocusItem;
 import com.hivesandcolonies.polen.item.material.RoyalPollenItem;
 import com.hivesandcolonies.polen.item.material.ResonantWaxItem;
 import com.hivesandcolonies.polen.item.material.SourceTouchedPetalItem;
+import com.hivesandcolonies.polen.item.spawn.UniquePolenSpawnEggItem;
 import com.hivesandcolonies.polen.item.story.PolenJournalItem;
 import com.hivesandcolonies.polen.item.story.PrincessLetterItem;
 import com.hivesandcolonies.polen.item.story.PrincessSealItem;
@@ -75,12 +76,7 @@ public class ModItems {
     public static final DeferredItem<DeferredSpawnEggItem> POLEN_SPAWN_EGG =
         ITEMS.registerItem(
                 "polen_spawn_egg",
-                properties -> new DeferredSpawnEggItem(
-                        ModEntities.POLEN,
-                        0xF4C430,
-                        0x7B3F98,
-                        properties
-                )
+                UniquePolenSpawnEggItem::new
         );
 
     private static DeferredItem<Item> registerStoryItem(

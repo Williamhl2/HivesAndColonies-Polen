@@ -11,6 +11,7 @@ import com.hivesandcolonies.polen.progression.player.PolenPlayerRelationshipData
 import com.hivesandcolonies.polen.progression.player.PolenPlayerRelationshipManager;
 import com.hivesandcolonies.polen.progression.world.PolenWorldStoryData;
 import com.hivesandcolonies.polen.progression.world.PolenWorldStorySavedData;
+import com.hivesandcolonies.polen.world.PolenSingletonManager;
 
 import com.hivesandcolonies.polen.story.PolenMemoryManager;
 import com.hivesandcolonies.polen.story.PolenMemoryType;
@@ -37,6 +38,7 @@ public final class PolenDebugCommands {
                         .then(registerAffinityCommands())
                         .then(registerChapterCommands())
                         .then(registerFlagCommands())
+                        .then(registerLocateCommands())
                         .then(registerMemoryCommands())
                         .then(registerMoodCommands())
                         .then(Commands.literal("ai")
@@ -454,6 +456,37 @@ public final class PolenDebugCommands {
             }
 
             return root;
+        }
+
+        private static LiteralArgumentBuilder<CommandSourceStack> registerLocateCommands() {
+            return Commands.literal("locate")
+                    .executes(context -> {
+                        ServerPlayer player = context.getSource().getPlayerOrException();
+                        PolenEntity polen = PolenSingletonManager.findLivingPolen(player.serverLevel());
+
+                        if (polen == null) {
+                            context.getSource().sendFailure(Component.literal("No living Polen entity is registered in this world."));
+                            return 0;
+                        }
+
+                        BlockPos pos = polen.blockPosition();
+                        String dimension = polen.level().dimension().location().toString();
+                        int distance = (int) Math.round(Math.sqrt(player.distanceToSqr(polen)));
+
+                        context.getSource().sendSuccess(
+                                () -> Component.literal(
+                                        "Polen located at "
+                                                + formatPos(pos)
+                                                + " in "
+                                                + dimension
+                                                + " (distance "
+                                                + distance
+                                                + " blocks)"
+                                ),
+                                false
+                        );
+                        return 1;
+                    });
         }
 
         private static LiteralArgumentBuilder<CommandSourceStack> registerMoodCommands() {

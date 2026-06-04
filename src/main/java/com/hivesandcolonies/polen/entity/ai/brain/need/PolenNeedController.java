@@ -27,7 +27,13 @@ public final class PolenNeedController {
         boolean trustedNearby = hasTrustedPlayerNearby(polen);
         boolean untrustedNearby = hasUntrustedPlayerNearby(polen);
         boolean nearInterest = PolenMemoryHandler.isNearRememberedInterest(polen);
-        PolenInterestTarget localInterest = PolenInterestLocator.findNearestLocalInterest(polen, 4, 2, true);
+        PolenInterestTarget localInterest = PolenInterestLocator.findNearestLocalInterest(
+                polen,
+                4,
+                2,
+                true,
+                polen.level().getGameTime()
+        );
         boolean nearSource = polen.getAiState().getFavoriteSourcePos() != null
                 && polen.getAiState().getFavoriteSourcePos().closerToCenterThan(polen.position(), 4.0D)
                 || localInterest != null && localInterest.type() == PolenInterestType.SOURCE;

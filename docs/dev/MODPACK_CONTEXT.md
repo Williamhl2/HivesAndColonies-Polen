@@ -9,7 +9,20 @@ It is part of the broader `Hives & Colonies` modpack ecosystem:
 - Mod list snapshot used here: user-provided on `2026-06-02`
 
 This matters because Polen should not grow as if vanilla Minecraft were the only environment she will ever inhabit.
-Her items, affinities, home logic, comfort logic, and future interactions should make sense inside the actual pack.
+Her items, affinities, home logic, comfort logic, memory recovery, and future interactions should make sense inside the actual pack.
+
+## Scope note
+
+The repository is still Polen-first.
+
+The canon is already wider than that:
+
+- Hive is a multi-species world
+- Polen carries lost memories from before the current world
+- her backstory includes war, healer training, and named relationships
+- a future rename such as `Hives & Colonies: Characters` is under consideration
+
+So modpack-aware design should not assume that every system exists only to support a single shy companion loop forever.
 
 ## Design rule
 
@@ -19,6 +32,7 @@ When adding new systems, assume Polen may need to:
 - react to modded food, farming, bees, and magic blocks
 - wear or sync accessories through `Curios`
 - coexist with colony structures, village overhauls, and player-built interiors
+- associate places and objects with memory fragments, healing, grief, or belonging
 
 Do not hardcode the future around vanilla-only assumptions if the pack already provides richer signals.
 
@@ -49,8 +63,8 @@ Planning impact:
 
 Planning impact:
 
-- Source attunement, magical curiosity, and future accessories should be able to react to Ars-adjacent blocks or spaces.
-- Arcane identity should remain soft and companion-driven, not become a combat kit by default.
+- Source attunement, magical curiosity, healing identity, and future accessories should be able to react to Ars-adjacent blocks or spaces.
+- Arcane identity should remain soft and character-driven, not become a combat kit by default.
 
 ### Bees, nature, and world identity
 
@@ -64,6 +78,7 @@ Planning impact:
 
 - Polen's apiarist and nature-facing identity should eventually read modded bee and biome content as real interests.
 - Future world affinity rules should not stop at vanilla hives or flowers.
+- Bee and flower motifs can also act as calming cues or memory triggers.
 
 ### Food, home, and daily life
 
@@ -81,7 +96,7 @@ Planning impact:
 Planning impact:
 
 - Comfort and home evaluation should eventually recognize modded kitchens, tables, chairs, doors, storage, and decorated interiors.
-- Polen's future hobbies, resting behavior, and home dialogue should benefit from these richer domestic spaces.
+- Polen's future hobbies, resting behavior, home dialogue, and recovery scenes should benefit from these richer domestic spaces.
 
 ### Travel and exploration
 
@@ -95,7 +110,7 @@ Planning impact:
 
 Planning impact:
 
-- Wayfinding, curiosity, and long-term companion travel can later anchor to waystones, villages, and exploration landmarks.
+- Wayfinding, curiosity, and long-term travel can later anchor to waystones, villages, and exploration landmarks.
 - Village-aware shelter logic should remain compatible with modded village layouts.
 
 ### Storage, logistics, and building workflow
@@ -122,7 +137,7 @@ Planning impact:
 Planning impact:
 
 - Accessories should be first-class content, not an afterthought.
-- Polen already uses affinity charms and a Curios bridge; future rings, necklaces, belts, and companion accessories should keep building on that layer.
+- Polen already uses affinity charms and a Curios bridge; future rings, necklaces, belts, and character accessories should keep building on that layer.
 
 ## What the codebase already reflects
 
@@ -163,6 +178,15 @@ These systems should be treated as the foundation for future modpack-aware behav
   - apiary
   - workshop
   - waystone
+
+### Memory
+
+- Modpack-aware spaces should eventually help stage memory recovery, not only utility behavior.
+- Good triggers can include:
+  - healing spaces
+  - quiet decorated interiors
+  - bee-heavy spaces
+  - arcane study areas
 
 ### Scalability
 

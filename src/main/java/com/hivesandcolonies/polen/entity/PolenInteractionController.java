@@ -51,8 +51,9 @@ public final class PolenInteractionController {
         }
 
         player.displayClientMessage(
-                PolenDialogueManager.getDialogue(
+                PolenDialogueManager.getInteractionDialogue(
                         player,
+                        polen,
                         currentChapter,
                         polen.getRandom()
                 ),

@@ -4,36 +4,37 @@
 
 La vision larga de la historia sigue organizada como prologo mas varios actos.
 
-Pero la implementacion jugable actual aun esta mas cerca de:
+Pero ahora debe leerse con dos verdades al mismo tiempo:
 
-- prologo
-- confianza temprana
-- refugio
-- pertenencia inicial
+- el canon completo ya incluye amnesia, guerra pasada, amistades, duelo y una futura reina prometida
+- la implementacion jugable actual aun esta mas cerca de encuentro, confianza temprana y refugio
 
 Este documento debe leerse como direccion narrativa, no como lista de contenido ya implementado al 100%.
 
-## Prologo
-
-### La chica del claro
+## Prologo - La chica del claro
 
 Tema:
 
 - primer encuentro
+- desorientacion
+- seguridad minima
 
 Objetivo:
 
-- presentar a Polen como persona antes que como misterio
+- presentar a Polen como persona antes que como leyenda
+- insinuar que hay huecos de memoria sin explicarlos del todo
 
 ## Acto I - La desconocida
 
 Tema:
 
 - confianza
+- rutina
 
 Objetivo:
 
 - transformar a una desconocida en una companera posible
+- construir un espacio donde Polen pueda empezar a recordar sin romperse
 
 Capitulos orientativos:
 
@@ -41,55 +42,64 @@ Capitulos orientativos:
 - un lugar seguro
 - primeros colonos
 - primer contacto serio con source
+- recuerdos pequenos
 
-## Acto II - Los cimientos
+## Acto II - Ecos de Hive
 
 Tema:
 
-- pertenencia
+- memoria
+- amistades ausentes
+- duelo
 
 Objetivo:
 
-- construir comunidad, rutina y espacios propios
+- introducir al elenco canonico como parte real del pasado de Polen
+- mostrar que su historia no comenzo con el jugador
 
 Capitulos orientativos:
 
 - ecos del pasado
 - abejas y memoria
-- voces antiguas
-- un lugar propio para Polen
+- nombres que vuelven
+- Luna
+- una herida de guerra
 
 ## Acto III - Los secretos perdidos
 
 Tema:
 
 - descubrimiento
+- identidad
 
 Objetivo:
 
 - comprender el pasado sin perder la escala humana de la historia
+- unir recuerdos personales con el legado mas grande
 
 Capitulos orientativos:
 
-- caminos lejanos
 - buscando respuestas
-- industria arcana
-- consejo perdido
+- la universidad de magia
+- curacion y cicatrices
+- el consejo perdido
 
-## Acto IV - El despertar
+## Acto IV - La reina prometida
 
 Tema:
 
 - legado
+- responsabilidad
 
 Objetivo:
 
-- decidir que futuro construir con todo lo recuperado
+- revelar que Polen no solo recuerda quien fue
+- tambien entiende quien debe llegar a ser en este nuevo mundo
 
 Capitulos orientativos:
 
 - el reino perdido
-- la heredera
+- la prometida
 - la eleccion
 - un nuevo comienzo
 
@@ -105,8 +115,8 @@ No se debe saltar de:
 
 directo a:
 
-- realeza
-- destino
-- gran revelacion
+- realeza declarada
+- destino anunciado
+- exposicion total del pasado
 
 si la base emocional aun no fue construida en juego.

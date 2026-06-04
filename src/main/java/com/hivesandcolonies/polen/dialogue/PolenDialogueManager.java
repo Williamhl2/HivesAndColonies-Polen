@@ -1,5 +1,7 @@
 package com.hivesandcolonies.polen.dialogue;
 
+import com.hivesandcolonies.polen.entity.PolenEntity;
+import com.hivesandcolonies.polen.entity.ai.brain.task.PolenTaskType;
 import com.hivesandcolonies.polen.story.PolenMemoryType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
@@ -36,6 +38,20 @@ public final class PolenDialogueManager {
                 .append(Component.translatable(key));
     }
 
+    public static Component getInteractionDialogue(
+            Player player,
+            PolenEntity polen,
+            int chapter,
+            RandomSource random
+    ) {
+        String situation = PolenDialogueSituationResolver.resolveSituation(polen);
+        if (situation != null && shouldPreferContextualDialogue(polen, random)) {
+            return getAmbientDialogue(player, situation, random);
+        }
+
+        return getDialogue(player, chapter, random);
+    }
+
     public static Component getAmbientDialogue(
             Player player,
             String situation,
@@ -52,5 +68,29 @@ public final class PolenDialogueManager {
         return Component.translatable(PolenSpeakerResolver.resolveSpeakerKey(player))
                 .append(Component.literal(": "))
                 .append(Component.translatable(memory.getDialogueKey()));
+    }
+
+    private static boolean shouldPreferContextualDialogue(PolenEntity polen, RandomSource random) {
+        if (polen == null) {
+            return false;
+        }
+
+        PolenTaskType currentTask = polen.getCurrentTask();
+        if (polen.isDoingQuietActivity()) {
+            return true;
+        }
+
+        if (currentTask == null) {
+            return random.nextInt(3) == 0;
+        }
+
+        if (currentTask.isUrgent()
+                || currentTask == PolenTaskType.APPROACH_TRUSTED_PLAYER
+                || currentTask == PolenTaskType.INVESTIGATE_INTEREST
+                || currentTask == PolenTaskType.SEEK_REST) {
+            return true;
+        }
+
+        return random.nextInt(3) == 0;
     }
 }

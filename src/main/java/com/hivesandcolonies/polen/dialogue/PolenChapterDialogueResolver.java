@@ -20,7 +20,10 @@ public final class PolenChapterDialogueResolver {
             "dialogue.polen.chapter1.line1",
             "dialogue.polen.chapter1.line2",
             "dialogue.polen.chapter1.line3",
-            "dialogue.polen.chapter1.line4"
+            "dialogue.polen.chapter1.line4",
+            "dialogue.polen.chapter1.line5",
+            "dialogue.polen.chapter1.line6",
+            "dialogue.polen.chapter1.line7"
     );
 
     private static final Map<Integer, List<String>> DIALOGUES_BY_CHAPTER = Map.of(

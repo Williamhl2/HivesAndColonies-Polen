@@ -116,16 +116,16 @@ public final class PolenMemoryHandler {
         )) {
             if (polen.getAiState().getFavoriteFlowerPos() == null
                     && polen.level().getBlockState(pos).is(BlockTags.FLOWERS)) {
-                polen.getAiState().setFavoriteFlowerPos(pos.immutable());
+                rememberInterestingSpot(polen, pos);
             }
 
             if (polen.getAiState().getFavoriteHivePos() == null && isHive(polen, pos)) {
-                polen.getAiState().setFavoriteHivePos(pos.immutable());
+                rememberInterestingSpot(polen, pos);
             }
 
             if (polen.getAiState().getFavoriteSourcePos() == null
                     && PolenInterestLocator.isSourceLike(polen.level().getBlockState(pos))) {
-                polen.getAiState().setFavoriteSourcePos(pos.immutable());
+                rememberInterestingSpot(polen, pos);
             }
 
             if (polen.getAiState().getFavoriteFlowerPos() != null
