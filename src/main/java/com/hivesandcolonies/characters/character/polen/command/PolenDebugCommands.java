@@ -29,16 +29,12 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import java.util.EnumSet;
 
 public final class PolenDebugCommands {
-    private static final String PRIMARY_ROOT = "hivescolonies";
-    private static final String SHORT_ROOT = "hc";
-    private static final String LEGACY_ROOT = "characters";
+    private static final String PRIMARY_ROOT = "hc-characters";
 
     private PolenDebugCommands() {}
 
     public static void register(RegisterCommandsEvent event) {
         event.getDispatcher().register(createRoot(PRIMARY_ROOT));
-        event.getDispatcher().register(createRoot(SHORT_ROOT));
-        event.getDispatcher().register(createRoot(LEGACY_ROOT));
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> createRoot(String rootName) {

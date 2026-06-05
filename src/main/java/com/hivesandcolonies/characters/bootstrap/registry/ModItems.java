@@ -15,6 +15,8 @@ import com.hivesandcolonies.characters.character.polen.item.story.PrincessLetter
 import com.hivesandcolonies.characters.character.polen.item.story.PrincessSealItem;
 
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -22,6 +24,7 @@ import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Characters.MODID);
@@ -78,6 +81,16 @@ public class ModItems {
                 "polen_spawn_egg",
                 UniquePolenSpawnEggItem::new
         );
+    public static final DeferredItem<DeferredSpawnEggItem> BEFSH_SPAWN_EGG =
+            registerSpawnEgg("befsh_spawn_egg", ModEntities.BEFSH, 0x6E3F2D, 0xD8B58A);
+    public static final DeferredItem<DeferredSpawnEggItem> LUNA_SPAWN_EGG =
+            registerSpawnEgg("luna_spawn_egg", ModEntities.LUNA, 0xC7E8FF, 0x7A92FF);
+    public static final DeferredItem<DeferredSpawnEggItem> VANILLA_SPAWN_EGG =
+            registerSpawnEgg("vanilla_spawn_egg", ModEntities.VANILLA, 0xF3E5C7, 0xC89F5D);
+    public static final DeferredItem<DeferredSpawnEggItem> NOIA_SPAWN_EGG =
+            registerSpawnEgg("noia_spawn_egg", ModEntities.NOIA, 0x97E7D7, 0xD86F9B);
+    public static final DeferredItem<DeferredSpawnEggItem> NORIS_SPAWN_EGG =
+            registerSpawnEgg("noris_spawn_egg", ModEntities.NORIS, 0x7E92D8, 0xD7E3FF);
 
     private static DeferredItem<Item> registerStoryItem(
             String name,
@@ -105,6 +118,19 @@ public class ModItems {
             Function<Item.Properties, ? extends Item> factory
     ) {
         return registerTypedItem(name, factory, new Item.Properties());
+    }
+
+    private static DeferredItem<DeferredSpawnEggItem> registerSpawnEgg(
+            String name,
+            Supplier<? extends EntityType<? extends Mob>> entityType,
+            int backgroundColor,
+            int highlightColor
+    ) {
+        return ITEMS.registerItem(
+                name,
+                properties -> new DeferredSpawnEggItem(entityType, backgroundColor, highlightColor, properties),
+                new Item.Properties()
+        );
     }
 
     @SuppressWarnings("unchecked")

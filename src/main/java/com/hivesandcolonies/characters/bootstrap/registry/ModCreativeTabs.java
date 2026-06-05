@@ -44,6 +44,11 @@ public class ModCreativeTabs {
 
                         // Debug / spawn support.
                         output.accept(ModItems.POLEN_SPAWN_EGG.get());
+                        output.accept(ModItems.BEFSH_SPAWN_EGG.get());
+                        output.accept(ModItems.LUNA_SPAWN_EGG.get());
+                        output.accept(ModItems.VANILLA_SPAWN_EGG.get());
+                        output.accept(ModItems.NOIA_SPAWN_EGG.get());
+                        output.accept(ModItems.NORIS_SPAWN_EGG.get());
 
                     })
                     .build());
