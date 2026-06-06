@@ -189,6 +189,10 @@ This version is still closer to:
 - early ambient behavior
 - first hints of memory recovery
 
+Important gap that is now defined in docs but not fully implemented in-world:
+
+- Polen's initial clearing, improvised starting shelter, and prologue locator item are now specified canonically, but they are not yet generated or wired as a full first-encounter system.
+
 Known mismatch to keep documented:
 
 - Polen's AI currently has a regression where she can lock into flower-watching behavior and stop moving as intended

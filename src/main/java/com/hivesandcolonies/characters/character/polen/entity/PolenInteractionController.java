@@ -8,6 +8,7 @@ import com.hivesandcolonies.characters.character.polen.progression.PolenChapterM
 import com.hivesandcolonies.characters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.characters.character.polen.progression.PolenStoryFlagsManager;
 import com.hivesandcolonies.characters.character.polen.progression.player.PolenPlayerRelationshipManager;
+import com.hivesandcolonies.characters.character.polen.entity.ai.world.home.PolenShelterValidator;
 import com.hivesandcolonies.characters.character.polen.story.PolenStoryEventManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -50,6 +51,12 @@ public final class PolenInteractionController {
             return InteractionResult.SUCCESS;
         }
 
+        if (shouldRecognizeShelter(polen, player, currentChapter)) {
+            PolenStoryEventManager.playShelterRecognition(player);
+            polen.refreshDisplayName();
+            return InteractionResult.SUCCESS;
+        }
+
         player.displayClientMessage(
                 PolenDialogueManager.getInteractionDialogue(
                         player,
@@ -76,5 +83,16 @@ public final class PolenInteractionController {
     private static boolean shouldRevealName(Player player, int affinity) {
         return !PolenStoryFlagsManager.hasFlag(player, PolenStoryFlag.NAME_REVEALED)
                 && affinity >= PolenAffinityLevels.NAME_REVEAL;
+    }
+
+    private static boolean shouldRecognizeShelter(PolenEntity polen, Player player, int currentChapter) {
+        if (currentChapter < PolenChapterManager.FOUNDATION
+                || PolenStoryFlagsManager.hasFlag(player, PolenStoryFlag.PLAYER_HAS_SHELTER)
+                || !PolenStoryFlagsManager.hasFlag(player, PolenStoryFlag.CHAPTER_0_COMPLETE)) {
+            return false;
+        }
+
+        return PolenShelterValidator.findStoryShelter(polen, player.blockPosition()) != null
+                || PolenShelterValidator.findStoryShelter(polen, polen.blockPosition()) != null;
     }
 }

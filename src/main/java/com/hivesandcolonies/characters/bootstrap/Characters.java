@@ -3,6 +3,8 @@ package com.hivesandcolonies.characters.bootstrap;
 import org.slf4j.Logger;
 
 import com.hivesandcolonies.characters.character.polen.command.PolenDebugCommands;
+import com.hivesandcolonies.characters.character.polen.progression.world.prologue.PolenPrologueManager;
+import com.hivesandcolonies.characters.character.polen.progression.world.singularity.PolenSingularityManager;
 import com.hivesandcolonies.characters.bootstrap.registry.ModBlocks;
 import com.hivesandcolonies.characters.bootstrap.registry.ModCreativeTabs;
 import com.hivesandcolonies.characters.bootstrap.registry.ModEntities;
@@ -27,5 +29,8 @@ public class Characters {
         ModEntities.ENTITY_TYPES.register(modEventBus);
 
         NeoForge.EVENT_BUS.addListener(PolenDebugCommands::register);
+        NeoForge.EVENT_BUS.addListener(PolenSingularityManager::onEntityJoinLevel);
+        NeoForge.EVENT_BUS.addListener(PolenPrologueManager::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(PolenPrologueManager::onPlayerLoggedIn);
     }
 }

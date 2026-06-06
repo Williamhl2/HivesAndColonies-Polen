@@ -1,30 +1,31 @@
 package com.hivesandcolonies.characters.bootstrap.registry;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 import com.hivesandcolonies.characters.bootstrap.Characters;
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.identity.PolenWorldAffinity;
 import com.hivesandcolonies.characters.character.polen.item.affinity.AffinityCharmItem;
 import com.hivesandcolonies.characters.character.polen.item.colony.ResidenceCharmItem;
 import com.hivesandcolonies.characters.character.polen.item.colony.SettlementCharmItem;
 import com.hivesandcolonies.characters.character.polen.item.focus.BloomFocusItem;
-import com.hivesandcolonies.characters.character.polen.item.material.RoyalPollenItem;
+import com.hivesandcolonies.characters.character.polen.item.focus.HiveheartCharmItem;
 import com.hivesandcolonies.characters.character.polen.item.material.ResonantWaxItem;
+import com.hivesandcolonies.characters.character.polen.item.material.RoyalPollenItem;
 import com.hivesandcolonies.characters.character.polen.item.material.SourceTouchedPetalItem;
 import com.hivesandcolonies.characters.character.polen.item.spawn.UniquePolenSpawnEggItem;
 import com.hivesandcolonies.characters.character.polen.item.story.PolenJournalItem;
 import com.hivesandcolonies.characters.character.polen.item.story.PrincessLetterItem;
 import com.hivesandcolonies.characters.character.polen.item.story.PrincessSealItem;
 
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredItem;
 import net.neoforged.neoforge.registries.DeferredRegister;
-
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class ModItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Characters.MODID);
@@ -50,6 +51,8 @@ public class ModItems {
     // Focus items: direct Ars-adjacent interaction tools for Polen and remembered places.
     public static final DeferredItem<Item> BLOOM_FOCUS =
             registerFocusItem("bloom_focus", BloomFocusItem::new);
+    public static final DeferredItem<Item> HIVEHEART_CHARM =
+            registerStoryItem("hiveheart_charm", HiveheartCharmItem::new);
 
     // Affinity charms: unique visual equipment generated from Polen's world affinity.
     public static final DeferredItem<Item> APIARIST_CHARM =
@@ -74,6 +77,11 @@ public class ModItems {
             ITEMS.registerItem(
                     "polen_lantern",
                     properties -> new BlockItem(ModBlocks.POLEN_LANTERN.get(), properties)
+            );
+    public static final DeferredItem<Item> POLEN_BEE_BED =
+            ITEMS.registerItem(
+                    "polen_bee_bed",
+                    properties -> new BlockItem(ModBlocks.POLEN_BEE_BED.get(), properties.stacksTo(1))
             );
 
     public static final DeferredItem<DeferredSpawnEggItem> POLEN_SPAWN_EGG =

@@ -6,6 +6,7 @@
 
 - [Story bible](es/STORY.md)
 - [Narrative chapters](es/NARRATIVE_CHAPTERS.md)
+- [Polen prologue site](es/POLEN_PROLOGUE_SITE.md)
 - [Polen residence](es/POLEN_RESIDENCE.md)
 
 ### English

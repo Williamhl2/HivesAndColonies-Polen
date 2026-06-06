@@ -70,6 +70,27 @@ public final class PolenPlayerRelationshipManager {
         mutate(player, PolenPlayerRelationshipData::incrementTasksCompletedForPolen);
     }
 
+    public static boolean hasPlayerFlag(Player player, String flag) {
+        if (flag == null || flag.isBlank()) {
+            return false;
+        }
+        return getRelationship(player).getPlayerFlags().contains(flag);
+    }
+
+    public static void addPlayerFlag(Player player, String flag) {
+        if (flag == null || flag.isBlank()) {
+            return;
+        }
+        mutate(player, data -> data.addPlayerFlag(flag));
+    }
+
+    public static void clearPlayerFlag(Player player, String flag) {
+        if (flag == null || flag.isBlank()) {
+            return;
+        }
+        mutate(player, data -> data.clearPlayerFlag(flag));
+    }
+
     private static void mutate(Player player, Consumer<PolenPlayerRelationshipData> consumer) {
         SavedRelationships savedData = getSavedData(player);
         if (savedData == null) {

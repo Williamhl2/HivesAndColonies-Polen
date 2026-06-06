@@ -6,6 +6,7 @@ import com.hivesandcolonies.characters.character.polen.entity.ai.world.interests
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.story.PolenStoryStage;
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.story.PolenWorldMemory;
 import com.hivesandcolonies.characters.character.polen.progression.PolenStoryFlag;
+import net.minecraft.core.BlockPos;
 
 import java.util.EnumSet;
 import java.util.UUID;
@@ -19,6 +20,9 @@ public final class PolenWorldStoryData {
     private PolenInterestProfile interestProfile;
     private PolenStoryStage storyStage;
     private final EnumSet<PolenWorldMemory> worldMemories;
+    private BlockPos prologueClearingCenter;
+    private BlockPos prologueShelterPos;
+    private BlockPos prologueBeeBedPos;
 
     public PolenWorldStoryData() {
         this.currentChapter = 0;
@@ -118,5 +122,29 @@ public final class PolenWorldStoryData {
 
     public EnumSet<PolenWorldMemory> getWorldMemories() {
         return EnumSet.copyOf(this.worldMemories);
+    }
+
+    public BlockPos getPrologueClearingCenter() {
+        return this.prologueClearingCenter;
+    }
+
+    public void setPrologueClearingCenter(BlockPos prologueClearingCenter) {
+        this.prologueClearingCenter = prologueClearingCenter == null ? null : prologueClearingCenter.immutable();
+    }
+
+    public BlockPos getPrologueShelterPos() {
+        return this.prologueShelterPos;
+    }
+
+    public void setPrologueShelterPos(BlockPos prologueShelterPos) {
+        this.prologueShelterPos = prologueShelterPos == null ? null : prologueShelterPos.immutable();
+    }
+
+    public BlockPos getPrologueBeeBedPos() {
+        return this.prologueBeeBedPos;
+    }
+
+    public void setPrologueBeeBedPos(BlockPos prologueBeeBedPos) {
+        this.prologueBeeBedPos = prologueBeeBedPos == null ? null : prologueBeeBedPos.immutable();
     }
 }

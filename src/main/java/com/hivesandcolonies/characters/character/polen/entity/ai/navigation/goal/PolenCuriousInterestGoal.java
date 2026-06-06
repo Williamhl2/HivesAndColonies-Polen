@@ -12,8 +12,7 @@ import com.hivesandcolonies.characters.character.polen.entity.ai.navigation.safe
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.affordance.PolenAffordanceResolver;
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.affordance.PolenAffordanceTarget;
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.affordance.PolenAffordanceType;
-import com.hivesandcolonies.characters.character.polen.story.PolenMemoryManager;
-import com.hivesandcolonies.characters.character.polen.story.PolenMemoryType;
+import com.hivesandcolonies.characters.character.polen.story.PolenWorldEventTriggers;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -89,12 +88,9 @@ public class PolenCuriousInterestGoal extends Goal {
         PolenTaskController.markActive(this.polen, PolenTaskType.INVESTIGATE_INTEREST, "investigating_interest");
         if (this.target.type() == PolenInterestType.SOURCE) {
             this.polen.rememberInterestingSpot(this.target.pos());
-            PolenMemoryManager.unlockMemory(
+            PolenWorldEventTriggers.onFirstSourceDiscovered(
                     (net.minecraft.server.level.ServerLevel) this.polen.level(),
-                    PolenMemoryType.FIRST_SOURCE,
-                    this.target.pos().getX() + 0.5D,
-                    this.target.pos().getY() + 0.5D,
-                    this.target.pos().getZ() + 0.5D
+                    this.target.pos()
             );
             PolenAmbientDialogueController.tryPlay(
                     this.polen,

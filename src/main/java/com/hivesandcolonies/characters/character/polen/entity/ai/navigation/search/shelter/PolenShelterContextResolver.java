@@ -1,5 +1,6 @@
 package com.hivesandcolonies.characters.character.polen.entity.ai.navigation.search.shelter;
 
+import com.hivesandcolonies.characters.bootstrap.registry.ModBlocks;
 import com.hivesandcolonies.characters.character.polen.dialogue.PolenDialogueManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -195,16 +196,59 @@ public final class PolenShelterContextResolver {
     }
 
     public static boolean hasNearbyBed(Level level, BlockPos origin) {
+        return findNearbyBed(level, origin) != null;
+    }
+
+    public static BlockPos findNearbyBeeBed(Level level, BlockPos origin) {
+        if (level == null || origin == null) {
+            return null;
+        }
+
+        BlockPos bestPos = null;
+        double bestScore = Double.MAX_VALUE;
         for (int dx = -BED_RADIUS; dx <= BED_RADIUS; dx++) {
             for (int dz = -BED_RADIUS; dz <= BED_RADIUS; dz++) {
                 for (int dy = -1; dy <= 2; dy++) {
-                    if (level.getBlockState(origin.offset(dx, dy, dz)).is(BlockTags.BEDS)) {
-                        return true;
+                    BlockPos candidate = origin.offset(dx, dy, dz);
+                    if (!level.getBlockState(candidate).is(ModBlocks.POLEN_BEE_BED.get())) {
+                        continue;
+                    }
+
+                    double score = candidate.distSqr(origin);
+                    if (score < bestScore) {
+                        bestScore = score;
+                        bestPos = candidate.immutable();
                     }
                 }
             }
         }
-        return false;
+        return bestPos;
+    }
+
+    private static BlockPos findNearbyBed(Level level, BlockPos origin) {
+        if (level == null || origin == null) {
+            return null;
+        }
+
+        BlockPos bestPos = null;
+        double bestScore = Double.MAX_VALUE;
+        for (int dx = -BED_RADIUS; dx <= BED_RADIUS; dx++) {
+            for (int dz = -BED_RADIUS; dz <= BED_RADIUS; dz++) {
+                for (int dy = -1; dy <= 2; dy++) {
+                    BlockPos candidate = origin.offset(dx, dy, dz);
+                    if (!level.getBlockState(candidate).is(BlockTags.BEDS)) {
+                        continue;
+                    }
+
+                    double score = candidate.distSqr(origin);
+                    if (score < bestScore) {
+                        bestScore = score;
+                        bestPos = candidate.immutable();
+                    }
+                }
+            }
+        }
+        return bestPos;
     }
 
     private static boolean hasNearbyNaturalTreeContext(Level level, BlockPos pos) {

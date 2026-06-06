@@ -5,6 +5,7 @@ import com.hivesandcolonies.characters.character.polen.entity.ai.brain.interest.
 import com.hivesandcolonies.characters.character.polen.entity.ai.brain.interest.PolenInterestType;
 import com.hivesandcolonies.characters.character.polen.entity.ai.brain.interest.PolenInterestLocator;
 import com.hivesandcolonies.characters.character.polen.entity.ai.brain.memory.PolenMemoryHandler;
+import com.hivesandcolonies.characters.character.polen.entity.ai.world.home.PolenHomeManager;
 import com.hivesandcolonies.characters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.characters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.characters.character.polen.progression.PolenStoryFlagsManager;
@@ -37,16 +38,19 @@ public final class PolenNeedController {
         boolean nearSource = polen.getAiState().getFavoriteSourcePos() != null
                 && polen.getAiState().getFavoriteSourcePos().closerToCenterThan(polen.position(), 4.0D)
                 || localInterest != null && localInterest.type() == PolenInterestType.SOURCE;
-        boolean atRest = polen.getAiState().getRestingPos() != null
+        boolean atRest = PolenHomeManager.isNearResidence(polen)
+                || polen.getAiState().getRestingPos() != null
                 && polen.getAiState().getRestingPos().closerToCenterThan(polen.position(), 2.0D);
         boolean badWeather = polen.level().isThundering()
                 || polen.level().isRaining() && polen.level().canSeeSky(polen.blockPosition());
         boolean shelterKnown = polen.level() instanceof ServerLevel serverLevel
                 && PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.PLAYER_HAS_SHELTER);
+        boolean homeKnown = shelterKnown
+                && (polen.getAiState().getRestingPos() != null || PolenHomeManager.getValidResidenceUsePos(polen) != null);
 
         state.adjustSafety(shouldSeekSafety ? 26 : unsafeArea ? 12 : atRest ? -10 : -5);
         if (badWeather) {
-            state.adjustSafety(8);
+            state.adjustSafety(atRest ? -4 : homeKnown ? 12 : 8);
         }
 
         state.adjustSocial(trustedNearby ? -14 : shelterKnown && !unsafeArea ? 5 : 2);
@@ -59,9 +63,12 @@ public final class PolenNeedController {
             state.adjustCuriosity(2);
         }
 
-        state.adjustRest(polen.level().isNight() || badWeather ? 10 : atRest ? -12 : 3);
+        state.adjustRest(polen.level().isNight() || badWeather ? homeKnown && !atRest ? 14 : 10 : atRest ? -12 : 3);
         if (polen.isDoingQuietActivity()) {
             state.adjustRest(-8);
+        }
+        if (atRest) {
+            state.adjustRest(-6);
         }
 
         state.adjustMagic(nearSource ? -14 : polen.isDoingQuietActivity() ? -10 : shelterKnown ? 2 : 1);

@@ -23,6 +23,6 @@ class PolenChapterDialogueResolverTest {
     @Test
     void wrapsRollIntoAvailableDialogueList() {
         String key = PolenChapterDialogueResolver.resolveKeyForRoll(PolenChapterManager.FOUNDATION, 9);
-        assertEquals("dialogue.polen.chapter1.line2", key);
+        assertEquals("dialogue.polen.chapter1.line3", key);
     }
 }

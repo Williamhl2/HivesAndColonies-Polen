@@ -6,10 +6,13 @@ import com.hivesandcolonies.characters.character.polen.entity.ai.world.identity.
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.interests.PolenInterest;
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.interests.PolenInterestGenerator;
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.interests.PolenInterestProfile;
+import com.hivesandcolonies.characters.character.polen.entity.ai.navigation.search.shelter.PolenShelterContextResolver;
+import com.hivesandcolonies.characters.character.polen.entity.ai.world.home.PolenShelterValidator;
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.story.PolenStoryStage;
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.story.PolenWorldMemory;
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.identity.PolenWorldAffinity;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 
 public final class PolenWorldStateManager {
@@ -47,6 +50,10 @@ public final class PolenWorldStateManager {
             dirty = true;
         }
 
+        if (ensurePrologueSite(data, polen)) {
+            dirty = true;
+        }
+
         ensureAffinityCharm(data, polen);
 
         if (dirty) {
@@ -54,6 +61,43 @@ public final class PolenWorldStateManager {
         }
 
         return data;
+    }
+
+    private static boolean ensurePrologueSite(PolenWorldStoryData data, PolenEntity polen) {
+        if (data == null || polen == null) {
+            return false;
+        }
+
+        ServerLevel level = (ServerLevel) polen.level();
+        boolean dirty = false;
+        if (data.getPrologueClearingCenter() == null) {
+            data.setPrologueClearingCenter(polen.blockPosition());
+            dirty = true;
+        }
+
+        if (data.getPrologueShelterPos() == null) {
+            BlockPos shelterPos = PolenShelterValidator.findStoryShelter(
+                    polen,
+                    data.getPrologueClearingCenter() == null ? polen.blockPosition() : data.getPrologueClearingCenter()
+            );
+            if (shelterPos != null) {
+                data.setPrologueShelterPos(shelterPos);
+                dirty = true;
+            }
+        }
+
+        if (data.getPrologueBeeBedPos() == null) {
+            BlockPos searchOrigin = data.getPrologueShelterPos() != null
+                    ? data.getPrologueShelterPos()
+                    : data.getPrologueClearingCenter();
+            BlockPos beeBedPos = PolenShelterContextResolver.findNearbyBeeBed(level, searchOrigin);
+            if (beeBedPos != null) {
+                data.setPrologueBeeBedPos(beeBedPos);
+                dirty = true;
+            }
+        }
+
+        return dirty;
     }
 
 

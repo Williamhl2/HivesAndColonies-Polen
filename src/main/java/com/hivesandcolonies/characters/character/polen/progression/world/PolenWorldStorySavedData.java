@@ -7,6 +7,7 @@ import com.hivesandcolonies.characters.character.polen.entity.ai.world.interests
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.story.PolenStoryStage;
 import com.hivesandcolonies.characters.character.polen.entity.ai.world.story.PolenWorldMemory;
 import com.hivesandcolonies.characters.character.polen.progression.PolenStoryFlag;
+import com.hivesandcolonies.characters.common.util.CharacterNbtHelper;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -36,6 +37,9 @@ public final class PolenWorldStorySavedData extends SavedData {
     private static final String TAG_INTEREST_PROFILE = "interestProfile";
     private static final String TAG_STORY_STAGE = "storyStage";
     private static final String TAG_WORLD_MEMORIES = "worldMemories";
+    private static final String TAG_PROLOGUE_CLEARING_CENTER = "prologueClearingCenter";
+    private static final String TAG_PROLOGUE_SHELTER_POS = "prologueShelterPos";
+    private static final String TAG_PROLOGUE_BEE_BED_POS = "prologueBeeBedPos";
 
     private final PolenWorldStoryData data;
 
@@ -129,6 +133,10 @@ public final class PolenWorldStorySavedData extends SavedData {
             }
         }
 
+        data.setPrologueClearingCenter(CharacterNbtHelper.loadBlockPos(tag, TAG_PROLOGUE_CLEARING_CENTER));
+        data.setPrologueShelterPos(CharacterNbtHelper.loadBlockPos(tag, TAG_PROLOGUE_SHELTER_POS));
+        data.setPrologueBeeBedPos(CharacterNbtHelper.loadBlockPos(tag, TAG_PROLOGUE_BEE_BED_POS));
+
         return new PolenWorldStorySavedData(data);
     }
 
@@ -176,6 +184,10 @@ public final class PolenWorldStorySavedData extends SavedData {
             memories.add(StringTag.valueOf(memory.name()));
         }
         tag.put(TAG_WORLD_MEMORIES, memories);
+
+        CharacterNbtHelper.saveBlockPos(tag, TAG_PROLOGUE_CLEARING_CENTER, data.getPrologueClearingCenter());
+        CharacterNbtHelper.saveBlockPos(tag, TAG_PROLOGUE_SHELTER_POS, data.getPrologueShelterPos());
+        CharacterNbtHelper.saveBlockPos(tag, TAG_PROLOGUE_BEE_BED_POS, data.getPrologueBeeBedPos());
 
         return tag;
     }

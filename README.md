@@ -64,6 +64,7 @@ The playable beginning should still stay intimate and grounded even though the l
 - [Dialogue localization workflow](docs/dev/DIALOGUE_LOCALIZATION.md)
 - [Codebase map](docs/dev/CODEBASE_MAP.md)
 - [Spanish story bible](docs/es/STORY.md)
+- [Polen prologue site spec](docs/es/POLEN_PROLOGUE_SITE.md)
 - [English story overview](docs/en/STORY.md)
 
 ## Quick structure

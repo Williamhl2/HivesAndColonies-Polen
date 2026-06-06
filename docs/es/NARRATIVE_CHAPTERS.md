@@ -19,6 +19,12 @@ Tema:
 - desorientacion
 - seguridad minima
 
+Regla de escena:
+
+- Polen ya habita un claro concreto
+- ese claro ya incluye un campamento pequeno y un refugio improvisado
+- el jugador no "crea" su primera supervivencia; la encuentra viviendo dentro de ella
+
 Objetivo:
 
 - presentar a Polen como persona antes que como leyenda

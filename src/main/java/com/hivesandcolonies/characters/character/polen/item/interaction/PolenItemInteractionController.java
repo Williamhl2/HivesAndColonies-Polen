@@ -12,8 +12,6 @@ import com.hivesandcolonies.characters.character.polen.entity.ai.navigation.safe
 import com.hivesandcolonies.characters.character.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.characters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.characters.character.polen.progression.PolenStoryFlagsManager;
-import com.hivesandcolonies.characters.character.polen.story.PolenMemoryManager;
-import com.hivesandcolonies.characters.character.polen.story.PolenMemoryType;
 import com.hivesandcolonies.characters.character.polen.story.PolenWorldEventTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -88,13 +86,7 @@ public final class PolenItemInteractionController {
 
         if (isSourceLike(clickedState)) {
             polen.rememberInterestingSpot(clickedPos);
-            PolenMemoryManager.unlockMemory(
-                    serverLevel,
-                    PolenMemoryType.FIRST_SOURCE,
-                    clickedPos.getX() + 0.5D,
-                    clickedPos.getY() + 0.5D,
-                    clickedPos.getZ() + 0.5D
-            );
+            PolenWorldEventTriggers.onFirstSourceDiscovered(serverLevel, clickedPos);
             PolenAffinityManager.addAffinity(player, 1);
             spawnSourceBurst(serverLevel, clickedPos);
             spawnPolenResponse(serverLevel, polen);
@@ -145,13 +137,7 @@ public final class PolenItemInteractionController {
         }
 
         PolenAffinityManager.addAffinity(player, 2);
-        PolenMemoryManager.unlockMemory(
-                serverLevel,
-                PolenMemoryType.FIRST_COLONY,
-                targetPos.getX() + 0.5D,
-                targetPos.getY() + 0.5D,
-                targetPos.getZ() + 0.5D
-        );
+        PolenWorldEventTriggers.onFirstColonyFounded(serverLevel, targetPos);
         spawnRestingBurst(serverLevel, targetPos);
         spawnPolenResponse(serverLevel, polen);
         PolenAmbientDialogueController.tryPlay(polen, PolenDialogueManager.AMBIENT_APPROACH);

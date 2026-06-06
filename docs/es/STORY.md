@@ -23,6 +23,10 @@ Solo que no debe aparecer antes que la cercania emocional.
 
 El jugador encuentra a una joven viviendo sola cerca del borde salvaje.
 
+No aparece en cualquier parte.
+
+Su primer lugar es un claro tranquilo con un refugio pequeno e improvisado.
+
 No parece importante a simple vista.
 No recuerda todo lo que vivio.
 No entrega confianza facilmente.
@@ -88,6 +92,26 @@ encuentro
 ```
 
 La epica debe nacer de la intimidad, no reemplazarla.
+
+## Regla del comienzo
+
+"La chica del claro" no es solo un titulo.
+
+Es una regla de puesta en escena:
+
+- Polen debe ser encontrada en un claro reconocible
+- ese claro debe sentirse apartado pero seguro
+- ya debe existir un refugio inicial precario
+- ese refugio inicial no es todavia el "nuevo comienzo" de Chapter 1
+
+Distincion importante:
+
+- el refugio del prologo explica como sobrevive Polen antes del jugador
+- el refugio de `PLAYER_HAS_SHELTER` marca cuando ambos reconocen un lugar mejor como comienzo compartido
+
+La especificacion concreta del claro, del refugio inicial y del item localizador vive en:
+
+- [POLEN_PROLOGUE_SITE.md](POLEN_PROLOGUE_SITE.md)
 
 ## Polen
 

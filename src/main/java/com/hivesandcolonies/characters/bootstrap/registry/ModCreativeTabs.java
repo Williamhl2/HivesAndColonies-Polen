@@ -24,6 +24,7 @@ public class ModCreativeTabs {
                         output.accept(ModItems.PRINCESS_SEAL.get());
                         output.accept(ModItems.PRINCESS_LETTER.get());
                         output.accept(ModItems.POLEN_JOURNAL.get());
+                        output.accept(ModItems.HIVEHEART_CHARM.get());
 
                         // Reusable materials and future systems.
                         output.accept(ModItems.ROYAL_POLLEN.get());
@@ -41,6 +42,7 @@ public class ModCreativeTabs {
                         output.accept(ModItems.ARTISAN_CHARM.get());
                         output.accept(ModItems.WAYFARER_CHARM.get());
                         output.accept(ModItems.POLEN_LANTERN.get());
+                        output.accept(ModItems.POLEN_BEE_BED.get());
 
                         // Debug / spawn support.
                         output.accept(ModItems.POLEN_SPAWN_EGG.get());

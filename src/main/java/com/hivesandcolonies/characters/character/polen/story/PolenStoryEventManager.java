@@ -34,6 +34,11 @@ public final class PolenStoryEventManager {
     private PolenStoryEventManager() {}
 
     public static void playShelterRecognition(Player player) {
+        if (player.level() instanceof ServerLevel serverLevel
+                && PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.PLAYER_HAS_SHELTER)) {
+            return;
+        }
+
         sendDialogueSequence(player, POLEN_KEY, ChatFormatting.LIGHT_PURPLE, SHELTER_RECOGNITION_LINES);
 
         if (player.level() instanceof ServerLevel serverLevel) {

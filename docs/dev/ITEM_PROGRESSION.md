@@ -207,3 +207,20 @@ Status update:
 
 - `residence_charm` now fills that colony-adjacent residence slot.
 - Residence validation still belongs in AI/world managers, not in the item class.
+## Prologue Locator Decision
+
+The item that should guide the player to Polen during the prologue is:
+
+- `hiveheart_charm`
+
+Its role is now defined more narrowly than a generic accessory or craftable charm:
+
+- it is a prologue locator
+- it points toward Polen's initial clearing
+- it should be obtained as the reward for the opening prologue clue or quest, not through normal crafting
+- it should stop acting as a primary locator after the first meeting
+
+Important design consequence:
+
+- the current crafted interpretation of `hiveheart_charm` should not be treated as canonical for the first playable encounter
+- if a later craftable version exists, it should be a later-stage variant, not the base prologue item

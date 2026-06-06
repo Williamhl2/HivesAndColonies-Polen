@@ -23,9 +23,9 @@ Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 
 ### `com.hivesandcolonies.characters`
 
-- `Polen`
+- `Characters`
   - entrada principal del mod
-- `PolenClient`
+- `CharactersClient`
   - registro cliente
 
 ### `com.hivesandcolonies.characters.client`

@@ -19,6 +19,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 public final class PolenRoutinePlanner {
 
     private static final int DEFAULT_SAFE_SPOT_RADIUS = 10;
+    private static final int DEFAULT_HOME_ROUTINE_RADIUS = 24;
+    private static final int BAD_WEATHER_HOME_ROUTINE_RADIUS = 36;
     private static final int MIN_INTEREST_BRIGHTNESS = 8;
     private static final int[] ROUTINE_ANCHOR_Y_OFFSETS = {0, 1, -1, 2, -2};
     private static final int ROUTINE_ANCHOR_RADIUS = 2;
@@ -104,6 +106,11 @@ public final class PolenRoutinePlanner {
             return lightMagicTarget;
         }
 
+        BlockPos preferredHomeTarget = findPreferredHomeRoutineTarget(polen);
+        if (preferredHomeTarget != null) {
+            return preferredHomeTarget;
+        }
+
         BlockPos rememberedSourceAnchor = normalizeQuietCreationAnchor(polen, polen.getAiState().getFavoriteSourcePos());
         if (rememberedSourceAnchor != null
                 && isSafeInterestSpot(polen, polen.getAiState().getFavoriteSourcePos())) {
@@ -130,6 +137,28 @@ public final class PolenRoutinePlanner {
         }
 
         return PolenSafetyNavigator.findNearbySafeSurfaceSpot(polen, DEFAULT_SAFE_SPOT_RADIUS);
+    }
+
+    private static BlockPos findPreferredHomeRoutineTarget(PolenEntity polen) {
+        int maxRadius = polen.level().isNight() || polen.level().isRaining()
+                ? BAD_WEATHER_HOME_ROUTINE_RADIUS
+                : DEFAULT_HOME_ROUTINE_RADIUS;
+
+        BlockPos residenceUsePos = PolenHomeManager.getValidResidenceUsePos(polen);
+        BlockPos normalizedResidencePos = normalizeQuietCreationAnchor(polen, residenceUsePos);
+        if (normalizedResidencePos != null
+                && residenceUsePos != null
+                && residenceUsePos.distSqr(polen.blockPosition()) <= (double) (maxRadius * maxRadius)) {
+            return normalizedResidencePos;
+        }
+
+        BlockPos normalizedRestingPos = normalizeRestingAnchor(polen, polen.getAiState().getRestingPos());
+        if (normalizedRestingPos != null
+                && normalizedRestingPos.distSqr(polen.blockPosition()) <= (double) (maxRadius * maxRadius)) {
+            return normalizedRestingPos;
+        }
+
+        return null;
     }
 
     private static BlockPos resolveRoutineAnchor(
