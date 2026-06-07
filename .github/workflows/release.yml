@@ -33,23 +33,32 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
+      - name: Find JAR
+        id: find_jar
+        run: |
+          JAR=$(ls build/libs/*.jar | grep -v '\-sources\.' | grep -v '\-javadoc\.' | head -1)
+          echo "jar=$JAR" >> "$GITHUB_OUTPUT"
+          echo "Found JAR: $JAR"
+
       - name: Publish to CurseForge
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          # CurseForge project numeric ID - set this to your CurseForge project ID
           curseforge-id: ${{ secrets.CF_PROJECT_ID }}
           curseforge-token: ${{ secrets.CF_API_TOKEN }}
 
-          # The built JAR artifact
-          files: build/libs/!(*-@(sources|javadoc)).jar
+          files: ${{ steps.find_jar.outputs.jar }}
 
-          name: Hives & Colonies Characters ${{ github.ref_name }}
+          name: "Hives & Colonies: Characters ${{ github.ref_name }}"
           version: ${{ github.ref_name }}
           version-type: beta
 
           changelog-file: CHANGELOG.md
 
-          game-versions: 1.21.1
-          game-version-filter: releases
-          loaders: neoforge
+          game-versions: |
+            1.21.1
+          loaders: |
+            neoforge
           java: 21
+
+          retry-attempts: 2
+          retry-delay: 15000
