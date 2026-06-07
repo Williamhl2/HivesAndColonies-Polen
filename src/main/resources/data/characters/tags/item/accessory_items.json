@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "characters:apiarist_charm",
+    "characters:arcane_charm",
+    "characters:colonial_charm",
+    "characters:harvest_charm",
+    "characters:artisan_charm",
+    "characters:wayfarer_charm"
+  ]
+}

@@ -1,5 +1,61 @@
 # Development Log
 
+## 2026-06-06 (Foundation Shelter Trigger Cleanup)
+
+### Added
+
+- `PolenShelterValidator`
+  - valida refugios jugables para el milestone narrativo de shelter recognition
+
+### Changed
+
+- Interactuar con Polen dentro de un refugio valido durante `FOUNDATION` ahora dispara por fin `PLAYER_HAS_SHELTER`.
+- `settlement_charm` y descubrimiento de source ahora reutilizan `PolenWorldEventTriggers` en vez de duplicar unlocks de memoria.
+- `CODEBASE_MAP.md` ya no nombra entrypoints viejos que no existen.
+
+### Removed
+
+- `POLEN_HAS_FOOD` como story flag placeholder sin referencias activas.
+
+## 2026-06-06 (Home Bias for Rest and Quiet Creation)
+
+### Changed
+
+- Polen ahora prioriza de forma mas fuerte su `restingPos` y `residence` al buscar refugio bajo lluvia o descanso nocturno.
+- La seleccion de `QUIET_CREATION` ahora favorece volver al hogar recordado antes de dispersarse hacia otros puntos tranquilos cuando el contexto ya es seguro.
+- El modelo de needs e intent ahora empuja con mas claridad el retorno al hogar durante lluvia o noche si ya existe un lugar marcado para ella.
+
+## 2026-06-06 (Prologue Clearing Canon Bound to World State)
+
+### Added
+
+- `prologueClearingCenter` y `prologueShelterPos` en el world story data de Polen.
+  - dejan persistido que la "chica del claro" pertenece a un lugar inicial concreto
+  - separan el refugio improvisado del prologo del refugio significativo de `PLAYER_HAS_SHELTER`
+
+### Changed
+
+- La documentacion del prologo y de narrativa ahora explicita que Polen ya vive en un claro con refugio precario antes de conocer al jugador.
+
+## 2026-06-06 (Initial Clearing, Shelter and Locator Defined)
+
+### Added
+
+- `docs/es/POLEN_PROLOGUE_SITE.md`
+  - define la estructura exacta del refugio inicial
+  - fija las reglas del claro donde debe estar Polen
+  - define `hiveheart_charm` como localizador del prologo
+
+### Changed
+
+- `hiveheart_charm` queda definido como item de prologo no crafteable en su primera etapa.
+- `PROJECT_OVERVIEW.md` y las docs narrativas ahora distinguen mejor entre canon definido y sistema todavia no implementado.
+
+### Removed
+
+- la receta crafteable prematura de `hiveheart_charm`
+- la inclusion de `hiveheart_charm` dentro del tag de charms activos de Curios
+
 ## 2026-05-31 (v0.0.11 - Autonomy Update)
 
 ### Added
@@ -23,7 +79,7 @@
 - `PolenMemoryHandler` now treats source-like locations as first-class remembered interests.
 - `PolenMoodController` now reflects internal needs instead of only immediate context.
 - `PolenRoutineGoal`, `PolenApproachTrustedPlayerGoal`, `PolenCuriousInterestGoal`, `PolenIdleHobbyGoal` and `PolenSafeStrollGoal` now depend on high-level intent gating.
-- `/polen ai get` now exposes intent, dominant need and the full internal need snapshot for balancing.
+- `/characters ai get` now exposes intent, dominant need and the full internal need snapshot for balancing.
 - Removed internal movement deadlocks where an intent could remain selected while its concrete goal was still blocked by cooldown or over-restrictive proximity checks.
 
 ### Result
@@ -118,7 +174,7 @@ Polen's behavior now reflects Ars Nouveau directly in gameplay:
 
 `PolenDialogueManager` is now more of a facade than a container for every dialogue concern.
 
-`/polen ai get` also exposes more reasoning signal, which should make future AI balancing faster.
+`/characters ai get` also exposes more reasoning signal, which should make future AI balancing faster.
 
 ## 2026-05-30 (Entity Refactor)
 

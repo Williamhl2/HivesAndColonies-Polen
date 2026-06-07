@@ -1,81 +1,127 @@
-# Polen Story Bible
+# Polen Story Overview
 
 ## Premise
 
-The player discovers a mysterious girl living alone near the wilderness.
+The player discovers a quiet girl living near the wilderness of a new world.
 
-She refuses to reveal her identity.
+She keeps emotional distance.
+She does not remember everything.
+She carries the afterimage of a war the player has not seen.
 
-Over time, the player gains her trust and learns that her name is Polen.
+The updated canon behind that beginning is:
 
-Eventually it is revealed that she is the missing heir of the Bee Kingdom.
+- Hive is a planet inhabited by many species and no native humans
+- humans later arrive as invaders
+- Polen lost her memories and will recover them gradually
+- she was trained in healing magic
+- she will eventually become the "promised queen" or legendary queen of this new world
 
-The Queen disappeared under mysterious circumstances.
+The early story still should not feel like "save the kingdom now".
+It should feel like becoming someone she can trust while fragments of a much larger history return.
 
-As the colony grows, Polen slowly develops from a frightened and insecure girl into a capable leader.
+## Backstory anchors
 
-The player's journey is not simply about automation and resource production.
+Before the playable opening:
 
-It is about helping Polen rebuild the Bee Kingdom and accept her destiny.
+- Befsh fell in love with Polen when they were younger, kissed her during a game, and their relationship remains canon through the whole story
+- at 23, Polen studied healing magic with Cosmic, Luna, Noris, and Noia
+- Jeff and Vanilla were professors in that healing-magic circle
+- Noris and Noia are siblings and two of Polen's closest friends
+- Luna flirted lightly with Polen, but was truly in love with Noia
 
----
+During the war against the human invasion of Hive:
 
-## Story Structure
+- Luna and Cosmic volunteered as soldiers
+- Polen, Noia, Noris, Jeff, and Vanilla served as healers
+- Luna died after raising a shield against the final attack
+- a reflected fragment of that strike cost Cosmic one eye
 
-### Chapter 0 - Prologue
+Long after the war:
 
-The Girl in the Clearing
+- Polen eventually marries Befsh
+- Cosmic eventually marries Noris
+- Noia continues to remember Luna with tenderness
 
-Player meets an unknown girl.
+## Narrative direction
 
-Identity remains secret.
+The mod now grows along four lines at the same time:
 
-### Chapter 1 - Foundation
+1. the player's relationship with Polen
+2. the gradual recovery of Polen's memories
+3. the growth of a settlement that can become a home
+4. the revelation of Polen's legendary role in the new world
 
-A Safe Place
+The intended emotional order is:
 
-The player establishes the first colony.
+```text
+meeting
+-> trust
+-> belonging
+-> recovered memory
+-> grief and responsibility
+-> legacy
+```
 
-Polen begins to trust the player.
+Epic meaning should emerge from intimacy, not replace it.
 
-### Chapter 2 - The Source
+## Polen's role
 
-Arcane Discoveries
+Polen is still the emotional axis of the current build, but she is no longer the only important person in the canon.
 
-Polen becomes interested in magic.
+She should feel like:
 
-### Chapter 3 - Beekeeping Industry
+- a survivor with memory gaps
+- a skilled healer
+- someone shaped by grief, love, and unfinished history
+- a future public figure who does not start as one
 
-The Forgotten Heritage
+That includes player-facing behavior already present in the mod:
 
-The connection between Polen and the bees becomes increasingly obvious.
+- caution toward strangers
+- approach toward trusted players
+- quiet singing and drawing
+- instinctive source-linked magic
+- blink escapes
+- shelter seeking in bad conditions
+- placing her own light at night
 
-### Chapter 4 - Logistics
+## Wider cast
 
-Building a Kingdom
+The active continuity also includes:
 
-The colony begins to resemble a real settlement.
+- Befsh
+- Cosmic
+- Luna
+- Noia
+- Noris
+- Jeff
+- Vanilla
 
-### Chapter 5 - Exploration
+They should exist in docs, dialogue planning, and future content as real narrative anchors, not throwaway names.
 
-Searching for Answers
+## Themes
 
-Evidence regarding the missing Queen begins to appear.
+- identity
+- belonging
+- memory
+- grief
+- community
+- responsibility
+- transformation
 
-### Chapter 6 - Arcane Industry
+## Current implementation note
 
-Power and Responsibility
+The long-form outline still spans prologue plus multiple acts, but implementation is intentionally much earlier and smaller right now.
 
-Polen starts acting as a leader.
+The current playable fantasy is centered on:
 
-### Chapter 7 - The Lost Kingdom
+- meeting Polen
+- building trust
+- giving her safety
+- seeing early autonomous behavior
+- uncovering only the first hints of her missing past
 
-Truths Revealed
+Two important reality checks for this version:
 
-The history of the Bee Kingdom is uncovered.
-
-### Chapter 8 - Coronation
-
-The Queen's Successor
-
-Polen accepts her role and becomes Queen.
+- dialogue authoring is now split into smaller files and merged into the runtime language files during the build
+- Polen's quiet-interest behavior now includes cooldowns and timeout recovery so she does not keep re-locking onto the same flower forever

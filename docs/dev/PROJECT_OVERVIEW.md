@@ -1,119 +1,206 @@
 # Project Overview
 
-## Que es este proyecto
+## What this project is
 
-`Hives And Colonies: Polen` es un mod de NeoForge para Minecraft 1.21.1 centrado en una NPC narrativa llamada Polen.
+`Hives & Colonies: Characters` is a NeoForge mod for Minecraft 1.21.1 built for a broader cast of narrative characters, with Polen currently serving as the first implemented companion.
 
-El proyecto mezcla cuatro capas:
+The repository and current implementation are still Polen-centric, but the narrative scope is expanding toward a wider cast. The project now uses the public title `Hives & Colonies: Characters` so additional story-relevant characters can be added without the mod identity revolving around a single one.
 
-1. Entidad y comportamiento de Polen.
-2. Progresión narrativa por capítulos.
-3. Relación jugador <-> Polen.
-4. Contenido narrativo base: ítems, diálogos, eventos y advancements.
+The project currently combines five layers:
 
-## Objetivo tecnico
+1. Polen as an in-world companion entity.
+2. Story and chapter progression.
+3. Per-player relationship and affinity.
+4. Character-oriented AI, safety, and soft magic.
+5. Item and block content that supports narrative, colony, and future accessory systems.
 
-La base técnica debe permitir que Polen evolucione como personaje sin convertir el mod en una colección de triggers sueltos.
+## Narrative foundation
 
-Eso implica:
+The current canon to preserve across docs and implementation is:
 
-- datos de mundo para historia compartida
-- datos por jugador para afinidad y relación
-- IA legible y extensible
-- recursos narrativos desacoplados en `lang` y `data`
+- Hive is a multi-species planet with no native humans.
+- Humans later invade Hive.
+- Polen survives that history but loses her memories.
+- Those memories return gradually in the new world where gameplay begins.
+- Polen was trained in healing magic.
+- Befsh, Cosmic, Luna, Noia, Noris, Jeff, and Vanilla are part of her real continuity.
+- Polen's long-term arc includes becoming the "promised queen" or legendary queen of the new world.
+
+Important rule:
+
+- early gameplay should feel intimate and grounded
+- full canon should still be documented and preserved
+- docs must not deny later truths just because the player has not learned them yet
+
+## Modpack context
+
+This project is being built as part of the `Hives & Colonies` modpack ecosystem, not as a standalone vanilla-only design exercise.
+
+That has two direct consequences:
+
+- Polen should increasingly understand modded homes, colony spaces, lights, doors, furniture, magic-adjacent areas, and apiary-oriented spaces as meaningful world signals.
+- Item, dialogue, memory, and accessory planning should assume long-term integration with `Curios`, colony-oriented content, and the broader building/decor ecosystem already present in the pack.
+
+See [MODPACK_CONTEXT.md](MODPACK_CONTEXT.md) for the working integration map based on the user-provided pack snapshot from `2026-06-02`.
+
+## Technical goal
+
+The codebase should let Polen and future related characters grow without turning the mod into:
+
+- a pile of one-off triggers
+- a single bloated entity class
+- a quest script disguised as gameplay
+
+That implies:
+
+- world data for shared story progress
+- player data for affinity and trust
+- AI split into small readable domains
+- dialogue that can scale beyond a single monolithic language file
+- client animation that can evolve independently from server AI
+- content families that can scale over time
 
 ## Stack
 
 - Java 21
 - NeoForge
 - Gradle
-- Recursos estándar de Minecraft: `assets` y `data`
+- standard Minecraft `assets` and `data`
 
-## Puntos de entrada principales
+## Main entrypoints
 
-- [Polen.java](../../src/main/java/com/hivesandcolonies/polen/Polen.java)
-  - entrada del mod
-  - registra ítems, creative tab, entidades y comandos debug
-- [PolenClient.java](../../src/main/java/com/hivesandcolonies/polen/PolenClient.java)
-  - bootstrap cliente para renderers
+- [Characters.java](../../src/main/java/com/hivesandcolonies/characters/Characters.java)
+  - mod entrypoint
+  - registers items, blocks, entities, attributes, creative tabs, and commands
+- `CharactersClient.java`
+  - client bootstrap
+  - connects renderer and client-only behavior
 
-## Subsistemas
+Recommended next architecture doc:
 
-### Entidad
+- [CHARACTER_ARCHITECTURE.md](CHARACTER_ARCHITECTURE.md)
+  - target split between shared systems and per-character implementations
+  - directory strategy for future characters like Luna and Vanilla
+
+## Main subsystems
+
+### Entity and presentation
 
 - `entity/PolenEntity.java`
 - `client/PolenRenderer.java`
-- `entity/ai/...`
+- `client/model/PolenModel.java`
+- `client/animation/PolenGesturePoseApplier.java`
 
-Responsabilidad:
+Responsibilities:
 
-- presencia física de Polen en mundo
-- nombre visible según progreso
-- goals de IA
-- estado de actividad tranquila, mood y memoria ligera
+- physical in-world presence
+- synced state
+- player-like rendering
+- gesture-driven visible behavior
 
-### Progresion
+### AI and autonomy
+
+- `entity/ai/core/*`
+- `entity/ai/brain/*`
+- `entity/ai/navigation/*`
+- `entity/ai/expression/*`
+- `entity/ai/ability/*`
+- `entity/ai/world/*`
+
+Responsibilities:
+
+- internal pressure model
+- intent selection
+- task arbitration and short recovery after failed non-urgent behaviors
+- quiet autonomous actions
+- reusable location search profiles and reachability resolution
+- movement and reaction goals
+- safety and shelter logic
+- blink and subtle magic
+- animation-facing gesture state
+- world-facing affordances, comfort, home semantics, observation, memory, and affinity shaping
+
+### Progression
 
 - `progression/PolenChapterManager.java`
 - `progression/PolenStoryFlagsManager.java`
 - `progression/PolenAffinityManager.java`
-- `progression/player/...`
-- `progression/world/...`
+- `progression/player/*`
+- `progression/world/*`
 
-Responsabilidad:
+Responsibilities:
 
-- capítulos de historia por mundo
-- flags de progreso narrativo
-- afinidad por jugador
-- persistencia en `SavedData`
+- world story chapters
+- story flags
+- player trust and affinity
+- persistence via `SavedData`
 
-### Historia y dialogo
+### Dialogue and story events
 
 - `dialogue/PolenDialogueManager.java`
 - `story/PolenStoryEventManager.java`
 
-Responsabilidad:
+Responsibilities:
 
-- líneas de diálogo normales
-- líneas ambientales contextuales por jugador
-- secuencias de eventos narrativos
-- avance de flags y advancements
+- normal dialogue
+- ambient dialogue
+- memory reveals
+- story event sequencing
+- advancement and progression hooks
 
-### Contenido
+Important status note:
+
+- dialogue text now lives in split source files and is merged into runtime language files during resource processing
+
+### Content
 
 - `registry/ModItems.java`
+- `registry/ModBlocks.java`
 - `registry/ModEntities.java`
 - `registry/ModCreativeTabs.java`
 - `registry/ModEntityAttributes.java`
-- `item/...`
-- `src/main/resources/assets/polen/...`
-- `src/main/resources/data/polen/...`
+- `item/*`
+- `src/main/resources/assets/characters/*`
+- `src/main/resources/data/characters/*`
 
-Responsabilidad:
+Responsibilities:
 
-- registrar contenido
-- tooltips traducibles
-- assets
-- advancements
+- item and block registration
+- lang keys
+- models and blockstates
+- recipes, tags, loot, advancements
 
-### Debug y soporte de desarrollo
+## Current design rules
 
-- `command/PolenDebugCommands.java`
+- Polen must feel like a character, not a generic villager.
+- Intimacy should come before spectacle.
+- AI should grow by layers, not by adding random conditionals to `PolenEntity`.
+- Public behavior should stay consistent with character arc and story stage.
+- Full canon and current implementation state must both be documented clearly.
+- Item growth should follow families and progression stages, not accidental creation order.
 
-Responsabilidad:
+## Current implementation reality
 
-- inspección manual de afinidad, capítulos, flags, relación, world data e IA
+This version is still closer to:
 
-## Reglas de diseño que ya existen
+- first encounters
+- trust building
+- shelter and routine
+- early ambient behavior
+- first hints of memory recovery
 
-- Polen no debe sentirse como un aldeano genérico.
-- La narrativa debe llegar antes que la épica.
-- La progresión del jugador y la conducta de Polen deben estar conectadas.
-- Los sistemas deben ser expandibles por capas, no por hardcode disperso.
+Important gap that is now defined in docs but not fully implemented in-world:
 
-## Donde empezar segun la tarea
+- Polen's initial clearing, improvised starting shelter, and prologue locator item are now specified canonically, but they are not yet generated or wired as a full first-encounter system.
 
-- Cambios de IA: [POLEN_AI.md](POLEN_AI.md)
-- Cambios de progreso: [PROGRESSION_SYSTEM.md](PROGRESSION_SYSTEM.md)
-- Cambios de assets y contenido: [CONTENT_PIPELINE.md](CONTENT_PIPELINE.md)
-- Cambios narrativos: `docs/es`
+Known mismatch to keep documented:
+
+- Polen's AI currently has a regression where she can lock into flower-watching behavior and stop moving as intended
+
+## Where to start
+
+- AI work: [POLEN_AI.md](POLEN_AI.md)
+- progression work: [PROGRESSION_SYSTEM.md](PROGRESSION_SYSTEM.md)
+- content work: [ITEM_PROGRESSION.md](ITEM_PROGRESSION.md) and [CONTENT_PIPELINE.md](CONTENT_PIPELINE.md)
+- dialogue work: [DIALOGUE_LOCALIZATION.md](DIALOGUE_LOCALIZATION.md)
+- narrative work: [../es/STORY.md](../es/STORY.md) and [../en/CHARACTERS.md](../en/CHARACTERS.md)

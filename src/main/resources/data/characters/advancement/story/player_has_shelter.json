@@ -1,0 +1,23 @@
+{
+  "parent": "characters:story/chapter0_complete",
+  "display": {
+    "icon": {
+      "id": "minecraft:oak_door"
+    },
+    "title": {
+      "translate": "advancement.characters.story.player_has_shelter.title"
+    },
+    "description": {
+      "translate": "advancement.characters.story.player_has_shelter.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "player_has_shelter": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

@@ -1,395 +1,275 @@
-# POLEN_CHARACTER_ARC.md
+# Polen Character Arc
 
-# Arco de Personalidad de Polen
+## Objective
 
-## Objetivo
+Polen should not remain frozen as "the shy girl in the clearing".
 
-Este documento define cómo debe evolucionar la personalidad de Polen a lo largo de la campaña.
+Her caution is real, but it is only the surface of a larger identity shaped by:
 
-Polen no debe quedarse congelada como una NPC tímida durante toda la historia.
+- memory loss
+- healing training
+- grief from war
+- deep pre-existing relationships
+- a future legendary role she does not fully remember at the start
 
-Su timidez inicial es parte de su contexto, no su identidad completa.
+With trust, safety, memory recovery, and discovery, she should become:
 
-Con confianza, seguridad y pertenencia, Polen debe volverse más segura, alegre y expresiva, especialmente con quienes forman parte de su círculo cercano.
+- more expressive
+- more proactive
+- more emotionally honest
+- more present inside the colony
+- more capable of carrying public responsibility
 
----
+without turning into a generic upbeat NPC.
 
-# Principio Central
+## Central rule
 
-Polen cambia, pero no se vuelve genérica.
+Polen changes, but she does not flatten.
 
-Al final de la historia puede ser más extrovertida, cálida y abierta, pero no con cualquiera.
+Her growth is filtered through four layers:
 
-Su crecimiento debe respetar tres capas:
+1. world story progress
+2. per-player affinity
+3. immediate environmental safety
+4. memory recovery stage
 
-1. Progreso global de la historia.
-2. Afinidad individual con cada jugador.
-3. Seguridad del entorno inmediato.
+## Canon anchors
 
----
+These facts should shape writing and behavior even when the player does not know them yet:
 
-# Línea General de Evolución
+- Befsh is Polen's canonical partner
+- Cosmic, Noris, and Noia are part of her inner circle
+- Luna's death is one of the key emotional fractures in her life
+- Jeff and Vanilla belong to her healer background
+- "promised queen" is late-stage truth, not early-stage presentation
+
+## Current implemented mood vocabulary
+
+The code currently exposes these moods:
+
+- `CALM`
+- `TIMID`
+- `CURIOUS`
+- `INSPIRED`
+- `UNSETTLED`
+- `CONFIDENT`
+- `JOYFUL`
+
+These are not the full narrative arc by themselves.
+They are the visible surface the AI can express right now.
+
+## Broad progression line
 
 ```text
-Desconfianza
-↓
-Seguridad
-↓
-Curiosidad compartida
-↓
-Pertenencia
-↓
-Alegría
-↓
-Confianza activa
-↓
-Responsabilidad
-↓
-Presencia plena
+Disorientation
+-> Safety
+-> Shared curiosity
+-> Belonging
+-> Returning memory
+-> Grief and responsibility
+-> Public presence
+-> Full Polen
 ```
 
----
+## Stage notes
 
-# Etapas de Personalidad
+### Stage 1 - The Lost Stranger
 
-## Etapa 1 - La Desconocida
+Approximate scope:
 
-Capítulos 0-1.
+- prologue
+- early contact
 
-### Rasgos
+Core traits:
 
-- tímida
-- cautelosa
-- reservada
-- sensible a la cercanía
-- evita exponerse emocionalmente
+- shy
+- cautious
+- private
+- fragmented
 
-### Comportamiento
+Behavior expectations:
 
-- mantiene distancia
-- evita conversaciones largas
-- observa más de lo que habla
-- reacciona negativamente a lugares oscuros o inseguros
+- keeps distance from untrusted players
+- prefers safe and simple spaces
+- reacts poorly to dark, enclosed, or exposed conditions
+- only uses magic in subtle or emergency ways
+- defaults to familiar calming stimuli such as flowers, bees, and quiet observation
 
-### Mood predominante
+Likely visible moods:
 
 - `TIMID`
-- `UNSETTLED` en peligro
-- `CALM` solo en contextos seguros
+- `UNSETTLED`
+- `CALM`
 
-### Tono de diálogo
+### Stage 2 - Fragile Routine
 
-- breve
-- suave
-- defensivo sin ser hostil
+Approximate scope:
 
----
+- early trust
+- first safe routines
 
-## Etapa 2 - La Visitante
+Core traits:
 
-Capítulos 2-3.
+- calmer
+- observant
+- curious
+- still guarded
 
-### Rasgos
+Behavior expectations:
 
-- más tranquila
-- curiosa
-- todavía reservada
-- empieza a participar
+- explores safe places
+- watches flowers, hives, and source-like spots
+- may sing or draw when unwatched
+- starts using memory and routine more clearly
+- shows brief flashes of healer instinct before she can explain them
 
-### Comportamiento
-
-- visita zonas seguras de la colonia
-- observa construcciones
-- hace preguntas simples
-- puede cantar o dibujar si no se siente vigilada
-
-### Mood predominante
+Likely visible moods:
 
 - `CALM`
 - `CURIOUS`
-- `INSPIRED` cerca de magia o símbolos familiares
+- `INSPIRED`
 
-### Magia temprana
+### Stage 3 - The Trusted Companion
 
-- pequenos hechizos instintivos
-- reacciones sutiles del source cuando canta o dibuja
-- desplazamiento breve de emergencia si queda atrapada
+Approximate scope:
 
-### Tono de diálogo
+- belonging phase
+- residence acceptance
 
-- más conversacional
-- todavía cuidadoso
-- admite curiosidad sin explicar demasiado
+Core traits:
 
----
+- more expressive
+- affectionate with trusted players
+- more anchored to colony spaces
 
-## Etapa 3 - La Compañera
+Behavior expectations:
 
-Capítulos 4-7.
+- uses remembered places
+- seeks better shelter on her own
+- places light at night when needed
+- reflects, attunes, and manages quiet magic intentionally
+- starts naming people or emotions tied to incomplete memories
 
-### Rasgos
-
-- curiosa de forma activa
-- afectuosa con personas de confianza
-- empieza a sentirse parte de la colonia
-- más expresiva cerca de flores, abejas y lugares seguros
-
-### Comportamiento
-
-- usa lugares favoritos
-- visita colmenas y flores recordadas
-- participa en observaciones de la colonia
-- acepta una residencia propia al final de la etapa
-
-### Mood predominante
+Likely visible moods:
 
 - `CURIOUS`
 - `INSPIRED`
-- `CALM` en la residencia o zonas conocidas
+- `CONFIDENT`
 
-### Tono de diálogo
+### Stage 4 - Returning Memory
 
-- cálido con alta afinidad
-- suave con afinidad media
-- todavía reservado con desconocidos
+Approximate scope:
 
----
+- deeper discovery
+- repeated memory recovery
 
-## Etapa 4 - La Buscadora
+Core traits:
 
-Capítulos 8-11.
+- determined
+- more emotionally honest
+- vulnerable around painful memories
 
-### Rasgos
+Behavior expectations:
 
-- determinada
-- vulnerable ante recuerdos fuertes
-- más activa en la investigación
-- consciente de que su pasado importa
+- stronger source interest
+- more active investigation behavior
+- distinct reactions to names like Befsh, Cosmic, Luna, Noia, Noris, Jeff, and Vanilla
+- seeks safe places after difficult revelations
 
-### Comportamiento
-
-- participa en exploración narrativa
-- reacciona ante ruinas, documentos y símbolos
-- puede tener momentos de inseguridad
-- vuelve a lugares seguros cuando necesita calma
-
-### Mood predominante
+Likely visible moods:
 
 - `INSPIRED`
 - `CURIOUS`
-- `UNSETTLED` ante revelaciones dolorosas
+- `UNSETTLED`
+- `CONFIDENT`
 
-### Tono de diálogo
+### Stage 5 - The Promised Queen
 
-- más directo
-- menos evasivo
-- emocionalmente honesto con sus cercanos
+Approximate scope:
 
----
+- acceptance of legacy
+- public recognition
 
-## Etapa 5 - La Heredera o Guardiana
+Core traits:
 
-Capítulos 12-13.
+- introspective
+- sincere
+- steadier under pressure
 
-Nota:
+Behavior expectations:
 
-El título exacto puede cambiar según el canon final. Lo importante es que Polen acepta su vínculo con el legado antiguo.
+- stops fleeing from the meaning of her past
+- speaks more clearly about memory, loss, and duty
+- remains soft-spoken even as her role becomes larger
+- carries grief without letting it erase tenderness
 
-### Rasgos
+Likely visible moods:
 
-- introspectiva
-- vulnerable
-- honesta
-- empieza a actuar con seguridad
-
-### Comportamiento
-
-- deja de huir de sus recuerdos
-- habla del pasado con más claridad
-- decide qué significa para ella su conexión con el legado antiguo
-
-### Mood predominante
-
-- `UNSETTLED` al inicio
-- `CALM` tras la aceptación
-
-### Tono de diálogo
-
-- íntimo
-- sincero
-- menos fragmentado
-
----
-
-## Etapa 6 - Polen Plena
-
-Capítulos 14-15 y postgame.
-
-### Rasgos
-
-- segura
-- alegre
-- expresiva
-- protectora
-- cercana con su círculo de confianza
-- capaz de liderazgo sin perder humanidad
-
-### Comportamiento
-
-- inicia conversaciones con jugadores cercanos
-- puede bromear suavemente
-- canta o dibuja con menos vergüenza
-- se mueve con más libertad por la colonia
-- muestra orgullo por lo construido
-
-### Mood predominante
-
+- `CONFIDENT`
 - `CALM`
+- occasional `UNSETTLED`
+
+### Stage 6 - Full Polen
+
+Approximate scope:
+
+- late story
+- postgame
+
+Core traits:
+
+- secure
+- warm
+- expressive
+- protective
+- capable of leadership without losing softness
+
+Behavior expectations:
+
+- initiates proximity more often with trusted players
+- uses the colony more freely
+- shows quiet joy in what was built together
+- acknowledges both old bonds and new ones
+- feels like a full person rather than a fragile visitor
+
+Likely visible moods:
+
+- `JOYFUL`
+- `CONFIDENT`
 - `INSPIRED`
+- `CALM`
 
-### Tono de diálogo
+## Relationship rule
 
-Con alta afinidad:
+Story progress does not erase per-player affinity.
 
-- cálido
-- alegre
-- confiado
-- más extrovertido
+Even in late stages:
 
-Con baja afinidad:
+- low affinity players should still meet boundaries
+- medium affinity players should get warmth with caution
+- high affinity players should get the fullest companion side of Polen
 
-- educado
-- reservado
-- firme con límites personales
+Also:
 
----
+- the player's bond with Polen should never erase Befsh or Polen's pre-existing history
 
-# Afinidad y Círculo de Confianza
+## AI-facing note
 
-La evolución global de Polen no elimina la afinidad individual.
+When adding new visible behavior, ask:
 
-Aunque la historia esté avanzada, Polen no debe tratar igual a todos los jugadores.
+- does this fit Polen's current stage
+- does it require trust
+- does it require safety
+- does it fit her memory-recovery state
+- does it honor existing relationships and grief
+- does it make her feel more like a character instead of a scripted prop
 
-## Baja afinidad
+If the answer is unclear, the feature probably needs to be simplified or moved to a later progression stage.
 
-- mantiene distancia
-- responde con cuidado
-- evita demasiada familiaridad
+## Current implementation warning
 
-## Afinidad media
+This version currently has a behavioral regression:
 
-- acepta compañía
-- comparte observaciones
-- usa tono suave
+- Polen can lock into flower-watching and fail to resume normal movement
 
-## Alta afinidad
-
-- busca conversación
-- muestra humor ligero
-- expresa preocupación
-- puede ser abiertamente alegre
-
----
-
-# Reglas para Diálogos
-
-## Inicio de campaña
-
-Evitar:
-
-- bromas excesivas
-- frases heroicas
-- seguridad artificial
-- exposición de lore
-
-Favorecer:
-
-- frases cortas
-- silencios
-- dudas
-- observaciones pequeñas
-
-## Mitad de campaña
-
-Permitir:
-
-- curiosidad más directa
-- comentarios sobre la colonia
-- cariño discreto
-- recuerdos fragmentados
-
-## Final de campaña
-
-Permitir:
-
-- alegría abierta con personas cercanas
-- confianza
-- humor suave
-- liderazgo emocional
-- frases sobre futuro
-
-Evitar:
-
-- convertirla en reina distante
-- borrar su sensibilidad
-- hacerla genéricamente extrovertida con todos
-
----
-
-# Relación con la IA
-
-La IA debe reflejar el arco cuando sea posible.
-
-## Capítulos tempranos
-
-- mayor uso de distancia personal
-- más sensibilidad a zonas inseguras
-- hobbies menos frecuentes
-
-## Capítulos medios
-
-- más visitas a flores y colmenas
-- más uso de lugares favoritos
-- canto y dibujo más frecuentes en seguridad
-
-## Capítulos tardíos
-
-- rutas más claras por la colonia
-- residencia como centro emocional
-- mayor permanencia en espacios comunitarios
-- más iniciativa contextual
-
----
-
-# Notas de Implementación Futura
-
-Posibles expansiones técnicas:
-
-- añadir un sistema de `trustTier` visual o narrativo
-- desbloquear nuevas variantes de diálogo por capítulo
-- modificar probabilidades de hobbies según progreso
-- asociar `restingPos` principal a la Residencia de Polen
-- añadir comentarios alegres exclusivos de alta afinidad
-- añadir estados tardíos como `CONFIDENT` o `JOYFUL` si los moods actuales quedan cortos
-
----
-
-# Regla Final
-
-Polen no deja de ser Polen cuando cambia.
-
-La evolución correcta no es:
-
-```text
-Tímida -> Otra persona
-```
-
-La evolución correcta es:
-
-```text
-Tímida porque no estaba segura
-↓
-Segura porque encontró pertenencia
-↓
-Alegre porque ya no necesita esconderse siempre
-```
+That bug does fit her calming motifs, but it does not fit the intended autonomy. Treat it as a bug, not as canon behavior.

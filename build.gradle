@@ -1,3 +1,6 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+
 plugins {
     id 'java-library'
     id 'maven-publish'
@@ -24,6 +27,8 @@ sourceSets.main.resources {
     // Exclude common development only resources from finalized outputs
     exclude("**/*.bbmodel") // BlockBench project files
     exclude("src/generated/**/.cache") // datagen cache files
+    exclude("assets/characters/lang_base/**")
+    exclude("assets/characters/lang_parts/**")
 }
 
 repositories {
@@ -163,11 +168,145 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
     from "src/main/templates"
     into "build/generated/sources/modMetadata"
 }
+
+def charactersLangRoot = file('src/main/resources/assets/characters')
+def charactersLangDir = file("${charactersLangRoot}/lang")
+def charactersLangBaseDir = file("${charactersLangRoot}/lang_base")
+def charactersLangPartsDir = file("${charactersLangRoot}/lang_parts")
+
+def readJsonMap = { File source ->
+    if (!source.exists()) {
+        return [:]
+    }
+
+    def parsed = new JsonSlurper().parse(source, 'UTF-8')
+    if (!(parsed instanceof Map)) {
+        throw new GradleException("Expected JSON object in ${source}")
+    }
+
+    return new LinkedHashMap(parsed as Map)
+}
+
+def writeSortedJson = { File target, Map<String, Object> content ->
+    target.parentFile.mkdirs()
+    def sorted = new TreeMap<String, Object>()
+    sorted.putAll(content)
+    target.setText(JsonOutput.prettyPrint(JsonOutput.toJson(sorted)) + System.lineSeparator(), 'UTF-8')
+}
+
+def fallbackLocalesFor = { String locale, Set<String> availableLocales ->
+    def fallbacks = []
+    if (locale != 'en_us' && availableLocales.contains('en_us')) {
+        fallbacks << 'en_us'
+    }
+    if (locale.startsWith('es_') && locale != 'es_es' && availableLocales.contains('es_es')) {
+        fallbacks << 'es_es'
+    }
+    return fallbacks.unique().findAll { it != locale }
+}
+
+tasks.register('mergeCharactersLang') {
+    description = 'Merge lang_base and lang_parts into runtime lang JSON files.'
+    group = 'build'
+
+    inputs.files(fileTree(charactersLangBaseDir) { include('*.json') })
+    inputs.files(fileTree(charactersLangPartsDir) { include('**/*.json') })
+    outputs.dir(charactersLangDir)
+
+    doLast {
+        def locales = new TreeSet<String>()
+
+        if (charactersLangBaseDir.exists()) {
+            charactersLangBaseDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.json') }?.each { file ->
+                locales.add(file.name.replaceFirst(/\.json$/, ''))
+            }
+        }
+
+        if (charactersLangPartsDir.exists()) {
+            charactersLangPartsDir.eachDir { dir ->
+                locales.add(dir.name)
+            }
+        }
+
+        if (locales.isEmpty()) {
+            logger.lifecycle('mergeCharactersLang: no locale sources found.')
+            return
+        }
+
+        def mergedByLocale = new LinkedHashMap<String, Map<String, Object>>()
+
+        locales.each { locale ->
+            def merged = new LinkedHashMap<String, Object>()
+            def seenSources = []
+
+            File baseFile = new File(charactersLangBaseDir, "${locale}.json")
+            if (baseFile.exists()) {
+                seenSources << baseFile
+            }
+
+            File partsDir = new File(charactersLangPartsDir, locale)
+            if (partsDir.exists()) {
+                seenSources.addAll(
+                        partsDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.json') }?.sort { it.name } ?: []
+                )
+            }
+
+            if (seenSources.isEmpty()) {
+                throw new GradleException("mergeCharactersLang: locale '${locale}' has no source files.")
+            }
+
+            seenSources.each { source ->
+                def data = readJsonMap(source)
+                def overlap = merged.keySet().intersect(data.keySet())
+                if (!overlap.isEmpty()) {
+                    throw new GradleException("mergeCharactersLang: duplicate keys for ${locale} in ${source.name}: ${overlap.take(20)}")
+                }
+                merged.putAll(data)
+            }
+
+            mergedByLocale.put(locale, merged)
+        }
+
+        def finalByLocale = new LinkedHashMap<String, Map<String, Object>>()
+        def availableLocales = mergedByLocale.keySet() as Set<String>
+
+        mergedByLocale.each { locale, entries ->
+            def finalEntries = new LinkedHashMap<String, Object>()
+            fallbackLocalesFor(locale, availableLocales).each { fallbackLocale ->
+                finalEntries.putAll(mergedByLocale.get(fallbackLocale))
+            }
+            finalEntries.putAll(entries)
+            finalByLocale.put(locale, finalEntries)
+        }
+
+        String baselineLocale = finalByLocale.containsKey('en_us') ? 'en_us' : finalByLocale.keySet().first()
+        def baselineKeys = finalByLocale.get(baselineLocale).keySet()
+
+        finalByLocale.each { locale, entries ->
+            def missing = baselineKeys.findAll { !entries.containsKey(it) }
+            if (!missing.isEmpty()) {
+                throw new GradleException(
+                        "mergeCharactersLang: locale '${locale}' is missing ${missing.size()} keys required by '${baselineLocale}': ${missing.take(20)}"
+                )
+            }
+        }
+
+        finalByLocale.each { locale, entries ->
+            writeSortedJson(new File(charactersLangDir, "${locale}.json"), entries)
+        }
+
+        logger.lifecycle("mergeCharactersLang: wrote ${finalByLocale.size()} locale files to ${charactersLangDir}")
+    }
+}
 // Include the output of "generateModMetadata" as an input directory for the build
 // this works with both building through Gradle and the IDE.
 sourceSets.main.resources.srcDir generateModMetadata
 // To avoid having to run "generateModMetadata" manually, make it run on every project reload
 neoForge.ideSyncTask generateModMetadata
+
+tasks.named('processResources', ProcessResources).configure {
+    dependsOn(tasks.named('mergeCharactersLang'))
+}
 
 // Example configuration to allow publishing using the maven-publish plugin
 publishing {

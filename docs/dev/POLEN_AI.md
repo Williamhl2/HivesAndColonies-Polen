@@ -1,595 +1,160 @@
 # Polen AI
 
-## v0.0.11 - Autonomy Update
+## Vision general
 
-Esta pasada cambia el centro de la IA.
+La IA de Polen no existe solo para mover una entidad.
 
-Polen ya no decide solo por `goal` aislado o por reaccion inmediata al entorno.
-Ahora existe una capa intermedia de autonomia compacta:
+Tiene que sostener tres cosas al mismo tiempo:
 
-- `entity/ai/PolenAiFacade`
-  - punto unico de entrada desde `PolenEntity` hacia la IA
-  - reduce imports y evita volver a mezclar wiring con estado
-- `entity/ai/state/PolenAiState`
-  - concentra memoria espacial, danger memory, needs e intent
-  - evita que `PolenEntity` tenga que exponer decenas de campos propios
-- `entity/ai/autonomy/PolenAutonomyController`
-  - orquesta el tick alto nivel de autonomia
-  - actualiza necesidades, intencion, mood y semillas de memoria sin inflar `PolenEntity`
-- `entity/ai/need/PolenNeedState`
-  - estado persistente de necesidades internas
-- `entity/ai/need/PolenNeedController`
-  - ajusta seguridad, compañia, curiosidad, descanso y resonancia magica
-- `entity/ai/intent/PolenIntentState`
-  - guarda la intencion actual, su razon y un lock temporal
-- `entity/ai/intent/PolenIntentController`
-  - decide que quiere hacer Polen antes de que los goals compitan
-- `entity/ai/interest/PolenInterestLocator`
-  - resuelve flores, colmenas y spots source como objetivos de interes reutilizables
+- legibilidad jugable
+- coherencia emocional
+- continuidad con el canon narrativo
 
-Objetivo practico:
+Eso significa que la IA debe reflejar:
 
-- que Polen parezca tener continuidad entre decisiones
-- que la IA no vuelva a crecer solo por agregar goals nuevos
-- que cada future feature de autonomia entre por `needs -> intent -> goal`
+- seguridad o amenaza
+- confianza o distancia
+- rutina o desorientacion
+- memoria recuperada o vacios de memoria
 
-## Modelo mental actual
-
-La cadena actual es esta:
-
-1. `PolenAutonomyController` actualiza contexto lento.
-2. `PolenNeedController` modifica necesidades internas.
-3. `PolenIntentController` elige una intencion dominante.
-4. Los goals solo se activan si esa intencion los habilita.
-5. `PolenMoodController` expresa externamente el resultado emocional.
-
-Eso deja dos niveles claros:
-
-- interno
-  - necesidades e intencion
-- visible
-  - mood, movimiento, hobbies, acercamiento, huida y curiosidad
-
-## Necesidades actuales
-
-`PolenNeedState` persiste cinco tensiones internas:
-
-- `SAFETY`
-- `SOCIAL`
-- `CURIOSITY`
-- `REST`
-- `MAGIC`
-
-No son stats de jugador ni barras UI.
-Son presiones blandas que ayudan a que Polen no cambie de conducta de forma arbitraria cada pocos ticks.
-
-## Intenciones actuales
-
-`PolenIntentController` puede fijar estas intenciones:
-
-- `SEEK_SAFETY`
-- `KEEP_DISTANCE`
-- `APPROACH_TRUSTED_PLAYER`
-- `INVESTIGATE_INTEREST`
-- `SEEK_REST`
-- `QUIET_CREATION`
-- `WANDER_SAFE`
-
-Cada una queda bloqueada por una ventana corta de ticks.
-Eso evita jitter de decisiones y ayuda a que Polen "insista" un poco en lo que estaba haciendo.
-
-Regla importante:
-
-- una intencion no debe depender de un goal ocultamente bloqueado por cooldown local
-- si un goal queda gated por la intencion, su disponibilidad real debe seguir siendo alcanzable
-- si no, se produce un falso estado "quiero moverme" pero sin movimiento real
-
-## Ultima pasada de limpieza
-
-Tambien se extrajeron estas responsabilidades:
-
-- `PolenInteractionController`
-- `PolenAmbientDialogueController`
-- `PolenDangerMemoryTracker`
-- `PolenGoalRegistry`
-- `PolenSpeakerResolver`
-- `PolenChapterDialogueResolver`
-- `PolenAmbientToneResolver`
-- `PolenAmbientDialogueResolver`
-
-Objetivo practico:
-
-- que `PolenEntity` conserve estado y ciclo de vida
-- que seleccion de dialogo, emision ambiental, memoria de peligro y registro de goals no vuelvan a inflarlo
-
-## Debug y tests
-
-`/polen ai get` ahora incluye mas señal:
-
-- mood
-- razon del mood
-- `unsafeArea`
-- `shouldSeekSafety`
-- `shouldUseUnsafeDialogue`
-- `nearRememberedInterest`
-
-Tambien se agrego una base minima de tests unitarios puros con JUnit 5 para:
-
-- tono ambiental por afinidad
-- resolucion de dialogo por capitulo
-- construccion de keys de ambient dialogue
-- matematica de memoria de peligro
-
-## Estado actual del refactor
-
-`PolenEntity` sigue siendo la coordinadora principal, pero ya no debe crecer como archivo unico.
-
-Responsabilidades ya extraidas:
-
-- `PolenInteractionController`
-  - interaccion principal con jugador
-  - reveal del nombre
-  - trigger de dialogo normal y progreso basico
-- `PolenAmbientDialogueController`
-  - cooldown y broadcast local de dialogos ambientales
-- `PolenDangerMemoryTracker`
-  - memoria temporal de zonas peligrosas
-  - expiracion y persistencia NBT de esa memoria
-- `PolenGoalRegistry`
-  - registro de prioridades de goals fuera de la entidad
-- `PolenAiFacade`
-  - concentrador del cableado principal de IA desde la entidad
-- `PolenAiState`
-  - contenedor del estado compartido de IA y persistencia asociada
-- `PolenAutonomyController`
-  - ordena la actualizacion lenta de autonomia sin pegarla a `tick`
-- `PolenNeedState`
-  - necesidades persistentes de seguridad, compañia, curiosidad, descanso y magia
-- `PolenNeedController`
-  - evolucion gradual de necesidades segun contexto
-- `PolenIntentState`
-  - estado actual de voluntad de Polen
-- `PolenIntentController`
-  - seleccion de intencion dominante antes de resolver goals
-- `PolenInterestLocator`
-  - localizacion compartida de flores, colmenas y source
-- `PolenMoodController`
-  - calculo de moods segun entorno, afinidad y actividad
-- `PolenMemoryHandler`
-  - descubrimiento de intereses, resting spot y semillas de memoria local
-- `PolenSafetyEvaluator`
-  - spots seguros, spots peligrosos y validacion de refugio/superficie
-- `PolenQuietActivityController`
-  - hobbies pasivos, temporizador sincronizado y particulas cliente
-- `PolenNbtHelper`
-  - guardado y carga reutilizable de `BlockPos` en NBT
-- `PolenRoutinePlanner`
-  - seleccion de destinos contextuales para rutina
-  - validacion de spots recordados
-  - filtro de intereses seguros
-- `PolenSafetyNavigator`
-  - decision de huida
-  - busqueda de spots seguros alcanzables
-  - replanteo de ruta cuando Polen se atasca o no logra salir
-- `PolenMagicController`
-  - blink de emergencia con particulas y sonido
-  - microhechizos durante quiet activity
-  - puente practico entre IA y el eje narrativo de Ars Nouveau
-
-Responsabilidades que aun conserva `PolenEntity`:
-
-- estado sincronizado de la entidad
-- persistencia de estado propio
-- ciclo base de `tick`
-- algunos getters/setters de estado compartido entre goals y controladores
-
-Regla de mantenimiento actual:
-
-- si una responsabilidad puede probarse o evolucionar sin conocer toda la entidad, debe vivir fuera de `PolenEntity`
-- si una clase externa solo necesita comportamiento, debe depender del controller/planner correcto y no de una fachada publica nueva en `PolenEntity`
-
-## Ajuste reciente de escape y peligro
-
-La logica de peligro ahora separa tres conceptos:
-
-- `unsafe`
-  - lugar poco comodo para hobbies o rutina pasiva
-- `shouldSeekSafety`
-  - lugar que justifica salir activamente
-- `unsafe dialogue`
-  - dialogo reservado para contextos tipo cueva o encierro, no para exterior normal
-
-Efectos practicos:
-
-- Polen ya no deberia quejarse de "salir de aqui" solo por estar al aire libre en un contexto no cavernoso
-- la huida reintenta una nueva ruta si la anterior termina mal
-- la busqueda de escape ahora prioriza spots alcanzables y con ganancia vertical cuando conviene subir
-- si no existe salida fisica razonable, Polen puede hacer blink a una superficie segura cercana en vez de quedarse congelada
-
-## Magia y Ars
-
-Polen no usa magia como mago de combate ni como sistema generico.
-
-La implementacion actual la trata como magia intima e instintiva:
-
-- escape magico cuando queda atrapada en un encierro imposible
-- pequenas respuestas visuales del source cuando canta o dibuja en calma
-- dialogo ambiental propio para esos momentos
-
-Esto mantiene alineados:
-
-- su caracter reservado
-- el foco narrativo en intimidad antes que epica
-- la presencia real de Ars Nouveau dentro de su comportamiento
-
-## Objetivo
-
-La IA de Polen no debe sentirse como la de un aldeano genérico.
-
-Su comportamiento debe reflejar personalidad, contexto y progreso.
-
-Los rasgos actuales que guían la implementación son:
-
-- tímida
-- curiosa
-- reservada
-- observadora
-- inclinada a dibujar y cantar cuando se siente segura
-
-## Archivo principal
-
-- [PolenEntity.java](../../src/main/java/com/hivesandcolonies/polen/entity/PolenEntity.java)
-
-Este archivo concentra:
-
-- estado sincronizado
-- mood
-- actividad tranquila
-- memoria básica de lugares
-- puertas de acceso a estado persistente compartido
-- delegación de autonomia, diálogo e interacción
-
-## Estado sincronizado actual
-
-### Actividad tranquila
-
-Valores:
-
-- `none`
-- `singing`
-- `drawing`
-
-Uso:
-
-- controlar partículas cliente
-- permitir que goals sepan si Polen ya está ocupada
-
-### Mood
-
-Ver [PolenMood.java](../../src/main/java/com/hivesandcolonies/polen/entity/ai/PolenMood.java).
-
-Estados:
-
-- `CALM`
-- `TIMID`
-- `CURIOUS`
-- `INSPIRED`
-- `UNSETTLED`
-
-Reglas actuales:
-
-- jugador desconocido demasiado cerca -> `TIMID`
-- lluvia/tormenta en cielo abierto -> `UNSETTLED`
-- hobby activo -> `INSPIRED`
-- cerca de intereses recordados -> `CURIOUS`
-- fallback -> `CALM`
-
-## Memoria actual
-
-Polen recuerda tres cosas:
-
-- `favoriteFlowerPos`
-- `favoriteHivePos`
-- `restingPos`
-- `dangerousSpotPos`
-
-Estas posiciones:
-
-- se descubren por escaneo local o por goals
-- se guardan en NBT de la entidad
-- alimentan la rutina contextual
-- también pueden bloquear destinos futuros si una zona fue percibida como peligrosa
-
-## Goals actuales por prioridad
-
-### `PolenKeepDistanceGoal`
-
-Archivo:
-
-- [PolenKeepDistanceGoal.java](../../src/main/java/com/hivesandcolonies/polen/entity/ai/goal/PolenKeepDistanceGoal.java)
-
-Responsabilidad:
-
-- retroceder si un jugador sin suficiente afinidad invade el espacio personal
-
-### `PolenRoutineGoal`
-
-Archivo:
-
-- [PolenRoutineGoal.java](../../src/main/java/com/hivesandcolonies/polen/entity/ai/goal/PolenRoutineGoal.java)
-
-Responsabilidad:
-
-- darle intención a sus desplazamientos
-- usar clima, hora y memoria para elegir destino
-
-Lógica actual:
-
-- noche o lluvia -> descansar / volver a `restingPos`
-- mañana o día -> visitar flores o colmenas recordadas
-
-### `PolenIdleHobbyGoal`
-
-Archivo:
-
-- [PolenIdleHobbyGoal.java](../../src/main/java/com/hivesandcolonies/polen/entity/ai/goal/PolenIdleHobbyGoal.java)
-
-Responsabilidad:
-
-- ejecutar dibujo o canto cuando el entorno es seguro
-
-### `PolenCuriousInterestGoal`
-
-Archivo:
-
-- [PolenCuriousInterestGoal.java](../../src/main/java/com/hivesandcolonies/polen/entity/ai/goal/PolenCuriousInterestGoal.java)
-
-Responsabilidad:
-
-- buscar flores, nidos o colmenas y observarlas
-- reforzar curiosidad y alimentar memoria
-
-## Señales visuales actuales
-
-- canto -> `NOTE`
-- dibujo -> `ENCHANT`
-
-No son una solución final de animación. Son telemetría visual simple para que el comportamiento sea visible sin assets adicionales.
-
-## Debug
-
-Usar:
+## Modelo por capas
 
 ```text
-/polen ai get
+Needs
+-> Intent
+-> Task
+-> Goal
+-> Movement / Action
 ```
 
-Devuelve:
+## Needs
 
-- mood actual
-- actividad tranquila actual
-- posiciones recordadas
+Representan presiones internas.
 
-## Dialogos ambientales
+Ejemplos actuales o esperados:
 
-Archivo:
+- Safety
+- Rest
+- Social
+- Curiosity
+- Comfort
+- Memory pull
 
-- [PolenDialogueManager.java](../../src/main/java/com/hivesandcolonies/polen/dialogue/PolenDialogueManager.java)
+## Intent
 
-La IA puede acompañar acciones pasivas con líneas cortas y variables.
+Describe que quiere hacer Polen en este momento.
 
-Reglas actuales:
+Ejemplos:
 
-- solo se disparan al inicio de acciones significativas
-- se envían a jugadores cercanos, no globalmente
-- cada jugador recibe una variante según su afinidad con Polen
-- existe cooldown para evitar spam
+- ponerse a salvo
+- descansar
+- acercarse a alguien de confianza
+- observar algo que le resulta calmante
+- investigar un lugar o estimulo ligado a recuerdos
 
-Situaciones actuales:
+## Task
 
-- `ambient_singing`
-- `ambient_drawing`
-- `ambient_curiosity`
-- `ambient_timid`
-- `ambient_unsafe`
+Describe como ejecutar la intencion sin mezclar toda la logica en una sola clase gigante.
 
-Tonos actuales:
+Debe servir para:
 
-- `guarded`
-- `soft`
-- `warm`
+- arbitrar prioridades
+- cortar actividades no urgentes cuando aparece peligro
+- recuperarse de fallos de navegacion o contexto
 
-La selección del tono depende de la afinidad del jugador que recibe la línea, no de un estado global único.
+## Goal
 
-## Seguridad y cuevas
+Implementa el comportamiento fisico concreto.
 
-La IA actual trata cuevas, oscuridad y zonas subterráneas como contextos inseguros.
+La seguridad siempre tiene prioridad sobre actividades recreativas.
 
-Capas actuales:
+## Regla narrativa
 
-- `PolenSeekSafetyGoal` fuerza salida a una zona más segura cuando ya está en peligro.
-- `PolenSafeStrollGoal` reemplaza el paseo aleatorio por uno que filtra destinos inseguros.
-- rutina, hobbies y curiosidad se cancelan si Polen detecta un área insegura.
-- al comenzar la salida de una zona peligrosa puede emitir diálogo ambiental `ambient_unsafe`.
-- la posición peligrosa queda recordada por un tiempo y se evita en decisiones futuras.
+No toda conducta tranquila significa que Polen "esta bien".
 
-La intención no es solo evitar daño. También debe comunicar que Polen percibe esos lugares como incómodos o amenazantes.
+En esta narrativa:
 
-Heurística actual de seguridad:
+- observar flores o abejas puede ser curiosidad
+- tambien puede ser autorregulacion
+- tambien puede ser un disparador de memoria
 
-- prefiere superficie o zonas muy cercanas a superficie
-- exige luz local suficiente
-- no exige ver cielo directo, para no tratar bosques o copas de árboles como cuevas
-- la memoria de peligro usa distancia horizontal corta para evitar una cueva sin bloquear toda la superficie cercana
+La IA debe dejar espacio para esas lecturas, pero sin perder funcionalidad basica.
 
-## Como expandir la IA sin romperla
+## Comportamientos visibles esperados
 
-### Añadir un nuevo mood
+La fantasia jugable actual de Polen incluye:
 
-1. Extender `PolenMood`.
-2. Actualizar `updateMood()` en `PolenEntity`.
-3. Si afecta comportamiento, hacer que algún goal lo consulte.
+- mantener distancia de desconocidos
+- acercarse mas a jugadores de confianza
+- buscar refugio cuando el entorno empeora
+- usar `blink` cuando moverse falla o queda atrapada
+- colocar luz propia por la noche
+- cantar, dibujar, reflexionar y sintonizarse con source cuando se siente segura
+- observar flores, abejas y spots tranquilos como parte de su identidad
 
-### Añadir una nueva memoria
+## Alineacion con la narrativa nueva
 
-1. Agregar campo en `PolenEntity`.
-2. Guardar/cargar en NBT.
-3. Definir quién la descubre y quién la usa.
+La IA actual y futura debe poder convivir con estas verdades canonicas:
 
-### Añadir un nuevo hobby
+- Polen perdio recuerdos
+- es curandera por formacion
+- carga duelo por la guerra de Hive
+- tiene relaciones importantes fuera del jugador
+- terminara ocupando un rol legendario mas grande
 
-1. Crear nuevo valor de actividad tranquila.
-2. Ajustar `pickQuietActivity()`.
-3. Añadir feedback visual o de animación.
-4. Revisar `PolenIdleHobbyGoal`.
+Eso no obliga a meter exposicion directa en cada comportamiento.
 
-### Añadir una nueva rutina
+Si obliga a que las decisiones visibles no contradigan su identidad.
 
-1. Decidir si depende de tiempo, clima, capítulo o afinidad.
-2. Modificar `getRoutineTarget()` o crear un goal separado.
-3. Mantener prioridades limpias. No poner todo dentro de un solo `Goal`.
+## Estado actual de implementacion
 
-## Errores a evitar
+La version jugable actual sigue concentrada en:
 
-- convertir la IA en una lista de random strolls con textos encima
-- meter lógica de progreso narrativo en goals de navegación
-- spamear mensajes al jugador desde `tick`
-- añadir hobbies sin memoria ni contexto
-- ignorar afinidad cuando el comportamiento debería cambiar con la relación
+- encuentro
+- confianza temprana
+- refugio
+- hobbies tranquilos
+- autonomia inicial
 
-## Siguientes capas recomendadas
+Todavia no refleja por completo:
 
-- comentarios ambientales raros y contextuales
-- reacción a destrucción de flores o agresión a abejas
-- rutas más claras dentro de la colonia
-- lugares favoritos persistentes asociados a estructuras narrativas reales
-- animaciones dedicadas para dibujo, observación y canto
+- recuperacion profunda de recuerdos
+- referencias sistémicas al elenco completo
+- reaccion narrativa avanzada a guerra, duelo o destino
 
----
+## Dialogos y memoria
 
-## Evolución de Personalidad por Progreso Narrativo
+La separacion en `lang_base/` y `lang_parts/` ya esta conectada al runtime.
 
-La IA actual representa la personalidad inicial de Polen, pero no debe limitar su arco completo.
+Hoy la IA y la interaccion ya pueden usar:
 
-Polen empieza tímida, reservada y sensible a la cercanía, pero puede evolucionar hacia una personalidad más segura, alegre y expresiva cuando la historia y la afinidad lo justifican.
+- dialogo base por capitulo
+- dialogo ambiental por situacion
+- eventos narrativos fijos
+- fragmentos de memoria al descubrir entorno
 
-Documento relacionado:
+Eso igual no significa que todo el contenido narrativo futuro ya exista.
+Al agregar lineas nuevas, hay que revisar tanto el texto como el resolver que decide cuando usarlas.
 
-- [POLEN_CHARACTER_ARC.md](POLEN_CHARACTER_ARC.md)
+## Ajuste reciente
 
-### Principio
+La investigacion de intereses tranquilos ahora:
 
-El progreso global de la historia no reemplaza la afinidad individual.
+- recuerda por un rato el ultimo interes observado o fallido
+- evita reengancharse enseguida al mismo spot
+- abandona el intento si no logra resolver el trayecto en un tiempo razonable
 
-Una Polen de capítulos tardíos puede ser segura y alegre con sus personas cercanas, pero seguir siendo reservada con jugadores desconocidos o de baja afinidad.
+Interpretacion correcta:
 
-### Capítulos 0-1
+- si, mirar flores encaja con su fantasia
+- no, quedarse bloqueada ahi indefinidamente no es el comportamiento deseado
 
-Personalidad predominante:
+## Regla de desarrollo
 
-- tímida
-- cautelosa
-- reservada
+Cuando se agregue o ajuste comportamiento, validar siempre:
 
-Comportamiento esperado:
-
-- mantener distancia
-- usar `TIMID` con facilidad
-- priorizar seguridad
-- cantar o dibujar solo en contextos muy seguros
-
-### Capítulos 2-3
-
-Personalidad predominante:
-
-- tranquila
-- curiosa
-- observadora
-
-Comportamiento esperado:
-
-- visitar lugares seguros de la colonia
-- observar construcción y Source
-- usar más `CURIOUS` e `INSPIRED`
-
-### Capítulos 4-7
-
-Personalidad predominante:
-
-- compañera
-- curiosa activa
-- más cálida con alta afinidad
-
-Comportamiento esperado:
-
-- recordar flores y colmenas importantes
-- usar lugares favoritos
-- mover `restingPos` hacia espacios seguros de la colonia
-- asociar la Residencia de Polen como centro emocional al final de la etapa
-
-### Capítulos 8-11
-
-Personalidad predominante:
-
-- buscadora
-- inspirada
-- vulnerable ante recuerdos
-
-Comportamiento esperado:
-
-- reaccionar a ruinas, símbolos y registros
-- alternar entre `INSPIRED` y `UNSETTLED`
-- volver a lugares seguros tras eventos narrativos fuertes
-
-### Capítulos 12-13
-
-Personalidad predominante:
-
-- introspectiva
-- honesta
-- en proceso de aceptación
-
-Comportamiento esperado:
-
-- reducir evasión narrativa
-- sostener conversaciones más directas
-- usar `CALM` después de eventos de aceptación
-
-### Capítulos 14-15 y postgame
-
-Personalidad predominante:
-
-- segura
-- alegre
-- expresiva con cercanos
-- protectora
-
-Comportamiento esperado:
-
-- iniciar más interacciones contextuales
-- cantar o dibujar con menos vergüenza
-- usar la residencia y espacios comunitarios con naturalidad
-- conservar distancia con jugadores de baja afinidad
-
-## Posibles moods futuros
-
-Los moods actuales son suficientes para la primera etapa, pero capítulos tardíos podrían justificar nuevos estados.
-
-Opciones futuras:
-
-- `CONFIDENT`
-- `JOYFUL`
-- `PROTECTIVE`
-
-No añadirlos hasta que exista comportamiento real que los use.
-
-## Regla de Afinidad
-
-La afinidad debe seguir afectando tono y comportamiento incluso cuando la historia avance.
-
-Ejemplo:
-
-- Capítulo 15 + baja afinidad: Polen es segura, pero formal.
-- Capítulo 15 + alta afinidad: Polen es segura, alegre y cercana.
-
-Esto evita que el progreso global borre la relación individual con cada jugador.
+1. que la conducta se entienda a simple vista
+2. que tenga sentido con afinidad, seguridad y etapa narrativa
+3. que no contradiga la amnesia ni la recuperacion gradual
+4. que no reduzca a Polen a "mueble con dialogo"
+5. que no rompa movimiento, refugio o bucles basicos

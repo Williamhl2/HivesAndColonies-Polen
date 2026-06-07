@@ -1,133 +1,128 @@
-# NARRATIVE_CHAPTERS.md
+# Estructura narrativa
 
-# Estructura General
+## Nota de estado
 
-La historia principal de Hives And Colonies: Polen se divide en un prólogo y cuatro actos.
+La vision larga de la historia sigue organizada como prologo mas varios actos.
 
-Cada acto representa una etapa en:
+Pero ahora debe leerse con dos verdades al mismo tiempo:
 
-- La relación entre Polen y el jugador.
-- El crecimiento de la colonia.
-- El descubrimiento del pasado.
+- el canon completo ya incluye amnesia, guerra pasada, amistades, duelo y una futura reina prometida
+- la implementacion jugable actual aun esta mas cerca de encuentro, confianza temprana y refugio
 
----
+Este documento debe leerse como direccion narrativa, no como lista de contenido ya implementado al 100%.
 
-# Prólogo
+## Prologo - La chica del claro
 
-## La Chica del Claro
+Tema:
 
-Tema principal:
+- primer encuentro
+- desorientacion
+- seguridad minima
 
-Primer encuentro.
+Regla de escena:
 
-Objetivo:
-
-Presentar a Polen como una persona antes que como un misterio.
-
-Documento:
-
-PROLOGUE.md
-
----
-
-# Acto I — La Desconocida
-
-Capítulos:
-
-0 - Primer Encuentro
-
-1 - Un Lugar Seguro
-
-2 - Los Primeros Colonos
-
-3 - El Source
-
-Tema principal:
-
-Confianza.
+- Polen ya habita un claro concreto
+- ese claro ya incluye un campamento pequeno y un refugio improvisado
+- el jugador no "crea" su primera supervivencia; la encuentra viviendo dentro de ella
 
 Objetivo:
 
-Transformar una desconocida en una amiga.
+- presentar a Polen como persona antes que como leyenda
+- insinuar que hay huecos de memoria sin explicarlos del todo
 
-Documento:
+## Acto I - La desconocida
 
-ACT_1_THE_UNKNOWN.md
+Tema:
 
----
-
-# Acto II — Los Cimientos
-
-Capítulos:
-
-4 - Ecos del Pasado
-
-5 - Las Abejas y Ella
-
-6 - Voces del Pasado
-
-7 - Un Lugar Propio
-
-Tema principal:
-
-Pertenencia.
+- confianza
+- rutina
 
 Objetivo:
 
-Construir una comunidad.
+- transformar a una desconocida en una companera posible
+- construir un espacio donde Polen pueda empezar a recordar sin romperse
 
-Documento:
+Capitulos orientativos:
 
-ACT_2_FOUNDATIONS.md
+- primer encuentro
+- un lugar seguro
+- primeros colonos
+- primer contacto serio con source
+- recuerdos pequenos
 
----
+## Acto II - Ecos de Hive
 
-# Acto III — Los Secretos Perdidos
+Tema:
 
-Capítulos:
-
-8 - Caminos Lejanos
-
-9 - Buscando Respuestas
-
-10 - Industria Arcana
-
-11 - El Consejo Perdido
-
-Tema principal:
-
-Descubrimiento.
+- memoria
+- amistades ausentes
+- duelo
 
 Objetivo:
 
-Comprender el pasado.
+- introducir al elenco canonico como parte real del pasado de Polen
+- mostrar que su historia no comenzo con el jugador
 
-Documento:
+Capitulos orientativos:
 
-ACT_3_LOST_SECRETS.md
+- ecos del pasado
+- abejas y memoria
+- nombres que vuelven
+- Luna
+- una herida de guerra
 
----
+## Acto III - Los secretos perdidos
 
-# Acto IV — El Despertar
+Tema:
 
-Capítulos:
-
-12 - El Reino Perdido
-
-13 - La Heredera
-
-14 - La Elección
-
-15 - Un Nuevo Comienzo
-
-Tema principal:
-
-Legado.
+- descubrimiento
+- identidad
 
 Objetivo:
 
-Decidir el futuro.
+- comprender el pasado sin perder la escala humana de la historia
+- unir recuerdos personales con el legado mas grande
 
-Documento:
+Capitulos orientativos:
 
-ACT_4_AWAKENING.md
+- buscando respuestas
+- la universidad de magia
+- curacion y cicatrices
+- el consejo perdido
+
+## Acto IV - La reina prometida
+
+Tema:
+
+- legado
+- responsabilidad
+
+Objetivo:
+
+- revelar que Polen no solo recuerda quien fue
+- tambien entiende quien debe llegar a ser en este nuevo mundo
+
+Capitulos orientativos:
+
+- el reino perdido
+- la prometida
+- la eleccion
+- un nuevo comienzo
+
+## Regla de lectura
+
+Cada acto debe crecer desde el anterior.
+
+No se debe saltar de:
+
+- timidez
+- refugio
+- compania
+
+directo a:
+
+- realeza declarada
+- destino anunciado
+- exposicion total del pasado
+
+si la base emocional aun no fue construida en juego.

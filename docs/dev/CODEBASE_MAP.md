@@ -1,279 +1,404 @@
 # Codebase Map
 
-## Ultimas extracciones
+## Direccion actual
 
-Se agregaron estas piezas fuera de `PolenEntity`:
+Este documento describe sobre todo la estructura fisica actual del codigo.
 
-- `entity/ai/PolenAiFacade`
-- `entity/PolenInteractionController`
-- `entity/PolenAmbientDialogueController`
-- `entity/PolenDangerMemoryTracker`
-- `entity/PolenGoalRegistry`
-- `entity/ai/autonomy/PolenAutonomyController`
-- `entity/ai/need/*`
-- `entity/ai/intent/*`
-- `entity/ai/interest/*`
-- `dialogue/PolenSpeakerResolver`
-- `dialogue/PolenChapterDialogueResolver`
-- `dialogue/PolenAmbientToneResolver`
-- `dialogue/PolenAmbientDialogueResolver`
+La estructura objetivo pensada para varios personajes esta en:
 
-Tambien existe una capa de debug de IA para inspeccion local:
+- [CHARACTER_ARCHITECTURE.md](CHARACTER_ARCHITECTURE.md)
 
-- `entity/ai/debug/PolenAiDebugInspector`
-- `entity/ai/debug/PolenAiDebugSnapshot`
+El proyecto esta migrando a una estructura donde Polen se construye por capas pequenas:
 
-## Refactor actual de Polen
+- entidad y wiring
+- IA por subdominio
+- render/animacion cliente
+- items por familia
+- registro y recursos desacoplados
 
-La IA ya no vive solo en `PolenEntity`.
-
-Extracciones activas:
-
-- `entity/PolenInteractionController`
-- `entity/PolenAmbientDialogueController`
-- `entity/PolenDangerMemoryTracker`
-- `entity/PolenGoalRegistry`
-- `entity/ai/activity/PolenQuietActivityController`
-- `entity/ai/PolenAiFacade`
- - fachada central entre `PolenEntity` y la capa de IA
-- `entity/ai/state/PolenAiState`
- - contenedor persistente del estado compartido de IA
-- `entity/ai/autonomy/PolenAutonomyController`
- - coordina el tick lento de autonomia
-- `entity/ai/interest/PolenInterestLocator`
- - localiza intereses recordados y locales
-- `entity/ai/intent/PolenIntent`
- - enum de intenciones de alto nivel
-- `entity/ai/intent/PolenIntentState`
- - estado persistente de intencion actual
-- `entity/ai/intent/PolenIntentController`
- - selecciona la intencion dominante
-- `entity/ai/memory/PolenMemoryHandler`
-- `entity/ai/magic/PolenMagicController`
-- `entity/ai/mood/PolenMoodController`
-- `entity/ai/need/PolenNeed`
- - enum de necesidades internas
-- `entity/ai/need/PolenNeedState`
- - estado persistente de necesidades
-- `entity/ai/need/PolenNeedController`
- - ajusta necesidades segun entorno, social y magia
-- `entity/ai/routine/PolenRoutinePlanner`
-- `entity/ai/safety/PolenSafetyEvaluator`
-- `entity/ai/safety/PolenSafetyNavigator`
-- `util/PolenNbtHelper`
-
-Objetivo:
-
-- mantener `PolenEntity` como coordinadora
-- evitar que hobbies, mood, memoria y serializacion terminen mezclados en un solo archivo
+La raiz de `entity/ai` debe mantenerse limpia.
+Cada nueva capacidad debe caer en un subdirectorio con responsabilidad clara.
 
 ## Paquetes principales
 
-### `com.hivesandcolonies.polen`
+### `com.hivesandcolonies.characters`
 
-- `Polen`
+- `Characters`
   - entrada principal del mod
-- `PolenClient`
-  - registro de renderers cliente
+- `CharactersClient`
+  - registro cliente
 
-### `com.hivesandcolonies.polen.client`
+### `com.hivesandcolonies.characters.client`
 
 - `PolenRenderer`
-  - renderer base de Polen usando `HumanoidModel`
+  - renderer de Polen
 
-### `com.hivesandcolonies.polen.command`
+### `com.hivesandcolonies.characters.client.model`
+
+- `PolenModel`
+  - modelo basado en `PlayerModel`
+
+### `com.hivesandcolonies.characters.client.animation`
+
+- `PolenGesturePoseApplier`
+  - traduce gestos a poses cliente
+
+### `com.hivesandcolonies.characters.command`
 
 - `PolenDebugCommands`
-  - comandos `/polen ...` para inspección y pruebas
+  - comandos `/hivescolonies ...` y alias corto `/hc ...`
 
-### `com.hivesandcolonies.polen.dialogue`
+### `com.hivesandcolonies.characters.dialogue`
 
 - `PolenDialogueManager`
-  - selecciona líneas por capítulo
+- `PolenSpeakerResolver`
+- `PolenChapterDialogueResolver`
+- `PolenAmbientToneResolver`
+- `PolenAmbientDialogueResolver`
 
-### `com.hivesandcolonies.polen.entity`
+### `com.hivesandcolonies.characters.entity`
 
 - `PolenEntity`
-  - entidad principal
-  - contenedor de estado sincronizado y ciclo base
+  - entidad principal y estado sincronizado
 - `PolenInteractionController`
-  - interaccion con jugador y reveal del nombre
+  - interaccion con jugador
 - `PolenAmbientDialogueController`
-  - emision de dialogos ambientales cercanos
+  - emision de lineas ambientales
 - `PolenDangerMemoryTracker`
-  - memoria temporal de peligro y persistencia asociada
+  - memoria de spots peligrosos
 - `PolenGoalRegistry`
-  - orden centralizado de goals de Polen
+  - prioridades de goals
 
-### `com.hivesandcolonies.polen.entity.ai`
+## IA de Polen
+
+### `entity/ai/core`
 
 - `PolenAiFacade`
-  - entrada unica de wiring entre entidad y subsistemas de IA
-- `PolenMood`
-  - enum de estado emocional actual
+  - fachada central del wiring de IA
 
-### `com.hivesandcolonies.polen.entity.ai.state`
+### `entity/ai/brain/state`
 
 - `PolenAiState`
-  - memoria espacial, danger memory, needs e intent en un solo contenedor persistente
+  - memoria espacial, needs, intent y estado de luz
 
-### `com.hivesandcolonies.polen.entity.ai.autonomy`
+### `entity/ai/core`
 
 - `PolenAutonomyController`
-  - ordena el flujo `needs -> intent -> mood -> memory seeding`
+  - tick lento de autonomia
 
-### `com.hivesandcolonies.polen.entity.ai.interest`
-
-- `PolenInterestType`
-  - tipo de interes encontrado
-- `PolenInterestTarget`
-  - destino tipado reutilizable
-- `PolenInterestLocator`
-  - escaneo local y reutilizacion de intereses recordados
-
-### `com.hivesandcolonies.polen.entity.ai.intent`
-
-- `PolenIntent`
-  - enum de voluntad inmediata de Polen
-- `PolenIntentState`
-  - estado persistido de intencion y lock temporal
-- `PolenIntentController`
-  - politica compacta de seleccion de intencion
-
-### `com.hivesandcolonies.polen.entity.ai.magic`
-
-- `PolenMagicController`
-  - blink de seguridad con FX y sonido
-  - microhechizos de quiet activity ligados al eje Ars Nouveau
-
-### `com.hivesandcolonies.polen.entity.ai.goal`
-
-- `PolenKeepDistanceGoal`
-  - timidez ante jugadores demasiado cercanos
-- `PolenRoutineGoal`
-  - rutina contextual usando tiempo, clima y memoria de lugares
-- `PolenIdleHobbyGoal`
-  - dibujo y canto sin interacción directa
-- `PolenCuriousInterestGoal`
-  - interes por flores, colmenas y source
-
-### `com.hivesandcolonies.polen.entity.ai.need`
+### `entity/ai/brain/need`
 
 - `PolenNeed`
-  - enum de necesidades internas
 - `PolenNeedState`
-  - valores persistentes de seguridad, social, curiosidad, descanso y magia
+- `PolenNeedSnapshot`
 - `PolenNeedController`
-  - deriva presiones internas desde contexto y progresion
 
-### `com.hivesandcolonies.polen.item`
+### `entity/ai/brain/intent`
 
-- `base/TranslatableTooltipItem`
-  - base para tooltips traducibles
-- `base/PolenTypedItem`
-  - base con familia, etapa de progresion y marca de unicidad
-- `base/PolenLoreItem`
-- `base/PolenMaterialItem`
-- `base/PolenUsableFocusItem`
-- `base/PolenColonyItem`
-- `meta/PolenItemFamily`
-- `meta/PolenProgressionStage`
-- `meta/PolenItemTags`
-- `story/PrincessSealItem`
-- `story/PrincessLetterItem`
-- `story/PolenJournalItem`
-- `material/RoyalPollenItem`
-- `material/SourceTouchedPetalItem`
-- `material/ResonantWaxItem`
-- `focus/BloomFocusItem`
-- `colony/SettlementCharmItem`
-- `interaction/PolenItemInteractionController`
+- `PolenIntent`
+- `PolenIntentState`
+- `PolenIntentSnapshot`
+- `PolenIntentController`
 
-### `com.hivesandcolonies.polen.progression`
+### `entity/ai/brain/task`
+
+- `PolenTaskType`
+- `PolenTaskStatus`
+- `PolenTaskState`
+- `PolenTaskSnapshot`
+- `PolenTaskController`
+
+### `entity/ai/brain/mood`
+
+- `PolenMood`
+- `PolenMoodAnalysis`
+- `PolenMoodController`
+
+### `entity/ai/brain/action`
+
+- `PolenAutonomousActionType`
+- `PolenAutonomousActionPlan`
+- `PolenAutonomousActionPlanner`
+
+### `entity/ai/expression/activity`
+
+- `PolenQuietActivityController`
+
+### `entity/ai/expression/gesture`
+
+- `PolenGesture`
+- `PolenGestureController`
+
+### `entity/ai/brain/interest`
+
+- `PolenInterestType`
+- `PolenInterestTarget`
+- `PolenInterestLocator`
+
+### `entity/ai/brain/memory`
+
+- `PolenMemoryHandler`
+
+### `entity/ai/world/affordance`
+
+- `PolenAffordanceType`
+- `PolenAffordanceTarget`
+- `PolenAffordanceResolver`
+
+Responsabilidad:
+
+- traducir lugares concretos a usos semanticos como refugio, descanso, luz, interes o residencia
+
+### `entity/ai/world/observation`
+
+- `PolenObservationFocus`
+- `PolenObservationDisposition`
+- `PolenObservationController`
+
+Responsabilidad:
+
+- registrar que esta observando Polen y con que disposicion
+
+### `entity/ai/world/comfort`
+
+- `PolenComfortCategory`
+- `PolenComfortProfile`
+- `PolenComfortRank`
+- `PolenComfortRule`
+- `PolenComfortReport`
+- `PolenComfortRules`
+- `PolenComfortSignal`
+- `PolenComfortEvaluator`
+
+Responsabilidad:
+
+- puntuar lugares por comodidad semantica y no solo por distancia o navegacion
+
+### `entity/ai/world/identity`
+
+- `PolenAffinity`
+- `PolenWorldAffinity`
+- `PolenIdentity`
+- `PolenAffinityFactory`
+
+Responsabilidad:
+
+- identidad de Polen, afinidades base y sesgos suaves de comportamiento
+
+### `entity/ai/world/interests`
+
+- `PolenInterest`
+- `PolenInterestProfile`
+- `PolenInterestGenerator`
+- `PolenAffinityBehaviorHooks`
+
+Responsabilidad:
+
+- generar intereses a partir de afinidad y contexto del mundo
+
+### `entity/ai/ability/magic`
+
+- `PolenMagicController`
+  - blink
+  - attunement
+  - reflection
+  - managed light
+
+### `entity/ai/brain/routine`
+
+- `PolenRoutinePlanner`
+  - targets de rutina y quiet creation
+
+### `entity/ai/navigation/search`
+
+- `PolenSearchPlanner`
+- `PolenSearchProfile`
+- `PolenSearchDomain`
+- `PolenSearchType`
+- `PolenSearchStatus`
+- `PolenSpotSelectionHelper`
+- `light/PolenLightSpotHelper`
+
+### `entity/ai/navigation/safety`
+
+- `PolenSafetyEvaluator`
+- `PolenSafetyNavigator`
+- `PolenDangerMemoryMath`
+
+### `entity/ai/world/home`
+
+- `PolenResidenceStage`
+- `PolenResidenceTarget`
+- `PolenResidenceValidation`
+- `PolenResidenceValidator`
+- `PolenHomeManager`
+
+### `entity/ai/world/story`
+
+- `PolenWorldMemory`
+- `PolenStoryStage`
+
+Responsabilidad:
+
+- puentes entre memoria narrativa local y lectura de etapa del mundo
+
+### `entity/ai/navigation/goal`
+
+- `PolenKeepDistanceGoal`
+- `PolenApproachTrustedPlayerGoal`
+- `PolenCuriousInterestGoal`
+- `PolenRoutineGoal`
+- `PolenIdleHobbyGoal`
+- `PolenSeekSafetyGoal`
+- `PolenSafeStrollGoal`
+
+### `entity/ai/debug`
+
+- `PolenAiDebugInspector`
+- `PolenAiDebugSnapshot`
+
+## Items
+
+### `item/base`
+
+- `TranslatableTooltipItem`
+- `PolenTypedItem`
+- `PolenLoreItem`
+- `PolenMaterialItem`
+- `PolenUsableFocusItem`
+- `PolenColonyItem`
+
+### `item/meta`
+
+- `PolenItemFamily`
+- `PolenProgressionStage`
+- `PolenItemTags`
+
+### `item/material`
+
+- materiales base de Polen
+
+### `item/focus`
+
+- focos usables
+
+### `item/colony`
+
+- items de asentamiento y progreso
+
+### `item/accessory`
+
+- `PolenAccessorySlot`
+- `PolenAccessoryTarget`
+- `PolenAccessoryBonusType`
+- `PolenAccessoryBonus`
+- `PolenAccessoryItem`
+
+### `item/affinity`
+
+- `AffinityCharmItem`
+
+### `compat/curios`
+
+- `PolenCuriosBridge`
+
+## Progression
+
+### `progression`
 
 - `PolenAffinityLevels`
-  - umbrales de afinidad
 - `PolenAffinityManager`
-  - acceso de alto nivel a afinidad
 - `PolenChapterManager`
-  - control de capítulos del mundo
 - `PolenStoryFlag`
-  - enum de flags narrativos
 - `PolenStoryFlagsManager`
-  - lectura/escritura de flags de historia
 - `PolenAdvancementManager`
-  - otorga advancements ligados a progreso
 
-### `com.hivesandcolonies.polen.progression.player`
+### `progression/player`
 
 - `PolenPlayerRelationshipData`
-  - DTO de afinidad, interacciones y flags por jugador
 - `PolenPlayerRelationshipManager`
-  - `SavedData` por jugador almacenado en overworld
 
-### `com.hivesandcolonies.polen.progression.world`
+### `progression/world`
 
 - `PolenWorldStoryData`
-  - DTO de capítulo, flags y estado de spawn
 - `PolenWorldStorySavedData`
-  - `SavedData` de historia global del mundo
 
-### `com.hivesandcolonies.polen.registry`
+## Registry
+
+### `registry`
 
 - `ModItems`
+- `ModBlocks`
 - `ModEntities`
 - `ModCreativeTabs`
 - `ModEntityAttributes`
 
-### `com.hivesandcolonies.polen.story`
+## Story
+
+### `story`
 
 - `PolenStoryEventManager`
-  - secuencias narrativas de nombre revelado y refugio
+- memoria narrativa y eventos de descubrimiento
 
 ## Recursos
 
-### `src/main/resources/assets/polen/lang`
+### `assets/characters/lang`
 
 - `es_es.json`
 - `en_us.json`
 
-Contiene:
+### `assets/characters/blockstates`
 
-- nombres de ítems
-- tooltips
-- diálogos
-- textos de advancements
+- blockstates del mod
 
-### `src/main/resources/assets/polen/textures`
+### `assets/characters/models/block`
 
-- `entity/polen.png`
-- `item/*.png`
+- modelos de bloques
 
-### `src/main/resources/assets/polen/models/item`
+### `assets/characters/models/item`
 
-- modelos de ítems y spawn egg
+- modelos de items
 
-### `src/main/resources/data/polen`
+### `data/characters/tags/item`
 
-- advancements narrativos
-- `recipe/*`
-  - adquisicion base de items jugables
-- `tags/item/*`
-  - clasificacion por familia para sistemas futuros
+- familias de item
+- incluye `accessory_items`
 
-## Flujo basico de una interaccion
+### `data/characters/loot_table`
 
-1. El jugador interactúa con `PolenEntity`.
-2. `PolenPlayerRelationshipManager` registra interacción.
-3. `PolenEntity` consulta capítulo y afinidad.
-4. Si se cumple una condición de evento, `PolenStoryEventManager` dispara secuencia.
-5. Si no, `PolenDialogueManager` devuelve una línea normal.
+- loot tables del mod
 
-## Flujo basico de IA
+## Reglas de crecimiento
 
-1. `PolenEntity` delega el tick lento a `PolenAutonomyController`.
-2. `PolenNeedController` ajusta necesidades internas.
-3. `PolenIntentController` decide la intencion dominante.
-4. Los goals solo compiten si la intencion actual los habilita.
-5. `PolenMoodController` traduce el estado interno a expresion emocional visible.
-6. El renderer solo dibuja; la logica vive en controladores, planners y goals.
+### IA
+
+- no agregar clases nuevas en la raiz de `entity/ai`
+- usar subdirectorios por dominio
+- si una capacidad es visible en cliente, separar estado servidor de pose cliente
+
+### Acciones
+
+- hobbies y microconductas nuevas entran por `entity/ai/brain/action`
+- ejecucion visible entra por `activity`, `magic`, `gesture` o `goal`
+
+### Hogar
+
+- residencia y pertenencia entran por `entity/ai/world/home`
+- descanso improvisado sigue en `routine` y `restingPos`
+- no mezclar ambos conceptos en `item` o `goal`
+
+### Mundo semantico
+
+- affordance, observation, comfort, identity e interests deben vivir en `entity/ai/world/*`
+- si una feature describe como Polen entiende un lugar, no debe caer por accidente en `goal`, `magic` o `entity`
+
+### Accesorios
+
+- toda nueva pieza reusable debe apoyarse en `item/accessory`
+- efectos especiales de accesorios no deben vivir embebidos en el item si pueden aislarse
+- integraciones de equipamiento externo como `Curios` deben quedar en `compat/*`
+
+### PolenEntity
+
+- solo debe conservar estado sincronizado, persistencia y ciclo base
+- no debe volver a absorber planners o logica de decision

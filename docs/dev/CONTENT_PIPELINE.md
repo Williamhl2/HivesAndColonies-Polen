@@ -2,69 +2,141 @@
 
 ## Registries
 
-Archivos:
+Main registry files:
 
-- [ModItems.java](../../src/main/java/com/hivesandcolonies/polen/registry/ModItems.java)
-- [ModEntities.java](../../src/main/java/com/hivesandcolonies/polen/registry/ModEntities.java)
-- [ModCreativeTabs.java](../../src/main/java/com/hivesandcolonies/polen/registry/ModCreativeTabs.java)
-- [ModEntityAttributes.java](../../src/main/java/com/hivesandcolonies/polen/registry/ModEntityAttributes.java)
+- [ModItems.java](../../src/main/java/com/hivesandcolonies/characters/registry/ModItems.java)
+- [ModBlocks.java](../../src/main/java/com/hivesandcolonies/characters/registry/ModBlocks.java)
+- [ModEntities.java](../../src/main/java/com/hivesandcolonies/characters/registry/ModEntities.java)
+- [ModCreativeTabs.java](../../src/main/java/com/hivesandcolonies/characters/registry/ModCreativeTabs.java)
+- [ModEntityAttributes.java](../../src/main/java/com/hivesandcolonies/characters/registry/ModEntityAttributes.java)
 
-## Añadir un item narrativo
+## Adding a new item
 
-1. Crear clase en `item/` si necesita tooltip o lógica propia.
-2. Registrar en `ModItems`.
-3. Añadir modelo en `assets/polen/models/item`.
-4. Añadir textura en `assets/polen/textures/item`.
-5. Añadir claves de traducción en `lang`.
-6. Si debe verse en creativo, agregarlo a `ModCreativeTabs`.
+1. Decide its family first.
+2. Create a concrete class only if it has behavior.
+3. Register it in `ModItems`.
+4. Add model data in `assets/characters/models/item`.
+5. Add lang keys in both English and Spanish.
+6. If it belongs in creative mode, add it to `ModCreativeTabs`.
+7. If it needs tags, add the correct `data/characters/tags/item/*` entry.
 
-## Tooltips traducibles
+## Adding a new block
 
-Base:
+1. Register it in `ModBlocks`.
+2. If it has a matching item form, register that in `ModItems`.
+3. Add blockstate and block model files.
+4. Add item model file if needed.
+5. Add lang keys in both languages.
+6. Add loot table if the block should drop something.
 
-- [TranslatableTooltipItem.java](../../src/main/java/com/hivesandcolonies/polen/item/TranslatableTooltipItem.java)
+This is already the path used by `polen_lantern`.
 
-Uso:
+## Tooltips and reusable item behavior
 
-- heredar de `TranslatableTooltipItem`
-- definir líneas de tooltip mediante claves de `lang`
+Relevant bases:
 
-## Añadir una linea de dialogo
+- `item/base/TranslatableTooltipItem`
+- `item/base/PolenTypedItem`
+- `item/accessory/PolenAccessoryItem`
 
-1. Registrar la clave en `es_es.json` y `en_us.json`.
-2. Conectarla a `PolenDialogueManager` o `PolenStoryEventManager`.
-3. Si cambia progresión, dispararla desde un evento y no solo desde diálogo normal.
+Rule:
 
-## Añadir un advancement
+- prefer reusable base classes over one-off copies
 
-1. Crear JSON en `src/main/resources/data/polen/advancement/...`
-2. Declarar `ResourceLocation` en `PolenAdvancementManager`
-3. Crear método `grant...`
-4. Conectarlo desde el evento o manager correcto
+## Adding dialogue
 
-## Añadir una entidad o renderer
+Read [DIALOGUE_LOCALIZATION.md](DIALOGUE_LOCALIZATION.md) first.
 
-1. Registrar tipo en `ModEntities`
-2. Registrar atributos en `ModEntityAttributes`
-3. Crear renderer cliente
-4. Conectar en `PolenClient`
+Current rule:
 
-## Localizacion
+- the project now uses split dialogue source files
+- final runtime still depends on `lang/*.json`
 
-Archivos actuales:
+So when changing dialogue:
 
-- `src/main/resources/assets/polen/lang/es_es.json`
-- `src/main/resources/assets/polen/lang/en_us.json`
+1. Update the split source files when they exist for that locale.
+2. Keep the final generated `lang/*.json` output aligned.
+3. Connect the key through `PolenDialogueManager` or the right event/controller.
+4. If the line changes progression, trigger it from an event or manager, not from random render or item code.
+5. Verify the line still matches current canon and current implementation state.
 
-Regla recomendada:
+## Adding character-facing content
 
-- toda nueva clave visible al jugador debe existir en ambos archivos
+If a new item, block, line, or event affects Polen or the wider cast:
 
-## Documentacion narrativa
+1. Register the content first if it is a game asset.
+2. Decide whether the behavior belongs in:
+- AI planner/controller
+- progression manager
+- interaction controller
+- accessory/equipment layer
+- dialogue or story event manager
+3. Update the relevant docs immediately.
 
-Antes de tocar contenido narrativo, revisar:
+Example:
+
+- `polen_lantern` is content
+- placement/removal rules belong to AI and magic controllers
+
+## Adding advancements
+
+1. Create the JSON in `src/main/resources/data/characters/advancement/...`
+2. Add the `ResourceLocation` in `PolenAdvancementManager`
+3. Add a grant method
+4. Trigger it from the correct manager or story event
+
+## Localization
+
+Current public lang files:
+
+- `src/main/resources/assets/characters/lang/en_us.json`
+- `src/main/resources/assets/characters/lang/es_es.json`
+- `src/main/resources/assets/characters/lang/es_cl.json`
+
+Rule:
+
+- every visible player-facing key should exist in English and Spanish
+- if a change alters public-facing fantasy, update docs too
+- if a change introduces lore names, relationships, memory reveals, or titles, verify those references are consistent across locales
+- if the documentation already has Spanish and English mirrors, keep both aligned in the same pass
+
+## Narrative alignment
+
+Before changing visible content, review:
 
 - [docs/es/STORY.md](../es/STORY.md)
-- [docs/es/NARRATIVE_CHAPTERS.md](../es/NARRATIVE_CHAPTERS.md)
+- [docs/en/STORY.md](../en/STORY.md)
+- [docs/en/CHARACTERS.md](../en/CHARACTERS.md)
 
-Si un cambio técnico contradice esos documentos, el contenido va a quedar inconsistente aunque compile.
+If the content changes Polen's visible identity or role, also review:
+
+- [POLEN_CHARACTER_ARC.md](POLEN_CHARACTER_ARC.md)
+- [POLEN_AI.md](POLEN_AI.md)
+
+If the content touches:
+
+- Befsh
+- Cosmic
+- Luna
+- Noia
+- Noris
+- Jeff
+- Vanilla
+- memory loss
+- war backstory
+- the "promised queen" role
+
+then treat it as continuity-sensitive content, not flavor text.
+
+## Maintenance rule
+
+If a new feature adds:
+
+- a new family
+- a new public mechanic
+- a new AI-facing item or block
+- a new accessory system hook
+- a new memory reveal path
+- a new named character reference
+
+then code, lang, assets, tags, and docs must all move together in the same pass.
