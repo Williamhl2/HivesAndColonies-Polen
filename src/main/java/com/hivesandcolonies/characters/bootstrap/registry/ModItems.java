@@ -17,6 +17,7 @@ import com.hivesandcolonies.characters.character.polen.item.spawn.UniquePolenSpa
 import com.hivesandcolonies.characters.character.polen.item.story.PolenJournalItem;
 import com.hivesandcolonies.characters.character.polen.item.story.PrincessLetterItem;
 import com.hivesandcolonies.characters.character.polen.item.story.PrincessSealItem;
+import com.hivesandcolonies.characters.common.item.spawn.SecondaryCharacterSpawnEggItem;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -136,7 +137,7 @@ public class ModItems {
     ) {
         return ITEMS.registerItem(
                 name,
-                properties -> new DeferredSpawnEggItem(entityType, backgroundColor, highlightColor, properties),
+                properties -> new SecondaryCharacterSpawnEggItem(entityType, backgroundColor, highlightColor, properties),
                 new Item.Properties()
         );
     }

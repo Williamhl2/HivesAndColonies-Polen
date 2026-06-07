@@ -1,6 +1,7 @@
 package com.hivesandcolonies.characters.bootstrap.registry;
 
 import com.hivesandcolonies.characters.bootstrap.Characters;
+import com.hivesandcolonies.characters.bootstrap.config.CharactersGameplayConfig;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -46,11 +47,13 @@ public class ModCreativeTabs {
 
                         // Debug / spawn support.
                         output.accept(ModItems.POLEN_SPAWN_EGG.get());
-                        output.accept(ModItems.BEFSH_SPAWN_EGG.get());
-                        output.accept(ModItems.LUNA_SPAWN_EGG.get());
-                        output.accept(ModItems.VANILLA_SPAWN_EGG.get());
-                        output.accept(ModItems.NOIA_SPAWN_EGG.get());
-                        output.accept(ModItems.NORIS_SPAWN_EGG.get());
+                        if (CharactersGameplayConfig.secondaryCharacterSpawnEggsEnabled()) {
+                            output.accept(ModItems.BEFSH_SPAWN_EGG.get());
+                            output.accept(ModItems.LUNA_SPAWN_EGG.get());
+                            output.accept(ModItems.VANILLA_SPAWN_EGG.get());
+                            output.accept(ModItems.NOIA_SPAWN_EGG.get());
+                            output.accept(ModItems.NORIS_SPAWN_EGG.get());
+                        }
 
                     })
                     .build());

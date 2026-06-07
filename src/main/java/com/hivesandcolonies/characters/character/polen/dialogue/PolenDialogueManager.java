@@ -23,6 +23,7 @@ public final class PolenDialogueManager {
     public static final String AMBIENT_NIGHT_TREE = "ambient_night_tree";
     public static final String AMBIENT_NIGHT_HOUSE = "ambient_night_house";
     public static final String AMBIENT_NIGHT_ROOF = "ambient_night_roof";
+    public static final String AMBIENT_BEDTIME = "ambient_bedtime";
 
     private PolenDialogueManager() {}
 

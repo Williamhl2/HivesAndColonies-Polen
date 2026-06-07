@@ -78,17 +78,14 @@ public final class PolenIntentController {
             case INVESTIGATE_INTEREST -> PolenAffordanceResolver.findBestInterest(polen, true) != null;
             case SEEK_REST -> (needs.rest() >= 35 || polen.level().isNight() || polen.level().isRaining())
                     && canSeekRest(polen);
-            case QUIET_CREATION -> needs.magic() >= 20 && canDoIllumination(polen)
+            case QUIET_CREATION -> shouldStaySettledForNight(polen)
+                    || needs.magic() >= 20 && canDoIllumination(polen)
                     || needs.magic() >= 35 && canDoQuietCreation(polen);
             case WANDER_SAFE -> canWanderSafely(polen);
         };
     }
 
     private static PolenIntentSnapshot selectIntent(PolenEntity polen, PolenNeedSnapshot needs, long gameTime) {
-        if (needs.social() >= 60 && hasApproachableTrustedPlayer(polen)) {
-            return locked(PolenIntent.APPROACH_TRUSTED_PLAYER, "social_need_high", gameTime, 100L);
-        }
-
         if (shouldReturnHomeForWeatherOrNight(polen) && canSeekRest(polen)) {
             return locked(
                     PolenIntent.SEEK_REST,
@@ -96,6 +93,14 @@ public final class PolenIntentController {
                     gameTime,
                     110L
             );
+        }
+
+        if (shouldStaySettledForNight(polen) && canDoQuietCreation(polen)) {
+            return locked(PolenIntent.QUIET_CREATION, "night_settled_in_refuge", gameTime, 120L);
+        }
+
+        if (needs.social() >= 60 && hasApproachableTrustedPlayer(polen)) {
+            return locked(PolenIntent.APPROACH_TRUSTED_PLAYER, "social_need_high", gameTime, 100L);
         }
 
         if (needs.rest() >= 32 && canDoQuietCreation(polen)
@@ -152,6 +157,13 @@ public final class PolenIntentController {
     }
 
     private static boolean canDoQuietCreation(PolenEntity polen) {
+        if (shouldStaySettledForNight(polen)) {
+            return !polen.isDoingQuietActivity()
+                    && !PolenSafetyNavigator.isInUnsafeArea(polen)
+                    && polen.onGround()
+                    && !polen.isInWaterOrBubble();
+        }
+
         PolenMood mood = polen.getMood();
         return !polen.isDoingQuietActivity()
                 && !polen.hasNearbyPlayer(3.0D)
@@ -178,6 +190,7 @@ public final class PolenIntentController {
 
     private static boolean canWanderSafely(PolenEntity polen) {
         return !PolenSafetyNavigator.isInUnsafeArea(polen)
+                && !shouldStaySettledForNight(polen)
                 && !polen.isDoingQuietActivity()
                 && polen.onGround()
                 && !polen.isInWaterOrBubble();
@@ -193,11 +206,17 @@ public final class PolenIntentController {
 
     private static boolean shouldReturnHomeForWeatherOrNight(PolenEntity polen) {
         boolean weatherOrNight = polen.level().isNight() || polen.level().isRaining();
-        if (!weatherOrNight || polen.hasNearbyPlayer(HOME_PULL_PLAYER_RANGE)) {
+        if (!weatherOrNight) {
             return false;
         }
 
         return polen.getAiState().getRestingPos() != null || PolenHomeManager.getValidResidenceUsePos(polen) != null;
+    }
+
+    private static boolean shouldStaySettledForNight(PolenEntity polen) {
+        return (polen.level().isNight() || polen.level().isRaining())
+                && isAtRestSpot(polen)
+                && (polen.getAiState().getRestingPos() != null || PolenHomeManager.getValidResidenceUsePos(polen) != null);
     }
 
     private static boolean isAtRestSpot(PolenEntity polen) {

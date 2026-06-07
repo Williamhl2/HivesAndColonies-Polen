@@ -127,5 +127,14 @@
   "dialogue.polen.ambient_night_roof.soft.line3": "Night feels lighter once I find a roof.",
   "dialogue.polen.ambient_night_roof.warm.line1": "I will spend the night here with you, under this roof.",
   "dialogue.polen.ambient_night_roof.warm.line2": "This shelter is not bad for waiting until day.",
-  "dialogue.polen.ambient_night_roof.warm.line3": "With a roof and a little calm, the night becomes bearable."
+  "dialogue.polen.ambient_night_roof.warm.line3": "With a roof and a little calm, the night becomes bearable.",
+  "dialogue.polen.ambient_bedtime.guarded.line1": "That is enough for today. I am staying here.",
+  "dialogue.polen.ambient_bedtime.guarded.line2": "This bed will do. I do not want to keep moving.",
+  "dialogue.polen.ambient_bedtime.guarded.line3": "I will head back out when morning comes.",
+  "dialogue.polen.ambient_bedtime.soft.line1": "Alright... I am staying here tonight.",
+  "dialogue.polen.ambient_bedtime.soft.line2": "This corner feels like mine for a little while.",
+  "dialogue.polen.ambient_bedtime.soft.line3": "I can rest calmly with this bed here.",
+  "dialogue.polen.ambient_bedtime.warm.line1": "I made it back to my bed. I feel better now.",
+  "dialogue.polen.ambient_bedtime.warm.line2": "Good night... I am staying here.",
+  "dialogue.polen.ambient_bedtime.warm.line3": "This refuge is enough to carry me through the night."
 }

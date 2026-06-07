@@ -101,14 +101,14 @@ public final class PolenRoutinePlanner {
     }
 
     private static BlockPos findQuietCreationTarget(PolenEntity polen) {
-        BlockPos lightMagicTarget = findLightMagicTarget(polen);
-        if (lightMagicTarget != null) {
-            return lightMagicTarget;
-        }
-
         BlockPos preferredHomeTarget = findPreferredHomeRoutineTarget(polen);
         if (preferredHomeTarget != null) {
             return preferredHomeTarget;
+        }
+
+        BlockPos lightMagicTarget = findLightMagicTarget(polen);
+        if (lightMagicTarget != null) {
+            return lightMagicTarget;
         }
 
         BlockPos rememberedSourceAnchor = normalizeQuietCreationAnchor(polen, polen.getAiState().getFavoriteSourcePos());

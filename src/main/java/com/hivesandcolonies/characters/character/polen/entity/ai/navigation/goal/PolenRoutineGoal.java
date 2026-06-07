@@ -1,5 +1,7 @@
 package com.hivesandcolonies.characters.character.polen.entity.ai.navigation.goal;
 
+import com.hivesandcolonies.characters.character.polen.dialogue.PolenDialogueManager;
+import com.hivesandcolonies.characters.character.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.characters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.characters.character.polen.entity.ai.brain.intent.PolenIntent;
 import com.hivesandcolonies.characters.character.polen.entity.ai.brain.routine.PolenRoutinePlanner;
@@ -146,6 +148,7 @@ public class PolenRoutineGoal extends Goal {
                 PolenTaskController.markFailed(this.polen, taskType, "routine_goal_aborted", 80L);
             } else if (this.reachedTarget && taskType == PolenTaskType.SEEK_REST) {
                 PolenTaskController.markCompleted(this.polen, taskType, "resting_spot_reached");
+                PolenAmbientDialogueController.tryPlayImmediate(this.polen, PolenDialogueManager.AMBIENT_BEDTIME);
             } else if (this.reachedTarget && taskType == PolenTaskType.QUIET_CREATION) {
                 PolenTaskController.markActive(this.polen, taskType, "quiet_creation_area_ready");
             }

@@ -30,12 +30,20 @@ public final class PolenAmbientDialogueController {
     }
 
     public static void tryPlay(PolenEntity polen, String situation) {
+        tryPlay(polen, situation, false);
+    }
+
+    public static void tryPlayImmediate(PolenEntity polen, String situation) {
+        tryPlay(polen, situation, true);
+    }
+
+    private static void tryPlay(PolenEntity polen, String situation, boolean ignoreCooldown) {
         if (!(polen.level() instanceof ServerLevel serverLevel)) {
             return;
         }
 
         long gameTime = serverLevel.getGameTime();
-        if (gameTime - polen.getAiState().getLastAmbientDialogueGameTime() < AMBIENT_DIALOGUE_COOLDOWN) {
+        if (!ignoreCooldown && gameTime - polen.getAiState().getLastAmbientDialogueGameTime() < AMBIENT_DIALOGUE_COOLDOWN) {
             return;
         }
 

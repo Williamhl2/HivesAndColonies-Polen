@@ -4,7 +4,6 @@ import com.hivesandcolonies.characters.character.polen.item.base.PolenLoreItem;
 import com.hivesandcolonies.characters.character.polen.item.meta.PolenProgressionStage;
 import com.hivesandcolonies.characters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.characters.character.polen.progression.PolenStoryFlagsManager;
-import com.hivesandcolonies.characters.character.polen.progression.world.PolenWorldStateManager;
 import com.hivesandcolonies.characters.character.polen.progression.world.prologue.PolenPrologueManager;
 import com.hivesandcolonies.characters.common.util.CharacterNbtHelper;
 import com.hivesandcolonies.characters.common.item.base.TranslatableTooltipItem.TooltipLine;
@@ -78,13 +77,12 @@ public class HiveheartCharmItem extends PolenLoreItem {
 
         String directionKey = resolveDirectionKey(player, target);
         int distanceBlocks = horizontalDistance(player.position(), target);
+        String distanceKey = resolveDistanceKey(distanceBlocks);
         player.displayClientMessage(
                 Component.translatable(
                         "message.polen.item.hiveheart_charm.guidance",
                         Component.translatable(directionKey),
-                        distanceBlocks,
-                        target.getX(),
-                        target.getZ()
+                        Component.translatable(distanceKey)
                 ),
                 true
         );
@@ -167,6 +165,19 @@ public class HiveheartCharmItem extends PolenLoreItem {
         double dx = target.getX() + 0.5D - playerPos.x;
         double dz = target.getZ() + 0.5D - playerPos.z;
         return (int) Math.round(Math.sqrt(dx * dx + dz * dz));
+    }
+
+    private static String resolveDistanceKey(int distance) {
+        if (distance <= 24) {
+            return "message.polen.item.hiveheart_charm.distance.immediate";
+        }
+        if (distance <= 80) {
+            return "message.polen.item.hiveheart_charm.distance.near";
+        }
+        if (distance <= 192) {
+            return "message.polen.item.hiveheart_charm.distance.far";
+        }
+        return "message.polen.item.hiveheart_charm.distance.distant";
     }
 
     @Nullable
