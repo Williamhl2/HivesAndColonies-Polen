@@ -2,6 +2,61 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.0-beta.1] - 2026-06-07
+
+### Added
+
+- PolenAutonomyController to keep high-level autonomy flow out of PolenEntity.
+- PolenAiFacade as the single AI-facing entry point used by PolenEntity.
+- PolenAiState to store remembered places, danger memory, needs, and intent outside the entity class itself.
+- Persistent need-state tracking for safety, social contact, curiosity, rest, and magic.
+- High-level intent selection with short-lived decision locks so Polen can sustain actions instead of jittering between reactions.
+- Reusable interest discovery for flowers, hives, and source-like locations.
+- PolenShelterValidator for validating playable shelters as narrative milestones.
+- prologueClearingCenter and prologueShelterPos persisted in world story data.
+- docs/es/POLEN_PROLOGUE_SITE.md defining prologue clearing structure and canon rules.
+- Typed item metadata for family, progression stage, and uniqueness.
+- Reusable item bases: PolenLoreItem, PolenMaterialItem, PolenUsableFocusItem, PolenColonyItem.
+- loom_focus as a reusable focus item for flower, hive, and source-like resonance memory.
+- settlement_charm as a colony item for marking safe resting places.
+- source_touched_petal and esonant_wax as early scalable materials.
+- PolenMagicController for emergency blink relocation and subtle idle spell effects.
+- New ambient magic dialogue lines for both Spanish and English localization.
+- Dedicated item interaction controller routing new item behaviors through memory, affinity, and story systems.
+- Dialogue resolvers for speaker identity, chapter key selection, ambient tone, and ambient key construction.
+- JUnit 5 unit test infrastructure with initial pure-logic tests for dialogue resolvers and danger-memory math.
+
+### Changed
+
+- Polen's server-side AI now follows a compact 
+eeds -> intent -> mood -> goals loop.
+- Source-like locations are now remembered as first-class interests and can feed later autonomous behavior.
+- Routine, hobby, curiosity, trusted approach, and safe wandering goals now activate through explicit intent gating.
+- /characters ai get now exposes intent, dominant need, full need values, and remembered source data for balancing.
+- Polen now prioritizes her estingPos and esidence more strongly when seeking shelter during rain or night rest.
+- QUIET_CREATION selection now favors returning home before dispersing to other quiet spots when context is already safe.
+- Item layer reclassified into explicit progression roles with family intent grouping.
+- Emergency relocation now uses a magical blink with particles and sound instead of a silent raw teleport.
+- Singing and drawing can now produce small Ars-inspired spell feedback while Polen is calm.
+- Narrative documentation now treats Polen's magic as instinctive, intimate Ars Nouveau behavior.
+- PolenDialogueManager refactored into a facade, splitting dialogue concerns into dedicated resolvers.
+- hiveheart_charm defined as a non-crafteable prologue item in its first stage.
+
+### Fixed
+
+- Movement deadlock where Polen could keep a selected intent while the matching movement goal was still blocked.
+- Interacting with Polen inside a valid shelter during FOUNDATION now correctly triggers PLAYER_HAS_SHELTER.
+- settlement_charm and source discovery now reuse PolenWorldEventTriggers instead of duplicating memory unlocks.
+
+### Removed
+
+- POLEN_HAS_FOOD placeholder story flag with no active references.
+- Premature crafteable recipe for hiveheart_charm.
+- hiveheart_charm inclusion in the active Curios charm tag (removed until shelter progression is complete).
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
 ## Unreleased - v0.0.11 Autonomy Update
 
 ### Added
