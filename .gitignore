@@ -39,3 +39,4 @@ run/
 repo/
 !**/src/**/repo/
 src/main.zip
+src/**.old.zip

@@ -19,7 +19,8 @@ All notable changes to this project will be documented in this file.
 - Reusable item bases: PolenLoreItem, PolenMaterialItem, PolenUsableFocusItem, PolenColonyItem.
 - loom_focus as a reusable focus item for flower, hive, and source-like resonance memory.
 - settlement_charm as a colony item for marking safe resting places.
-- source_touched_petal and esonant_wax as early scalable materials.
+- source_touched_petal and
+  esonant_wax as early scalable materials.
 - PolenMagicController for emergency blink relocation and subtle idle spell effects.
 - New ambient magic dialogue lines for both Spanish and English localization.
 - Dedicated item interaction controller routing new item behaviors through memory, affinity, and story systems.
@@ -28,12 +29,14 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Polen's server-side AI now follows a compact 
-eeds -> intent -> mood -> goals loop.
+- Polen's server-side AI now follows a compact
+  eeds -> intent -> mood -> goals loop.
 - Source-like locations are now remembered as first-class interests and can feed later autonomous behavior.
 - Routine, hobby, curiosity, trusted approach, and safe wandering goals now activate through explicit intent gating.
 - /characters ai get now exposes intent, dominant need, full need values, and remembered source data for balancing.
-- Polen now prioritizes her estingPos and esidence more strongly when seeking shelter during rain or night rest.
+- Polen now prioritizes her
+  estingPos and
+  esidence more strongly when seeking shelter during rain or night rest.
 - QUIET_CREATION selection now favors returning home before dispersing to other quiet spots when context is already safe.
 - Item layer reclassified into explicit progression roles with family intent grouping.
 - Emergency relocation now uses a magical blink with particles and sound instead of a silent raw teleport.
@@ -53,6 +56,7 @@ eeds -> intent -> mood -> goals loop.
 - POLEN_HAS_FOOD placeholder story flag with no active references.
 - Premature crafteable recipe for hiveheart_charm.
 - hiveheart_charm inclusion in the active Curios charm tag (removed until shelter progression is complete).
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

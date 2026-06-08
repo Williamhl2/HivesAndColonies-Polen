@@ -79,7 +79,7 @@ public class PolenReturnToBedGoal extends Goal {
                 PolenSearchStatus.PATHING,
                 this.accessPos,
                 this.bedPos,
-                this.polen.level().isRaining() ? "rain_pathing_to_bed" : "night_pathing_to_bed"
+                PolenSleepController.hasImmediateThreat(this.polen) ? "danger_pathing_to_bed" : (this.polen.level().isRaining() ? "rain_pathing_to_bed" : "night_pathing_to_bed")
         );
         this.lastDistanceSqr = distanceToAccessSqr();
         moveToAccessPos();
@@ -165,10 +165,7 @@ public class PolenReturnToBedGoal extends Goal {
     }
 
     private boolean shouldReturnToBedNow() {
-        return PolenSleepController.shouldSleepNow(this.polen)
-                && !PolenSleepController.hasImmediateThreat(this.polen)
-                && this.polen.onGround()
-                && !this.polen.isInWaterOrBubble();
+        return PolenSleepController.shouldReturnToSafeBedNow(this.polen);
     }
 
     private void resetPathState() {

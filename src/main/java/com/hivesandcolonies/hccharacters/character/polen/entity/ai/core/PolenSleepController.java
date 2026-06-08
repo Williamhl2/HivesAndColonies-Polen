@@ -1,6 +1,7 @@
 package com.hivesandcolonies.hccharacters.character.polen.entity.ai.core;
 
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
+import com.hivesandcolonies.hccharacters.character.polen.block.PolenBeeBedBlock;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenDangerMemoryTracker;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.intent.PolenIntent;
@@ -31,6 +32,7 @@ public final class PolenSleepController {
     private static final double START_SLEEP_DISTANCE_SQR = START_SLEEP_DISTANCE * START_SLEEP_DISTANCE;
     private static final double MAX_FORCED_HOME_BED_DISTANCE_SQR = 128.0D * 128.0D;
     private static final double NEARBY_BED_PRIORITY_DISTANCE_SQR = 12.0D * 12.0D;
+    private static final double POLEN_BEE_BED_PRIORITY_BONUS = 10000.0D;
     private static final double HOSTILE_THREAT_RANGE = 6.0D;
     private static final double UNTRUSTED_PLAYER_RANGE = 2.5D;
 
@@ -88,7 +90,17 @@ public final class PolenSleepController {
     }
 
     public static boolean shouldPrioritizeBedReturn(PolenEntity polen) {
-        return shouldSleepNow(polen) && findBestKnownBed(polen) != null;
+        return shouldReturnToSafeBedNow(polen) && findBestKnownBed(polen) != null;
+    }
+
+    public static boolean shouldReturnToSafeBedNow(PolenEntity polen) {
+        if (polen == null) {
+            return false;
+        }
+        return (polen.level().isNight() || polen.level().isRaining() || hasImmediateThreat(polen))
+                && !polen.isSleeping()
+                && polen.onGround()
+                && !polen.isInWaterOrBubble();
     }
 
     public static boolean hasKnownBed(PolenEntity polen) {
@@ -101,6 +113,11 @@ public final class PolenSleepController {
         }
 
         BlockPos currentPos = polen.blockPosition();
+        BlockPos preferredBeeBed = findNearestPolenBeeBed(polen, currentPos, HOME_BED_SCAN_RADIUS + NEARBY_BED_SCAN_RADIUS);
+        if (preferredBeeBed != null) {
+            return preferredBeeBed;
+        }
+
         BlockPos nearbyBed = findNearestBed(polen, currentPos, NEARBY_BED_SCAN_RADIUS);
         BlockPos homeBed = findHomeBed(polen);
 
@@ -181,12 +198,17 @@ public final class PolenSleepController {
     }
 
     private static void beginSleeping(PolenEntity polen, ServerLevel serverLevel, BlockPos bedPos, String note) {
+        BlockPos normalizedBedPos = normalizeSleepPos(polen.level(), bedPos);
+        if (normalizedBedPos == null) {
+            return;
+        }
+        rememberBedAsRestAnchor(polen, normalizedBedPos);
         polen.stopQuietActivity();
         polen.getNavigation().stop();
         polen.setDeltaMovement(Vec3.ZERO);
-        orientTowardBed(polen, bedPos);
-        polen.startSleeping(bedPos);
-        setSleepIntentState(polen, serverLevel, bedPos, bedPos, PolenSearchStatus.ARRIVED, note);
+        orientTowardBed(polen, normalizedBedPos);
+        polen.startSleeping(normalizedBedPos);
+        setSleepIntentState(polen, serverLevel, normalizedBedPos, normalizedBedPos, PolenSearchStatus.ARRIVED, note);
     }
 
     private static void setSleepIntentState(
@@ -200,7 +222,7 @@ public final class PolenSleepController {
         long gameTime = serverLevel.getGameTime();
         polen.getAiState().getIntentState().set(
                 PolenIntent.SEEK_REST,
-                polen.level().isRaining() ? "rain_returning_to_bed" : "night_returning_to_bed",
+                hasImmediateThreat(polen) ? "danger_returning_to_bed" : (polen.level().isRaining() ? "rain_returning_to_bed" : "night_returning_to_bed"),
                 gameTime + SLEEP_INTENT_LOCK_TICKS
         );
         PolenTaskController.markActive(polen, PolenTaskType.SEEK_REST, note);
@@ -218,8 +240,12 @@ public final class PolenSleepController {
             return false;
         }
 
-        return bedPos.distSqr(polen.blockPosition()) <= START_SLEEP_DISTANCE_SQR
-                || bedPos.closerToCenterThan(polen.position(), START_SLEEP_DISTANCE);
+        BlockPos normalizedBedPos = normalizeSleepPos(polen.level(), bedPos);
+        if (normalizedBedPos == null) {
+            return false;
+        }
+        return normalizedBedPos.distSqr(polen.blockPosition()) <= START_SLEEP_DISTANCE_SQR
+                || normalizedBedPos.closerToCenterThan(polen.position(), START_SLEEP_DISTANCE);
     }
 
     private static void rememberNearbyBedAsRestAnchor(PolenEntity polen) {
@@ -246,7 +272,15 @@ public final class PolenSleepController {
         }
     }
 
+    private static BlockPos findNearestPolenBeeBed(PolenEntity polen, BlockPos origin, int radius) {
+        return findNearestBedMatching(polen, origin, radius, true);
+    }
+
     private static BlockPos findNearestBed(PolenEntity polen, BlockPos origin, int radius) {
+        return findNearestBedMatching(polen, origin, radius, false);
+    }
+
+    private static BlockPos findNearestBedMatching(PolenEntity polen, BlockPos origin, int radius, boolean beeBedOnly) {
         if (polen == null || origin == null) {
             return null;
         }
@@ -260,18 +294,27 @@ public final class PolenSleepController {
                 for (int dy = -3; dy <= 3; dy++) {
                     BlockPos candidate = origin.offset(dx, dy, dz);
                     BlockState state = level.getBlockState(candidate);
-                    if (!isUsableBedState(state) || findBestBedAccessPos(polen, candidate) == null) {
+                    boolean isBeeBed = isPolenBeeBedState(state);
+                    if (beeBedOnly && !isBeeBed) {
+                        continue;
+                    }
+                    if (!isUsableBedState(state)) {
                         continue;
                     }
 
-                    double score = candidate.distSqr(origin);
-                    if (state.is(ModBlocks.POLEN_BEE_BED.get())) {
-                        score -= 10.0D;
+                    BlockPos sleepPos = normalizeSleepPos(level, candidate);
+                    if (sleepPos == null || findBestBedAccessPos(polen, sleepPos) == null) {
+                        continue;
+                    }
+
+                    double score = sleepPos.distSqr(origin);
+                    if (isBeeBed) {
+                        score -= POLEN_BEE_BED_PRIORITY_BONUS;
                     }
 
                     if (score < bestScore) {
                         bestScore = score;
-                        bestPos = candidate.immutable();
+                        bestPos = sleepPos.immutable();
                     }
                 }
             }
@@ -286,6 +329,10 @@ public final class PolenSleepController {
         }
 
         Level level = polen.level();
+        bedPos = normalizeSleepPos(level, bedPos);
+        if (bedPos == null) {
+            return null;
+        }
         BlockState bedState = level.getBlockState(bedPos);
         BlockPos bestPos = null;
         double bestScore = Double.MAX_VALUE;
@@ -347,11 +394,28 @@ public final class PolenSleepController {
     }
 
     private static boolean isUsableBedState(BlockState state) {
-        return state != null && (state.is(BlockTags.BEDS) || state.is(ModBlocks.POLEN_BEE_BED.get()));
+        return state != null && (state.is(BlockTags.BEDS) || isPolenBeeBedState(state));
+    }
+
+    private static boolean isPolenBeeBedState(BlockState state) {
+        return state != null && state.is(ModBlocks.POLEN_BEE_BED.get());
+    }
+
+    private static BlockPos normalizeSleepPos(Level level, BlockPos pos) {
+        if (level == null || pos == null) {
+            return null;
+        }
+
+        BlockState state = level.getBlockState(pos);
+        if (isPolenBeeBedState(state)) {
+            return PolenBeeBedBlock.getHeadPos(state, pos).immutable();
+        }
+        return isUsableBedState(state) ? pos.immutable() : null;
     }
 
     private static void orientTowardBed(PolenEntity polen, BlockPos bedPos) {
-        BlockState state = polen.level().getBlockState(bedPos);
+        BlockPos normalizedBedPos = normalizeSleepPos(polen.level(), bedPos);
+        BlockState state = polen.level().getBlockState(normalizedBedPos == null ? bedPos : normalizedBedPos);
         if (state.hasProperty(HorizontalDirectionalBlock.FACING)) {
             polen.setYRot(state.getValue(HorizontalDirectionalBlock.FACING).toYRot());
             polen.yBodyRot = polen.getYRot();

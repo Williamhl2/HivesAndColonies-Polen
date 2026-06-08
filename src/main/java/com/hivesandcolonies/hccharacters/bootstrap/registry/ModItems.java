@@ -21,6 +21,7 @@ import com.hivesandcolonies.hccharacters.common.item.spawn.SecondaryCharacterSpa
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.item.BedItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.common.DeferredSpawnEggItem;
@@ -82,7 +83,7 @@ public class ModItems {
     public static final DeferredItem<Item> POLEN_BEE_BED =
             ITEMS.registerItem(
                     "polen_bee_bed",
-                    properties -> new BlockItem(ModBlocks.POLEN_BEE_BED.get(), properties.stacksTo(1))
+                    properties -> new BedItem(ModBlocks.POLEN_BEE_BED.get(), properties.stacksTo(1))
             );
 
     public static final DeferredItem<DeferredSpawnEggItem> POLEN_SPAWN_EGG =

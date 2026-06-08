@@ -425,7 +425,6 @@ public final class PolenPrologueManager {
 
         BlockState barrel = Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP);
         setBlock(level, shelterPos.offset(-1, 0, -1), Blocks.YELLOW_CARPET.defaultBlockState());
-        setBlock(level, shelterPos.offset(1, 0, -1), Blocks.WHITE_CARPET.defaultBlockState());
         setBlock(level, shelterPos.offset(2, 0, -1), barrel);
 
         BlockState campfire = Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT, true);

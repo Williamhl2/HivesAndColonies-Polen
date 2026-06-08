@@ -1,0 +1,34 @@
+{
+  "textures": {
+    "particle": "characters:block/polen_bee_bed_top_head",
+    "top": "characters:block/polen_bee_bed_top_head",
+    "side": "characters:block/polen_bee_bed_side",
+    "pillow": "minecraft:block/white_wool",
+    "bottom": "minecraft:block/cherry_planks"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 5, 16],
+      "faces": {
+        "down": { "texture": "#bottom", "uv": [0, 0, 16, 16] },
+        "up": { "texture": "#top", "uv": [0, 0, 16, 16] },
+        "north": { "texture": "#side", "uv": [0, 11, 16, 16] },
+        "south": { "texture": "#side", "uv": [0, 11, 16, 16] },
+        "west": { "texture": "#side", "uv": [0, 11, 16, 16] },
+        "east": { "texture": "#side", "uv": [0, 11, 16, 16] }
+      }
+    },
+    {
+      "from": [1, 5, 0],
+      "to": [15, 8, 7],
+      "faces": {
+        "up": { "texture": "#pillow", "uv": [1, 0, 15, 7] },
+        "north": { "texture": "#pillow", "uv": [1, 8, 15, 11] },
+        "south": { "texture": "#pillow", "uv": [1, 8, 15, 11] },
+        "west": { "texture": "#pillow", "uv": [8, 8, 15, 11] },
+        "east": { "texture": "#pillow", "uv": [1, 8, 8, 11] }
+      }
+    }
+  ]
+}
