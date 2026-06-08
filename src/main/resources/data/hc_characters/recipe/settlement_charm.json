@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " T ",
+    "PWP",
+    " R "
+  ],
+  "key": {
+    "T": {
+      "item": "minecraft:string"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "W": {
+      "item": "hc_characters:resonant_wax"
+    },
+    "R": {
+      "item": "hc_characters:royal_pollen"
+    }
+  },
+  "result": {
+    "id": "hc_characters:settlement_charm",
+    "count": 1
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "minecraft:honeycomb"
+    },
+    {
+      "item": "hc_characters:royal_pollen"
+    }
+  ],
+  "result": {
+    "id": "hc_characters:resonant_wax",
+    "count": 1
+  }
+}

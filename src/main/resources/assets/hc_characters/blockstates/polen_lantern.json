@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "hanging=false,waterlogged=false": {
+      "model": "hc_characters:block/polen_lantern"
+    },
+    "hanging=false,waterlogged=true": {
+      "model": "hc_characters:block/polen_lantern"
+    },
+    "hanging=true,waterlogged=false": {
+      "model": "hc_characters:block/polen_lantern_hanging"
+    },
+    "hanging=true,waterlogged=true": {
+      "model": "hc_characters:block/polen_lantern_hanging"
+    }
+  }
+}

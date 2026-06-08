@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "hc_characters:settlement_charm",
+    "hc_characters:residence_charm",
+    "hc_characters:polen_lantern"
+  ]
+}

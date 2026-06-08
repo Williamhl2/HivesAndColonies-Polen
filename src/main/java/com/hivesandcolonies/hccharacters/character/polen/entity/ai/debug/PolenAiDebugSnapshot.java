@@ -1,0 +1,66 @@
+package com.hivesandcolonies.hccharacters.character.polen.entity.ai.debug;
+
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.mood.PolenMood;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.intent.PolenIntent;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchStatus;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchType;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.need.PolenNeed;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskStatus;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceType;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenResidenceStage;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.identity.PolenWorldAffinity;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.observation.PolenObservationDisposition;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.observation.PolenObservationFocus;
+import net.minecraft.core.BlockPos;
+
+public record PolenAiDebugSnapshot(
+        PolenMood mood,
+        String moodReason,
+        PolenIntent intent,
+        String intentReason,
+        PolenTaskType task,
+        PolenTaskType desiredTask,
+        PolenTaskStatus taskStatus,
+        String taskReason,
+        String taskNote,
+        PolenTaskType recentFailedTask,
+        int recentFailureCount,
+        long taskRecoverUntil,
+        String quietActivity,
+        PolenWorldAffinity equippedAffinityCharm,
+        String affinityReason,
+        String activeInterestTarget,
+        PolenNeed dominantNeed,
+        int safetyNeed,
+        int socialNeed,
+        int curiosityNeed,
+        int restNeed,
+        int magicNeed,
+        boolean unsafeArea,
+        boolean shouldSeekSafety,
+        boolean shouldUseUnsafeDialogue,
+        PolenSearchType searchType,
+        PolenSearchStatus searchStatus,
+        String searchNote,
+        BlockPos searchTarget,
+        BlockPos observedPos,
+        PolenObservationFocus observationFocus,
+        PolenObservationDisposition observationDisposition,
+        PolenAffordanceType observationAffordanceType,
+        BlockPos observationFocusPos,
+        BlockPos observationUsePos,
+        String observationContext,
+        String observationNote,
+        boolean nearRememberedInterest,
+        BlockPos flowerSpot,
+        BlockPos hiveSpot,
+        BlockPos sourceSpot,
+        BlockPos residenceAnchor,
+        BlockPos residenceUse,
+        String residenceContext,
+        PolenResidenceStage residenceStage,
+        BlockPos restingSpot,
+        BlockPos dangerousSpot
+) {
+}

@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " W ",
+    "GRG",
+    " W "
+  ],
+  "key": {
+    "W": {
+      "item": "hc_characters:resonant_wax"
+    },
+    "G": {
+      "item": "minecraft:gold_nugget"
+    },
+    "R": {
+      "item": "hc_characters:royal_pollen"
+    }
+  },
+  "result": {
+    "id": "hc_characters:honey_signet_ring",
+    "count": 1
+  }
+}

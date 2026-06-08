@@ -1,0 +1,35 @@
+package com.hivesandcolonies.hccharacters.character.polen.entity;
+
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.goal.PolenApproachTrustedPlayerGoal;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.goal.PolenCuriousInterestGoal;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.goal.PolenIdleHobbyGoal;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.goal.PolenKeepDistanceGoal;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.goal.PolenRoutineGoal;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.goal.PolenReturnToBedGoal;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.goal.PolenSafeStrollGoal;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.goal.PolenSeekSafetyGoal;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.GoalSelector;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.player.Player;
+
+public final class PolenGoalRegistry {
+
+    private PolenGoalRegistry() {
+    }
+
+    public static void register(PolenEntity polen, GoalSelector goalSelector) {
+        goalSelector.addGoal(0, new FloatGoal(polen));
+        goalSelector.addGoal(1, new PolenReturnToBedGoal(polen));
+        goalSelector.addGoal(2, new PolenSeekSafetyGoal(polen));
+        goalSelector.addGoal(3, new PolenKeepDistanceGoal(polen));
+        goalSelector.addGoal(4, new PolenApproachTrustedPlayerGoal(polen));
+        goalSelector.addGoal(5, new PolenRoutineGoal(polen));
+        goalSelector.addGoal(6, new PolenIdleHobbyGoal(polen));
+        goalSelector.addGoal(7, new PolenCuriousInterestGoal(polen));
+        goalSelector.addGoal(8, new PolenSafeStrollGoal(polen, 0.8D));
+        goalSelector.addGoal(9, new LookAtPlayerGoal(polen, Player.class, 8.0F));
+        goalSelector.addGoal(10, new RandomLookAroundGoal(polen));
+    }
+}
