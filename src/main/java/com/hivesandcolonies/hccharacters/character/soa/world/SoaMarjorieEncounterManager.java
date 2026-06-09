@@ -1,16 +1,22 @@
 package com.hivesandcolonies.hccharacters.character.soa.world;
 
+import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModEntities;
 import com.hivesandcolonies.hccharacters.character.soa.entity.SoaMarjorieEntity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
@@ -22,15 +28,18 @@ public final class SoaMarjorieEncounterManager {
     private static final int BOARD_SPAWN_RADIUS = 7;
     private static final int CAVE_SPAWN_HORIZONTAL_RADIUS = 18;
     private static final int CAVE_SPAWN_VERTICAL_RADIUS = 5;
-    private static final int CAVE_MAX_Y = 0;
     private static final int EXISTING_SOA_RADIUS = 56;
-    private static final int BOARD_SPAWN_CHANCE = 8;
-    private static final int CAVE_SPAWN_CHANCE = 12;
+    private static final int CAVE_ORE_SCAN_HORIZONTAL_RADIUS = 14;
+    private static final int CAVE_ORE_SCAN_VERTICAL_RADIUS = 6;
 
     private static final ResourceLocation[] BOUNTIFUL_BOARD_IDS = new ResourceLocation[] {
             ResourceLocation.fromNamespaceAndPath("bountiful", "bountyboard"),
             ResourceLocation.fromNamespaceAndPath("bountiful", "bounty_board")
     };
+    private static final TagKey<Block> SOA_MINEABLE_ORES = TagKey.create(
+            Registries.BLOCK,
+            ResourceLocation.fromNamespaceAndPath(HcCharacters.MODID, "soa_marjorie_mineable")
+    );
 
     private SoaMarjorieEncounterManager() {
     }
@@ -71,7 +80,7 @@ public final class SoaMarjorieEncounterManager {
         if (savedData.isBoardPlayerOnCooldown(player.getUUID(), now)) {
             return;
         }
-        if (player.getRandom().nextInt(BOARD_SPAWN_CHANCE) != 0) {
+        if (player.getRandom().nextInt(HcCharactersGameplayConfig.soaMarjorieBoardSpawnChanceDivisor()) != 0) {
             return;
         }
         BlockPos boardPos = findNearestBountifulBoard(level, player.blockPosition());
@@ -102,17 +111,20 @@ public final class SoaMarjorieEncounterManager {
         if (savedData.isCavePlayerOnCooldown(player.getUUID(), now)) {
             return;
         }
-        if (player.blockPosition().getY() > CAVE_MAX_Y) {
+        if (player.blockPosition().getY() > HcCharactersGameplayConfig.soaMarjorieCaveMaxY()) {
             return;
         }
         if (level.canSeeSky(player.blockPosition())) {
             return;
         }
-        if (player.getRandom().nextInt(CAVE_SPAWN_CHANCE) != 0) {
+        if (player.getRandom().nextInt(HcCharactersGameplayConfig.soaMarjorieCaveSpawnChanceDivisor()) != 0) {
             return;
         }
         BlockPos spawnPos = findCaveSpawnNear(level, player.blockPosition());
         if (spawnPos == null || hasNearbySoa(level, spawnPos)) {
+            return;
+        }
+        if (HcCharactersGameplayConfig.soaMarjorieCanMineBlocks() && !hasNearbyExposedOre(level, spawnPos)) {
             return;
         }
         SoaMarjorieEntity soa = ModEntities.SOA_MARJORIE.get().create(level);
@@ -192,7 +204,7 @@ public final class SoaMarjorieEncounterManager {
             int y = level.random.nextInt(CAVE_SPAWN_VERTICAL_RADIUS * 2 + 1) - CAVE_SPAWN_VERTICAL_RADIUS;
             int z = level.random.nextInt(CAVE_SPAWN_HORIZONTAL_RADIUS * 2 + 1) - CAVE_SPAWN_HORIZONTAL_RADIUS;
             BlockPos pos = origin.offset(x, y, z);
-            if (pos.getY() > CAVE_MAX_Y) {
+            if (pos.getY() > HcCharactersGameplayConfig.soaMarjorieCaveMaxY()) {
                 continue;
             }
             if (distanceSqr(pos, origin) < 7.0D * 7.0D) {
@@ -207,6 +219,43 @@ public final class SoaMarjorieEncounterManager {
             return pos.immutable();
         }
         return null;
+    }
+
+
+    private static boolean hasNearbyExposedOre(ServerLevel level, BlockPos origin) {
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int y = -CAVE_ORE_SCAN_VERTICAL_RADIUS; y <= CAVE_ORE_SCAN_VERTICAL_RADIUS; y++) {
+            for (int x = -CAVE_ORE_SCAN_HORIZONTAL_RADIUS; x <= CAVE_ORE_SCAN_HORIZONTAL_RADIUS; x++) {
+                for (int z = -CAVE_ORE_SCAN_HORIZONTAL_RADIUS; z <= CAVE_ORE_SCAN_HORIZONTAL_RADIUS; z++) {
+                    cursor.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
+                    if (isMineableOre(level.getBlockState(cursor)) && hasExposedFace(level, cursor)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasExposedFace(ServerLevel level, BlockPos pos) {
+        for (Direction direction : Direction.values()) {
+            if (level.getBlockState(pos.relative(direction)).isAir()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isMineableOre(BlockState state) {
+        return state.is(SOA_MINEABLE_ORES)
+                || state.is(BlockTags.COAL_ORES)
+                || state.is(BlockTags.IRON_ORES)
+                || state.is(BlockTags.COPPER_ORES)
+                || state.is(BlockTags.GOLD_ORES)
+                || state.is(BlockTags.REDSTONE_ORES)
+                || state.is(BlockTags.EMERALD_ORES)
+                || state.is(BlockTags.LAPIS_ORES)
+                || state.is(BlockTags.DIAMOND_ORES);
     }
 
     private static double distanceSqr(BlockPos a, BlockPos b) {

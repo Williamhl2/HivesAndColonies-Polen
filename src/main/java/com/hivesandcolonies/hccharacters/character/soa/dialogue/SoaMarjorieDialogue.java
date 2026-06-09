@@ -4,13 +4,8 @@ import java.util.List;
 
 import com.hivesandcolonies.hccharacters.common.npc.relationship.NpcRewardPool;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.Enchantments;
 
 public final class SoaMarjorieDialogue {
     public static final String PROFILE_ID = "soa_marjorie_mining_guide";
@@ -52,36 +47,17 @@ public final class SoaMarjorieDialogue {
 
     public static NpcRewardPool rewardPool() {
         return new NpcRewardPool()
-                .rare(player -> new ItemStack(Items.DIAMOND_BLOCK),
-                        "No es netherita, pero un bloque de diamante nunca estorba en buenas manos.")
-                .rare(player -> new ItemStack(Items.EMERALD_BLOCK),
-                        "Las montanas me debian esto. Quedatelo.")
-                .rare(player -> new ItemStack(Items.DIAMOND, 4 + player.level().random.nextInt(5)),
-                        "Diamantes. No suficientes para volverte imprudente, espero.")
-                .legendary(player -> new ItemStack(Items.ANCIENT_DEBRIS),
-                        "No suelo regalar esto. Me costo bastante encontrarlo.")
-                .legendary(player -> new ItemStack(Items.NETHERITE_SCRAP),
-                        "Guarda este fragmento. La netherita castiga a quien la presume demasiado pronto.")
-                .legendary(player -> new ItemStack(Items.ANCIENT_DEBRIS, player.level().random.nextInt(6) == 0 ? 2 : 1),
-                        "Hoy la profundidad fue generosa. No esperes que vuelva a ocurrir pronto.")
-                .unique(SoaMarjorieDialogue::legendaryPickaxe,
-                        "He llevado esto durante anos. Creo que ya encontré a la persona correcta.")
-                .unique(player -> named(new ItemStack(Items.ECHO_SHARD), "Fragmento del Corazon de la Montana", ChatFormatting.AQUA),
-                        "Esto no es un mineral cualquiera. Escucha bien cuando lo sostengas.")
-                .unique(player -> named(new ItemStack(Items.FILLED_MAP), "Mapa de una veta olvidada", ChatFormatting.GOLD),
-                        "Marque algo interesante hace tiempo. Quiza tu puedas llegar mas lejos que yo.");
-    }
-
-    private static ItemStack legendaryPickaxe(net.minecraft.world.entity.player.Player player) {
-        ItemStack stack = named(new ItemStack(Items.NETHERITE_PICKAXE), "Pico del Primer Minero", ChatFormatting.LIGHT_PURPLE);
-        var registry = player.level().registryAccess().registryOrThrow(Registries.ENCHANTMENT);
-        stack.enchant(registry.getHolderOrThrow(Enchantments.EFFICIENCY), 5);
-        stack.enchant(registry.getHolderOrThrow(Enchantments.UNBREAKING), 3);
-        return stack;
-    }
-
-    private static ItemStack named(ItemStack stack, String name, ChatFormatting color) {
-        stack.set(DataComponents.CUSTOM_NAME, Component.literal(name).withStyle(color));
-        return stack;
+                .rare(player -> new ItemStack(Items.TORCH, 24 + player.level().random.nextInt(17)),
+                        "Provisiones. No brillan, pero evitan que termines negociando con un zombi.")
+                .rare(player -> new ItemStack(Items.COAL, 8 + player.level().random.nextInt(9)),
+                        "Carbón. Humilde, útil y menos peligroso que tu entusiasmo.")
+                .rare(player -> new ItemStack(Items.RAW_IRON, 2 + player.level().random.nextInt(4)),
+                        "Hierro decente. No lo desperdicies en una pala heroica.")
+                .rare(player -> new ItemStack(Items.LAPIS_LAZULI, 4 + player.level().random.nextInt(6)),
+                        "Lapis. Sirve más cuando sabes encantar que cuando sabes presumir.")
+                .legendary(player -> new ItemStack(Items.DIAMOND),
+                        "Uno. No una fortuna. Si eso te vuelve imprudente, te lo quito de vuelta.")
+                .legendary(player -> new ItemStack(Items.EMERALD, 2 + player.level().random.nextInt(3)),
+                        "Las montañas pagaron poco, pero pagaron.");
     }
 }

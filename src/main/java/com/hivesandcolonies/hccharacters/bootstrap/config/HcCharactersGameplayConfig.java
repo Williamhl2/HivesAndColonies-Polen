@@ -21,6 +21,9 @@ public final class HcCharactersGameplayConfig {
     private static final ModConfigSpec.IntValue SOA_MARJORIE_BOARD_PLAYER_COOLDOWN_SECONDS;
     private static final ModConfigSpec.IntValue SOA_MARJORIE_BOARD_POSITION_COOLDOWN_SECONDS;
     private static final ModConfigSpec.IntValue SOA_MARJORIE_CAVE_PLAYER_COOLDOWN_SECONDS;
+    private static final ModConfigSpec.IntValue SOA_MARJORIE_CAVE_MAX_Y;
+    private static final ModConfigSpec.IntValue SOA_MARJORIE_BOARD_SPAWN_CHANCE_DIVISOR;
+    private static final ModConfigSpec.IntValue SOA_MARJORIE_CAVE_SPAWN_CHANCE_DIVISOR;
     private static final ModConfigSpec.IntValue SOA_MARJORIE_MAX_BLOCKS_PER_CAVE_ENCOUNTER;
 
     static {
@@ -81,9 +84,24 @@ public final class HcCharactersGameplayConfig {
         SOA_MARJORIE_CAVE_PLAYER_COOLDOWN_SECONDS = builder
                 .comment("Per-player cooldown after a cave mining encounter spawn attempt succeeds.")
                 .defineInRange("cave_player_cooldown_seconds", 2400, 60, 21600);
+        SOA_MARJORIE_CAVE_MAX_Y = builder
+                .comment("Highest Y level where SoaMarjorie may start a cave mining encounter. Default 0 keeps her in deeper caves.")
+                .defineInRange("cave_max_y", 0, -64, 64);
+        SOA_MARJORIE_BOARD_SPAWN_CHANCE_DIVISOR = builder
+                .comment(
+                        "Spawn chance divisor checked every manager interval for board visits after cooldowns pass.",
+                        "8 means roughly one successful roll every 40 seconds while a valid player waits near a valid board. Cooldowns still apply."
+                )
+                .defineInRange("board_spawn_chance_divisor", 8, 1, 240);
+        SOA_MARJORIE_CAVE_SPAWN_CHANCE_DIVISOR = builder
+                .comment(
+                        "Spawn chance divisor checked every manager interval for cave encounters after cooldowns pass.",
+                        "12 means roughly one successful roll every 60 seconds while the player is in a valid deep cave. Cooldowns still apply."
+                )
+                .defineInRange("cave_spawn_chance_divisor", 12, 1, 240);
         SOA_MARJORIE_MAX_BLOCKS_PER_CAVE_ENCOUNTER = builder
                 .comment("Maximum exposed ore blocks SoaMarjorie may break during one cave encounter.")
-                .defineInRange("max_blocks_per_cave_encounter", 10, 0, 64);
+                .defineInRange("max_blocks_per_cave_encounter", 8, 0, 64);
         builder.pop();
 
         SPEC = builder.build();
@@ -142,6 +160,18 @@ public final class HcCharactersGameplayConfig {
 
     public static int soaMarjorieCavePlayerCooldownTicks() {
         return SOA_MARJORIE_CAVE_PLAYER_COOLDOWN_SECONDS.get() * 20;
+    }
+
+    public static int soaMarjorieCaveMaxY() {
+        return SOA_MARJORIE_CAVE_MAX_Y.get();
+    }
+
+    public static int soaMarjorieBoardSpawnChanceDivisor() {
+        return SOA_MARJORIE_BOARD_SPAWN_CHANCE_DIVISOR.get();
+    }
+
+    public static int soaMarjorieCaveSpawnChanceDivisor() {
+        return SOA_MARJORIE_CAVE_SPAWN_CHANCE_DIVISOR.get();
     }
 
     public static int soaMarjorieMaxBlocksPerCaveEncounter() {
