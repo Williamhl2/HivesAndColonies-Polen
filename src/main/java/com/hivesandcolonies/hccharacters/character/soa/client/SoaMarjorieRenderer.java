@@ -10,6 +10,6 @@ public class SoaMarjorieRenderer extends SimpleCharacterRenderer<SoaMarjorieEnti
     public SoaMarjorieRenderer(EntityRendererProvider.Context context) {
         super(context, "soa");
         this.addLayer(new ItemInHandLayer<>(this, context.getItemInHandRenderer()));
-        this.addLayer(new SoaMarjorieMiningGearLayer(this, context.getItemInHandRenderer()));
+        this.addLayer(new SoaMarjorieMiningGearLayer(this, context.getItemInHandRenderer(), context.bakeLayer(SoaMarjorieMiningGearLayer.LAYER_LOCATION)));
     }
 }

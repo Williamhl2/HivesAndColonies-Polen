@@ -3,6 +3,9 @@
     "hc_characters:soa_marjorie"
   ],
   "slots": [
-    "belt"
+    "belt",
+    "backpack",
+    "tool_right",
+    "tool_left"
   ]
 }

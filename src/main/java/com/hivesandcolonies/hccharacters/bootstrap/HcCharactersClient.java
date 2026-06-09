@@ -7,6 +7,7 @@ import com.hivesandcolonies.hccharacters.character.polen.client.PolenRenderer;
 import com.hivesandcolonies.hccharacters.character.polen.item.focus.HiveheartCharmItem;
 import com.hivesandcolonies.hccharacters.common.client.renderer.SimpleCharacterRenderer;
 import com.hivesandcolonies.hccharacters.character.soa.client.SoaMarjorieRenderer;
+import com.hivesandcolonies.hccharacters.character.soa.client.layer.SoaMarjorieMiningGearLayer;
 
 import net.minecraft.client.renderer.item.CompassItemPropertyFunction;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -29,6 +30,11 @@ public class HcCharactersClient {
                 ResourceLocation.withDefaultNamespace("angle"),
                 new CompassItemPropertyFunction((level, stack, entity) -> HiveheartCharmItem.getCompassTarget(stack))
         ));
+    }
+
+    @SubscribeEvent
+    static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(SoaMarjorieMiningGearLayer.LAYER_LOCATION, SoaMarjorieMiningGearLayer::createLayer);
     }
 
     @SubscribeEvent

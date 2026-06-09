@@ -3,10 +3,12 @@ package com.hivesandcolonies.hccharacters.character.soa.entity;
 import java.util.EnumSet;
 
 import com.hivesandcolonies.hccharacters.common.entity.SimpleCharacterEntity;
+import com.hivesandcolonies.hccharacters.integration.curios.PolenCuriosBridge;
 import com.hivesandcolonies.hccharacters.common.npc.relationship.NpcRelationshipInteraction;
 import com.hivesandcolonies.hccharacters.character.soa.dialogue.SoaMarjorieDialogue;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
@@ -29,6 +31,7 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -37,12 +40,17 @@ import net.minecraft.world.phys.Vec3;
 public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private static final String SOA_KEY = "entity.hc_characters.soa_marjorie";
     private static final int DEFENSE_DRAW_TICKS = 120;
+    public static final String CURIOS_BACKPACK_SLOT = "backpack";
+    public static final String CURIOS_TOOL_RIGHT_SLOT = "tool_right";
+    public static final String CURIOS_TOOL_LEFT_SLOT = "tool_left";
+    private static final ResourceLocation SOPHISTICATED_BACKPACK = ResourceLocation.fromNamespaceAndPath("sophisticatedbackpacks", "backpack");
     private static final float PLAYER_WARNING_STRIKE_DAMAGE = 38.0F;
 
     private int defenseDrawTicks;
     private int miningDrawTicks;
     private int torchDrawTicks;
     private int ambientDialogueCooldown;
+    private int equipmentSyncCooldown;
 
     public SoaMarjorieEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -124,6 +132,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         }
         if (!this.level().isClientSide) {
             this.equipExpertMiningTools();
+            this.syncMiningEquipmentToCurios();
         }
         this.tickAmbientDialogue();
     }
@@ -192,6 +201,39 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         if (player.isAlive() && player.getHealth() > 1.0F) {
             player.setHealth(1.0F);
         }
+    }
+
+
+    private void syncMiningEquipmentToCurios() {
+        if (this.equipmentSyncCooldown > 0) {
+            --this.equipmentSyncCooldown;
+            return;
+        }
+        this.equipmentSyncCooldown = 40;
+
+        this.syncCuriosSlot(CURIOS_BACKPACK_SLOT, this.createSophisticatedBackpackStack());
+        this.syncCuriosSlot(CURIOS_TOOL_RIGHT_SLOT, new ItemStack(Items.NETHERITE_PICKAXE));
+        this.syncCuriosSlot(CURIOS_TOOL_LEFT_SLOT, new ItemStack(Items.NETHERITE_AXE));
+    }
+
+    private void syncCuriosSlot(String slot, ItemStack wanted) {
+        if (wanted.isEmpty()) {
+            return;
+        }
+        ItemStack current = PolenCuriosBridge.getCuriosStack(this, slot, 0);
+        if (!current.isEmpty() && ItemStack.isSameItemSameComponents(current, wanted)) {
+            return;
+        }
+        PolenCuriosBridge.setCuriosStack(this, slot, 0, wanted);
+    }
+
+    private ItemStack createSophisticatedBackpackStack() {
+        ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(SOPHISTICATED_BACKPACK));
+        if (stack.isEmpty()) {
+            // Sophisticated Backpacks is a required dependency, so this should never happen in a valid install.
+            return ItemStack.EMPTY;
+        }
+        return stack;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

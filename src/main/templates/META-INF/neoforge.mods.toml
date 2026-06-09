@@ -45,7 +45,7 @@ earning their trust, and rebuilding the future of a lost kingdom.
 
 [[dependencies.${mod_id}]]
     modId="sophisticatedbackpacks"
-    type="optional"
-    versionRange="[0,)"
+    type="required"
+    versionRange="[3,)"
     ordering="AFTER"
     side="BOTH"
