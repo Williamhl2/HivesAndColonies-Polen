@@ -6,6 +6,7 @@ import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayCo
 import com.hivesandcolonies.hccharacters.character.polen.command.PolenDebugCommands;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.prologue.PolenPrologueManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.singularity.PolenSingularityManager;
+import com.hivesandcolonies.hccharacters.character.soa.world.SoaMarjorieEncounterManager;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModCreativeTabs;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModEntities;
@@ -36,5 +37,6 @@ public class HcCharacters {
         NeoForge.EVENT_BUS.addListener(PolenSingularityManager::onEntityJoinLevel);
         NeoForge.EVENT_BUS.addListener(PolenPrologueManager::onServerStarted);
         NeoForge.EVENT_BUS.addListener(PolenPrologueManager::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(SoaMarjorieEncounterManager::onServerTick);
     }
 }

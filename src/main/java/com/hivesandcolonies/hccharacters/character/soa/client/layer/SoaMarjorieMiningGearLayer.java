@@ -182,12 +182,12 @@ public class SoaMarjorieMiningGearLayer extends RenderLayer<SoaMarjorieEntity, S
 
     poseStack.translate(
         rightHip ? -0.305D : 0.305D,
-        0.505D,
+        0.625D,
         -0.025D
     );
-    
-    poseStack.mulPose(Axis.YP.rotationDegrees(rightHip ? 82.0F : -82.0F));
-    poseStack.mulPose(Axis.XP.rotationDegrees(rightHip ? 168.0F : 12.0F));
+
+    poseStack.mulPose(Axis.YP.rotationDegrees(rightHip ? 82.0F : 98.0F));
+    poseStack.mulPose(Axis.XP.rotationDegrees(rightHip ? 168.0F : 192.0F));
     poseStack.mulPose(Axis.ZP.rotationDegrees(-88.0F));
     
     poseStack.scale(0.7F, 0.7F, 0.7F);

@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 
 public class SoaMarjorieRenderer extends SimpleCharacterRenderer<SoaMarjorieEntity> {
     public SoaMarjorieRenderer(EntityRendererProvider.Context context) {
-        super(context, "soa");
+        super(context, "soa_marjorie");
         this.addLayer(new ItemInHandLayer<>(this, context.getItemInHandRenderer()));
         this.addLayer(new SoaMarjorieMiningGearLayer(this, context.getItemInHandRenderer(), context.bakeLayer(SoaMarjorieMiningGearLayer.LAYER_LOCATION)));
     }
