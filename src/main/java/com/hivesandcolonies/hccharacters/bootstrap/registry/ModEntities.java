@@ -2,6 +2,7 @@ package com.hivesandcolonies.hccharacters.bootstrap.registry;
 
 import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
+import com.hivesandcolonies.hccharacters.character.soa.entity.SoaMarjorieEntity;
 import com.hivesandcolonies.hccharacters.character.befsh.entity.BefshEntity;
 import com.hivesandcolonies.hccharacters.character.luna.entity.LunaEntity;
 import com.hivesandcolonies.hccharacters.character.noia.entity.NoiaEntity;
@@ -67,5 +68,13 @@ public class ModEntities {
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(8)
                             .build(HcCharacters.MODID + ":noris")
+            );
+    public static final DeferredHolder<EntityType<?>, EntityType<SoaMarjorieEntity>> SOA_MARJORIE =
+            ENTITY_TYPES.register(
+                    "soa_marjorie",
+                    () -> EntityType.Builder.of(SoaMarjorieEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(8)
+                            .build(HcCharacters.MODID + ":soa_marjorie")
             );
 }

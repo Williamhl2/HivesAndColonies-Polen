@@ -101,6 +101,8 @@ public class ModItems {
             registerSpawnEgg("noia_spawn_egg", ModEntities.NOIA, 0x97E7D7, 0xD86F9B);
     public static final DeferredItem<DeferredSpawnEggItem> NORIS_SPAWN_EGG =
             registerSpawnEgg("noris_spawn_egg", ModEntities.NORIS, 0x7E92D8, 0xD7E3FF);
+    public static final DeferredItem<DeferredSpawnEggItem> SOA_MARJORIE_SPAWN_EGG =
+            registerSpawnEgg("soa_marjorie_spawn_egg", ModEntities.SOA_MARJORIE, 0x4C4C4C, 0xD8A14A);
 
     private static DeferredItem<Item> registerStoryItem(
             String name,
