@@ -2,6 +2,105 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v1.0.1] SoaMarjorie Beta - 2026-06-09
+
+## Added
+
+- Added SoaMarjorie as a new encounter-based NPC focused on mining.
+- Added temporary encounter system for SoaMarjorie:
+  - Bountiful board encounters.
+  - Cave mining encounters.
+  - Timed despawn after each encounter.
+- Added Bountiful board integration:
+  - SoaMarjorie can appear near Bountiful bounty boards.
+  - She stays near the board for a limited time.
+  - She can give short dialogues and small rewards.
+  - Board encounters now use player and board cooldowns.
+- Added cave encounter system:
+  - SoaMarjorie can appear underground from Y 0 and below.
+  - Cave encounters only trigger when exposed mineable ores are nearby.
+  - Cave spawn rules check darkness, sky visibility, valid floor, and safe space.
+- Added real mining behavior for SoaMarjorie:
+  - She can mine exposed ores.
+  - She uses her pickaxe while mining.
+  - She shares part of the mined resources with a nearby player.
+  - Mining is limited per encounter for balance.
+  - Mining respects `mobGriefing`.
+- Added tool usage states:
+  - Pickaxe while mining.
+  - Axe while defending herself.
+  - Torch while placing light.
+- Added torch placement during cave encounters.
+- Added defensive behavior:
+  - SoaMarjorie can respond to hostile mobs.
+  - SoaMarjorie can defend herself against players.
+  - SoaMarjorie is highly resistant to damage during encounters.
+- Added persistent cooldown data for SoaMarjorie encounters.
+- Added common NPC relationship/affinity system.
+- Added persistent relationship data per player and character.
+- Added affinity memories/flags for future character-specific behavior.
+- Added SoaMarjorie relationship integration:
+  - Board visit memory.
+  - Board reward memory.
+  - Cave encounter memory.
+  - Shared ore memory.
+  - Attack memory.
+- Added graphical affinity notification overlay.
+- Added compact HUD feedback when affinity changes.
+- Added relationship level names and personality-specific dialogue hooks for SoaMarjorie.
+- Added mineable ore block tag for SoaMarjorie:
+  - `hc_characters:soa_marjorie_mineable`
+- Added new gameplay config options for SoaMarjorie:
+  - Encounter toggles.
+  - Board visit duration.
+  - Cave encounter duration.
+  - Board player cooldown.
+  - Board position cooldown.
+  - Cave player cooldown.
+  - Cave max Y.
+  - Spawn chance divisors.
+  - Mining limit.
+  - Torch placement toggle.
+  - Affinity notification options.
+
+## Changed
+
+- Renamed Soa’s canonical entity ID to `hc_characters:soa_marjorie`.
+- Updated SoaMarjorie assets to use `soa_marjorie` naming.
+- Reworked SoaMarjorie from a natural persistent spawn into controlled temporary encounters.
+- Removed natural biome modifier spawning for SoaMarjorie.
+- Rebalanced SoaMarjorie board rewards to avoid progression-breaking items.
+- Reduced rare reward power for beta release.
+- Reduced mining output by limiting mined blocks per encounter.
+- Changed cave spawn layer from Y 48 and below to Y 0 and below.
+- Improved cave encounter validation so SoaMarjorie does not spawn where she has nothing to mine.
+- Improved affinity progression so normal repeated dialogue no longer grants unlimited affinity.
+- Reduced and compacted affinity overlay text size.
+- Added message wrapping to affinity overlay.
+- Adjusted SoaMarjorie dialogue tone toward mentor-style mining humor.
+- Preserved final approved visual positions of SoaMarjorie’s belt pickaxe, belt axe, backpack, and rendered tools.
+
+## Fixed
+
+- Fixed old `hc_characters:soa` references.
+- Fixed outdated Soa asset paths.
+- Fixed SoaMarjorie cave mining goal stopping before mining.
+- Fixed repeated right-click dialogue allowing players to quickly reach max affinity.
+- Fixed SoaMarjorie respawning too quickly at the same Bountiful board.
+- Fixed board cooldowns not persisting across world/server restarts.
+- Fixed cave encounters spawning above the intended mining layer.
+- Fixed oversized affinity overlay text.
+- Fixed SoaMarjorie not consistently using the correct tool state while mining or defending.
+
+## Balance Notes
+
+- SoaMarjorie is intended as a rare narrative/mining encounter, not an automation system.
+- She only mines exposed ores.
+- She does not use Fortune or Silk Touch.
+- She shares only a portion of the mined drops.
+- Her board rewards are intentionally small and utility-focused.
+- Bountiful remains the main bounty reward system; SoaMarjorie is a companion encounter around it.
+
 ## [1.0.0-beta.1] - 2026-06-07
 
 ### Added
@@ -19,7 +118,8 @@ All notable changes to this project will be documented in this file.
 - Reusable item bases: PolenLoreItem, PolenMaterialItem, PolenUsableFocusItem, PolenColonyItem.
 - loom_focus as a reusable focus item for flower, hive, and source-like resonance memory.
 - settlement_charm as a colony item for marking safe resting places.
-- source_touched_petal and esonant_wax as early scalable materials.
+- source_touched_petal and
+  esonant_wax as early scalable materials.
 - PolenMagicController for emergency blink relocation and subtle idle spell effects.
 - New ambient magic dialogue lines for both Spanish and English localization.
 - Dedicated item interaction controller routing new item behaviors through memory, affinity, and story systems.
@@ -28,12 +128,14 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Polen's server-side AI now follows a compact 
-eeds -> intent -> mood -> goals loop.
+- Polen's server-side AI now follows a compact
+  eeds -> intent -> mood -> goals loop.
 - Source-like locations are now remembered as first-class interests and can feed later autonomous behavior.
 - Routine, hobby, curiosity, trusted approach, and safe wandering goals now activate through explicit intent gating.
 - /characters ai get now exposes intent, dominant need, full need values, and remembered source data for balancing.
-- Polen now prioritizes her estingPos and esidence more strongly when seeking shelter during rain or night rest.
+- Polen now prioritizes her
+  estingPos and
+  esidence more strongly when seeking shelter during rain or night rest.
 - QUIET_CREATION selection now favors returning home before dispersing to other quiet spots when context is already safe.
 - Item layer reclassified into explicit progression roles with family intent grouping.
 - Emergency relocation now uses a magical blink with particles and sound instead of a silent raw teleport.
@@ -53,6 +155,7 @@ eeds -> intent -> mood -> goals loop.
 - POLEN_HAS_FOOD placeholder story flag with no active references.
 - Premature crafteable recipe for hiveheart_charm.
 - hiveheart_charm inclusion in the active Curios charm tag (removed until shelter progression is complete).
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

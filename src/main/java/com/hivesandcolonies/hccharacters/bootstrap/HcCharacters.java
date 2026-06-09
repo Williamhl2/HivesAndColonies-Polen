@@ -6,10 +6,12 @@ import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayCo
 import com.hivesandcolonies.hccharacters.character.polen.command.PolenDebugCommands;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.prologue.PolenPrologueManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.singularity.PolenSingularityManager;
+import com.hivesandcolonies.hccharacters.character.soa.world.SoaMarjorieEncounterManager;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModCreativeTabs;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModEntities;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModItems;
+import com.hivesandcolonies.hccharacters.common.network.HcCharactersNetwork;
 import com.mojang.logging.LogUtils;
 
 import net.neoforged.bus.api.IEventBus;
@@ -31,10 +33,12 @@ public class HcCharacters {
         ModItems.ITEMS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         ModEntities.ENTITY_TYPES.register(modEventBus);
+        modEventBus.addListener(HcCharactersNetwork::register);
 
         NeoForge.EVENT_BUS.addListener(PolenDebugCommands::register);
         NeoForge.EVENT_BUS.addListener(PolenSingularityManager::onEntityJoinLevel);
         NeoForge.EVENT_BUS.addListener(PolenPrologueManager::onServerStarted);
         NeoForge.EVENT_BUS.addListener(PolenPrologueManager::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(SoaMarjorieEncounterManager::onServerTick);
     }
 }

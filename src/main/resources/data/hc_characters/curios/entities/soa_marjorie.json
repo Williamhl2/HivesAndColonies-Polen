@@ -1,0 +1,11 @@
+{
+  "entities": [
+    "hc_characters:soa_marjorie"
+  ],
+  "slots": [
+    "belt",
+    "backpack",
+    "tool_right",
+    "tool_left"
+  ]
+}

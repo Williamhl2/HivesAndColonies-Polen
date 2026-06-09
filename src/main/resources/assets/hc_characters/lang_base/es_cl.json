@@ -185,3 +185,5 @@
   "screen.polen.profile.tooltip.charm.wayfarer": "Amuleto errante: se siente atraída por caminos, puntos de referencia, viaje y descubrimiento.",
   "screen.polen.profile.tooltip.charm.none": "Aún no se ve ningún amuleto de afinidad."
 }
+    "entity.hc_characters.soa_marjorie": "SoaMarjorie",
+    "item.hc_characters.soa_marjorie_spawn_egg": "Huevo generador de SoaMarjorie",

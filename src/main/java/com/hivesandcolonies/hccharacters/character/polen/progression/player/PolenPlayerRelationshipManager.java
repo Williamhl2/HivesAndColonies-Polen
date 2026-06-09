@@ -1,6 +1,9 @@
 package com.hivesandcolonies.hccharacters.character.polen.progression.player;
 
 import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
+import com.hivesandcolonies.hccharacters.character.polen.progression.PolenAffinityLevels;
+import com.hivesandcolonies.hccharacters.common.npc.relationship.NpcRelationshipLevels;
+import com.hivesandcolonies.hccharacters.common.npc.relationship.NpcRelationshipManager;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -8,6 +11,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -17,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.IntUnaryOperator;
 
 public final class PolenPlayerRelationshipManager {
     private static final String FILE_ID = HcCharacters.MODID + "_player_relationships";
@@ -44,19 +49,19 @@ public final class PolenPlayerRelationshipManager {
     }
 
     public static void setAffinity(Player player, int value) {
-        mutate(player, data -> data.setAffinity(value));
+        changeAffinity(player, ignored -> value, "Polen noto un cambio en vuestro vinculo.");
     }
 
     public static void addAffinity(Player player, int amount) {
-        mutate(player, data -> data.setAffinity(data.getAffinity() + amount));
+        changeAffinity(player, current -> current + amount, "Polen se siente un poco mas cerca de ti.");
     }
 
     public static void removeAffinity(Player player, int amount) {
-        mutate(player, data -> data.setAffinity(data.getAffinity() - amount));
+        changeAffinity(player, current -> current - amount, "Polen recuerda este momento con cautela.");
     }
 
     public static void resetAffinity(Player player) {
-        mutate(player, PolenPlayerRelationshipData::resetAffinity);
+        changeAffinity(player, ignored -> PolenAffinityLevels.STRANGER, "El vinculo con Polen volvio a empezar.");
     }
 
     public static void recordInteraction(Player player) {
@@ -89,6 +94,52 @@ public final class PolenPlayerRelationshipManager {
             return;
         }
         mutate(player, data -> data.clearPlayerFlag(flag));
+    }
+
+
+    private static void changeAffinity(Player player, IntUnaryOperator operation, String reasonText) {
+        SavedRelationships savedData = getSavedData(player);
+        if (savedData == null) {
+            return;
+        }
+
+        PolenPlayerRelationshipData data = savedData.getOrCreate(player.getUUID());
+        int oldAffinity = data.getAffinity();
+        data.setAffinity(operation.applyAsInt(oldAffinity));
+        int newAffinity = data.getAffinity();
+        savedData.setDirty();
+
+        if (oldAffinity != newAffinity && player instanceof ServerPlayer serverPlayer) {
+            NpcRelationshipManager.notifyAffinityChange(
+                    serverPlayer,
+                    "Polen",
+                    newAffinity - oldAffinity,
+                    oldAffinity,
+                    newAffinity,
+                    rankName(newAffinity),
+                    NpcRelationshipLevels.rankIndex(newAffinity) > NpcRelationshipLevels.rankIndex(oldAffinity),
+                    reasonText
+            );
+        }
+    }
+
+    private static String rankName(int affinity) {
+        if (affinity >= PolenAffinityLevels.TRUSTED) {
+            return "Confianza plena";
+        }
+        if (affinity >= PolenAffinityLevels.CLOSE_FRIEND) {
+            return "Confianza profunda";
+        }
+        if (affinity >= PolenAffinityLevels.FRIEND) {
+            return "Amiga";
+        }
+        if (affinity >= PolenAffinityLevels.NAME_REVEAL) {
+            return "Nombre revelado";
+        }
+        if (affinity >= PolenAffinityLevels.FIRST_TRUST) {
+            return "Primer vinculo";
+        }
+        return "Extrana";
     }
 
     private static void mutate(Player player, Consumer<PolenPlayerRelationshipData> consumer) {

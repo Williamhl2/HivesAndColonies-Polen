@@ -11,6 +11,13 @@
       ],
       "conditions": [
         {
+          "condition": "minecraft:block_state_property",
+          "block": "hc_characters:polen_bee_bed",
+          "properties": {
+            "part": "foot"
+          }
+        },
+        {
           "condition": "minecraft:survives_explosion"
         }
       ]

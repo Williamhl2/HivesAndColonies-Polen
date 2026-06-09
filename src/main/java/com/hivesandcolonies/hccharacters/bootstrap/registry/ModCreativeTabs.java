@@ -53,6 +53,7 @@ public class ModCreativeTabs {
                             output.accept(ModItems.VANILLA_SPAWN_EGG.get());
                             output.accept(ModItems.NOIA_SPAWN_EGG.get());
                             output.accept(ModItems.NORIS_SPAWN_EGG.get());
+                            output.accept(ModItems.SOA_MARJORIE_SPAWN_EGG.get());
                         }
 
                     })

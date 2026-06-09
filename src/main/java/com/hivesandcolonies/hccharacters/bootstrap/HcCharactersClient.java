@@ -6,6 +6,9 @@ import com.hivesandcolonies.hccharacters.character.befsh.client.BefshRenderer;
 import com.hivesandcolonies.hccharacters.character.polen.client.PolenRenderer;
 import com.hivesandcolonies.hccharacters.character.polen.item.focus.HiveheartCharmItem;
 import com.hivesandcolonies.hccharacters.common.client.renderer.SimpleCharacterRenderer;
+import com.hivesandcolonies.hccharacters.character.soa.client.SoaMarjorieRenderer;
+import com.hivesandcolonies.hccharacters.character.soa.client.layer.SoaMarjorieMiningGearLayer;
+import com.hivesandcolonies.hccharacters.common.client.hud.NpcAffinityOverlayClient;
 
 import net.minecraft.client.renderer.item.CompassItemPropertyFunction;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -15,6 +18,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod(value = HcCharacters.MODID, dist = Dist.CLIENT)
@@ -30,6 +34,17 @@ public class HcCharactersClient {
         ));
     }
 
+
+    @SubscribeEvent
+    static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
+        event.registerAboveAll(NpcAffinityOverlayClient.LAYER_ID, NpcAffinityOverlayClient::render);
+    }
+
+    @SubscribeEvent
+    static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(SoaMarjorieMiningGearLayer.LAYER_LOCATION, SoaMarjorieMiningGearLayer::createLayer);
+    }
+
     @SubscribeEvent
     static void onEntityRenderersSetup(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.POLEN.get(), PolenRenderer::new);
@@ -38,5 +53,6 @@ public class HcCharactersClient {
         event.registerEntityRenderer(ModEntities.VANILLA.get(), context -> new SimpleCharacterRenderer<>(context, "vanilla"));
         event.registerEntityRenderer(ModEntities.NOIA.get(), context -> new SimpleCharacterRenderer<>(context, "noia"));
         event.registerEntityRenderer(ModEntities.NORIS.get(), context -> new SimpleCharacterRenderer<>(context, "noris"));
+        event.registerEntityRenderer(ModEntities.SOA_MARJORIE.get(), SoaMarjorieRenderer::new);
     }
 }
