@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
 import com.hivesandcolonies.hccharacters.character.soa.dialogue.SoaMarjorieDialogue;
+import com.hivesandcolonies.hccharacters.character.soa.progression.SoaMarjorieRelationship;
 import com.hivesandcolonies.hccharacters.common.entity.SimpleCharacterEntity;
 import com.hivesandcolonies.hccharacters.common.npc.relationship.NpcRelationshipInteraction;
 import com.hivesandcolonies.hccharacters.integration.curios.PolenCuriosBridge;
@@ -13,11 +15,14 @@ import com.hivesandcolonies.hccharacters.integration.curios.PolenCuriosBridge;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -31,9 +36,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.PanicGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -42,6 +48,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public class SoaMarjorieEntity extends SimpleCharacterEntity {
@@ -53,12 +60,18 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private static final int CAVE_HARD_LIMIT_DISTANCE_SQR = 52 * 52;
     private static final int BOARD_GIFT_MIN_DELAY = 20 * 30;
     private static final int BOARD_GIFT_RANDOM_DELAY = 20 * 50;
+    private static final int HOSTILE_SCAN_INTERVAL_TICKS = 30;
+    private static final double HOSTILE_SCAN_RADIUS = 10.0D;
 
     public static final String CURIOS_BACKPACK_SLOT = "backpack";
     public static final String CURIOS_TOOL_RIGHT_SLOT = "tool_right";
     public static final String CURIOS_TOOL_LEFT_SLOT = "tool_left";
 
     private static final ResourceLocation SOPHISTICATED_BACKPACK = ResourceLocation.fromNamespaceAndPath("sophisticatedbackpacks", "backpack");
+    private static final TagKey<Block> SOA_MINEABLE_ORES = TagKey.create(
+            Registries.BLOCK,
+            ResourceLocation.fromNamespaceAndPath(HcCharacters.MODID, "soa_marjorie_mineable")
+    );
     private static final float PLAYER_WARNING_STRIKE_DAMAGE = 38.0F;
 
     private EncounterMode encounterMode = EncounterMode.NONE;
@@ -72,6 +85,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private int torchDrawTicks;
     private int ambientDialogueCooldown;
     private int equipmentSyncCooldown;
+    private int hostileScanCooldown;
 
     public SoaMarjorieEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -81,23 +95,41 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     }
 
     public void startBoardVisit(BlockPos boardPos, int durationTicks) {
+        this.startBoardVisit(boardPos, durationTicks, null);
+    }
+
+    public void startBoardVisit(BlockPos boardPos, int durationTicks, ServerPlayer witness) {
         this.encounterMode = EncounterMode.BOARD_VISIT;
         this.encounterAnchor = boardPos.immutable();
         this.encounterTicksLeft = Math.max(20 * 30, durationTicks);
         this.boardGiftDelayTicks = BOARD_GIFT_MIN_DELAY + this.getRandom().nextInt(BOARD_GIFT_RANDOM_DELAY + 1);
         this.boardGiftGiven = false;
         this.ambientDialogueCooldown = 20 + this.getRandom().nextInt(80);
-        this.sayNearby("Vi el tablón desde la entrada del pueblo. A veces las mejores vetas empiezan con un encargo.");
+        if (witness != null) {
+            SoaMarjorieRelationship.recordBoardVisit(witness);
+            this.sayTo(witness, SoaMarjorieRelationship.arrivalBoardLine(witness));
+        } else {
+            this.sayNearby("Vi el tablon desde la entrada del pueblo. A veces las mejores vetas empiezan con un encargo.");
+        }
     }
 
     public void startCaveMiningEncounter(int durationTicks) {
+        this.startCaveMiningEncounter(durationTicks, null);
+    }
+
+    public void startCaveMiningEncounter(int durationTicks, ServerPlayer witness) {
         this.encounterMode = EncounterMode.CAVE_MINING;
         this.encounterAnchor = this.blockPosition().immutable();
         this.encounterTicksLeft = Math.max(20 * 45, durationTicks);
         this.boardGiftDelayTicks = 0;
         this.boardGiftGiven = true;
         this.ambientDialogueCooldown = 20 + this.getRandom().nextInt(80);
-        this.sayNearby("Si vienes conmigo, mantén la luz cerca y las manos lejos de mi pico.");
+        if (witness != null) {
+            SoaMarjorieRelationship.recordCaveEncounter(witness);
+            this.sayTo(witness, SoaMarjorieRelationship.arrivalCaveLine(witness));
+        } else {
+            this.sayNearby("Si vienes conmigo, manten la luz cerca y las manos lejos de mi pico.");
+        }
     }
 
     public boolean isEncounterActive() {
@@ -128,7 +160,9 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
                     SoaMarjorieDialogue.TIER_1,
                     SoaMarjorieDialogue.TIER_2,
                     SoaMarjorieDialogue.TIER_3,
-                    SoaMarjorieDialogue.rewardPool()
+                    SoaMarjorieDialogue.rewardPool(),
+                    SoaMarjorieRelationship.RANK_RESOLVER,
+                    "Soa tomo nota de que sigues vivo. Buen comienzo."
             );
             if (this.isBoardVisit() && !this.boardGiftGiven) {
                 this.tryGiveBoardGift(player);
@@ -192,6 +226,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         }
         if (!this.level().isClientSide) {
             this.tickEncounterLifetime();
+            this.tickSurvivabilityAndThreats();
             this.equipExpertMiningTools();
             this.syncMiningEquipmentToCurios();
         }
@@ -277,7 +312,10 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             player.drop(delivered, false);
         }
         this.boardGiftGiven = true;
-        this.sayTo(player, "Toma. No es tesoro, pero en una mina esto vale más de lo que parece.");
+        if (player instanceof ServerPlayer serverPlayer) {
+            SoaMarjorieRelationship.recordBoardGift(serverPlayer);
+        }
+        this.sayTo(player, "Toma. No es tesoro, pero en una mina esto vale mas de lo que parece.");
     }
 
     private ItemStack createBoardGift() {
@@ -308,23 +346,31 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         if (this.getRandom().nextInt(240) != 0) {
             return;
         }
-        String[] lines;
-        if (this.isBoardVisit()) {
-            lines = new String[] {
-                    "Los tablones atraen aventureros. Los aventureros atraen historias. Y a veces, problemas.",
-                    "No todos los encargos se aceptan por recompensa. Algunos se aceptan por curiosidad.",
-                    "Si buscas mina, no sigas solo el brillo. Sigue el aire frío.",
-                    "Un buen trabajo empieza antes del primer golpe de pico."
-            };
+        Player nearest = this.findNearestPlayer(14.0D);
+        if (nearest instanceof ServerPlayer serverPlayer) {
+            String line = this.isBoardVisit()
+                    ? SoaMarjorieRelationship.idleBoardLine(serverPlayer, this.getRandom())
+                    : SoaMarjorieRelationship.idleCaveLine(serverPlayer, this.getRandom());
+            this.sayTo(serverPlayer, line);
         } else {
-            lines = new String[] {
-                    "Esta veta no está sola... hay algo bueno cerca.",
-                    "Antorcha cada pocos pasos. La oscuridad cobra intereses.",
-                    "Si el eco vuelve seco, hay cámara grande adelante.",
-                    "La netherita no perdona manos torpes. Por suerte, las mías no lo son."
-            };
+            String[] lines;
+            if (this.isBoardVisit()) {
+                lines = new String[] {
+                        "Los tablones atraen aventureros. Los aventureros atraen historias. Y a veces, problemas.",
+                        "No todos los encargos se aceptan por recompensa. Algunos se aceptan por curiosidad.",
+                        "Si buscas mina, no sigas solo el brillo. Sigue el aire frio.",
+                        "Un buen trabajo empieza antes del primer golpe de pico."
+                };
+            } else {
+                lines = new String[] {
+                        "Esta veta no esta sola... hay algo bueno cerca.",
+                        "Antorcha cada pocos pasos. La oscuridad cobra intereses.",
+                        "Si el eco vuelve seco, hay camara grande adelante.",
+                        "La netherita no perdona manos torpes. Por suerte, las mias no lo son."
+                };
+            }
+            this.sayNearby(lines[this.getRandom().nextInt(lines.length)]);
         }
-        this.sayNearby(lines[this.getRandom().nextInt(lines.length)]);
         this.ambientDialogueCooldown = 20 * 35 + this.getRandom().nextInt(20 * 45);
     }
 
@@ -358,14 +404,85 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        boolean hurt = super.hurt(source, amount);
+        Entity attacker = source.getEntity();
+        float effectiveAmount = this.scaleIncomingDamage(attacker, amount);
+        boolean hurt = super.hurt(source, effectiveAmount);
         if (!this.level().isClientSide && hurt) {
-            Entity attacker = source.getEntity();
+            if (attacker instanceof LivingEntity livingAttacker) {
+                this.setDefensiveTarget(livingAttacker);
+            }
             if (attacker instanceof Player player) {
                 this.warnPlayerWithMiningAxe(player);
             }
         }
         return hurt;
+    }
+
+    private float scaleIncomingDamage(Entity attacker, float amount) {
+        if (attacker instanceof Player) {
+            return Math.min(amount, 0.75F);
+        }
+        return Math.min(amount * 0.08F, 0.35F);
+    }
+
+    private void tickSurvivabilityAndThreats() {
+        if (this.tickCount % 40 == 0 && this.getHealth() < this.getMaxHealth()) {
+            this.heal(3.0F);
+        }
+        if (this.hostileScanCooldown > 0) {
+            --this.hostileScanCooldown;
+            return;
+        }
+        this.hostileScanCooldown = HOSTILE_SCAN_INTERVAL_TICKS;
+        if (!this.isCaveMiningEncounter()) {
+            return;
+        }
+        this.scanNearbyHostiles();
+    }
+
+    private void scanNearbyHostiles() {
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        AABB area = this.getBoundingBox().inflate(HOSTILE_SCAN_RADIUS);
+        List<Monster> monsters = serverLevel.getEntitiesOfClass(
+                Monster.class,
+                area,
+                monster -> monster.isAlive() && this.hasLineOfSight(monster)
+        );
+        Monster closest = null;
+        double closestDistance = Double.MAX_VALUE;
+        for (Monster monster : monsters) {
+            LivingEntity monsterTarget = monster.getTarget();
+            boolean isThreat = monsterTarget == this || monsterTarget instanceof Player || monsterTarget == null;
+            if (!isThreat) {
+                continue;
+            }
+            double distance = this.distanceToSqr(monster);
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                closest = monster;
+            }
+        }
+        if (closest == null) {
+            return;
+        }
+        if (closest.getTarget() == null && this.getRandom().nextInt(3) == 0) {
+            closest.setTarget(this);
+        }
+        this.setDefensiveTarget(closest);
+    }
+
+    private void setDefensiveTarget(LivingEntity target) {
+        if (target == this || !target.isAlive()) {
+            return;
+        }
+        if (target instanceof Player player && (player.isCreative() || player.isSpectator())) {
+            return;
+        }
+        this.defenseDrawTicks = DEFENSE_DRAW_TICKS;
+        this.setTarget(target);
+        this.equipExpertMiningTools();
     }
 
     private void warnPlayerWithMiningAxe(Player player) {
@@ -374,6 +491,9 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         }
         this.defenseDrawTicks = DEFENSE_DRAW_TICKS;
         this.equipExpertMiningTools();
+        if (player instanceof ServerPlayer serverPlayer) {
+            SoaMarjorieRelationship.recordAttack(serverPlayer);
+        }
         this.sayTo(player, "Una advertencia basta. La siguiente abre hasta bedrock.");
         this.getLookControl().setLookAt(player, 30.0F, 30.0F);
 
@@ -422,18 +542,20 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return PathfinderMob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 44.0D)
-                .add(Attributes.MOVEMENT_SPEED, 0.26D)
-                .add(Attributes.FOLLOW_RANGE, 32.0D)
+                .add(Attributes.MAX_HEALTH, 240.0D)
+                .add(Attributes.ARMOR, 30.0D)
+                .add(Attributes.ARMOR_TOUGHNESS, 20.0D)
+                .add(Attributes.MOVEMENT_SPEED, 0.28D)
+                .add(Attributes.FOLLOW_RANGE, 40.0D)
                 .add(Attributes.STEP_HEIGHT, 1.0D)
-                .add(Attributes.ATTACK_DAMAGE, 34.0D)
-                .add(Attributes.KNOCKBACK_RESISTANCE, 0.75D);
+                .add(Attributes.ATTACK_DAMAGE, 36.0D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0D);
     }
 
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new PanicGoal(this, 1.2D));
+        this.goalSelector.addGoal(1, new DefensiveAxeAttackGoal(this));
         this.goalSelector.addGoal(2, new StayNearBoardGoal(this));
         this.goalSelector.addGoal(3, new TorchDarknessGoal(this));
         this.goalSelector.addGoal(4, new MiningWorkGoal(this));
@@ -478,6 +600,50 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         CAVE_MINING
     }
 
+    private static final class DefensiveAxeAttackGoal extends MeleeAttackGoal {
+        private final SoaMarjorieEntity soa;
+
+        private DefensiveAxeAttackGoal(SoaMarjorieEntity soa) {
+            super(soa, 1.25D, true);
+            this.soa = soa;
+        }
+
+        @Override
+        public boolean canUse() {
+            LivingEntity target = this.soa.getTarget();
+            return target != null && target.isAlive() && super.canUse();
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            LivingEntity target = this.soa.getTarget();
+            return target != null && target.isAlive() && super.canContinueToUse();
+        }
+
+        @Override
+        public void start() {
+            this.soa.defenseDrawTicks = DEFENSE_DRAW_TICKS;
+            this.soa.equipExpertMiningTools();
+            super.start();
+        }
+
+        @Override
+        public void tick() {
+            this.soa.defenseDrawTicks = DEFENSE_DRAW_TICKS;
+            this.soa.equipExpertMiningTools();
+            super.tick();
+        }
+
+        @Override
+        public void stop() {
+            super.stop();
+            LivingEntity target = this.soa.getTarget();
+            if (target == null || !target.isAlive()) {
+                this.soa.setTarget(null);
+            }
+        }
+    }
+
     private static final class StayNearBoardGoal extends Goal {
         private final SoaMarjorieEntity soa;
 
@@ -511,7 +677,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     }
 
     private static final class TorchDarknessGoal extends Goal {
-        private static final int LIGHT_THRESHOLD = 6;
+        private static final int LIGHT_THRESHOLD = 8;
         private static final int PLACE_COOLDOWN_TICKS = 100;
         private static final double MIN_DISTANCE_FROM_LAST_TORCH_SQR = 6.0D * 6.0D;
 
@@ -611,9 +777,9 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private static final class MiningWorkGoal extends Goal {
         private static final int HORIZONTAL_RADIUS = 12;
         private static final int VERTICAL_RADIUS = 5;
-        private static final int SEARCH_INTERVAL_TICKS = 80;
-        private static final int WORK_TICKS_PER_BLOCK = 45;
-        private static final int BLOCK_COOLDOWN_TICKS = 65;
+        private static final int SEARCH_INTERVAL_TICKS = 20;
+        private static final int WORK_TICKS_PER_BLOCK = 35;
+        private static final int BLOCK_COOLDOWN_TICKS = 45;
         private static final int PLAYER_SHARE_RADIUS = 13;
 
         private final SoaMarjorieEntity soa;
@@ -667,8 +833,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
                     && this.minedBlocks < HcCharactersGameplayConfig.soaMarjorieMaxBlocksPerCaveEncounter()
                     && this.canMine(this.orePos)
                     && this.soa.distanceToSqr(Vec3.atCenterOf(this.orePos)) < 18.0D * 18.0D
-                    && this.soa.findNearestPlayer(PLAYER_SHARE_RADIUS) != null
-                    && (!this.soa.getNavigation().isDone() || this.workTicks > 0);
+                    && this.soa.findNearestPlayer(PLAYER_SHARE_RADIUS) != null;
         }
 
         @Override
@@ -773,11 +938,16 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
                 reward.setCount(share);
                 rewards.add(reward);
             }
+            int totalShared = 0;
             for (ItemStack reward : rewards) {
+                totalShared += reward.getCount();
                 ItemStack delivered = reward.copy();
                 if (!companion.addItem(delivered)) {
                     companion.drop(delivered, false);
                 }
+            }
+            if (totalShared > 0 && companion instanceof ServerPlayer serverPlayer) {
+                SoaMarjorieRelationship.recordOreShared(serverPlayer, totalShared);
             }
         }
 
@@ -850,7 +1020,8 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         }
 
         private static boolean isOre(BlockState state) {
-            return state.is(BlockTags.COAL_ORES)
+            return state.is(SOA_MINEABLE_ORES)
+                    || state.is(BlockTags.COAL_ORES)
                     || state.is(BlockTags.IRON_ORES)
                     || state.is(BlockTags.COPPER_ORES)
                     || state.is(BlockTags.GOLD_ORES)

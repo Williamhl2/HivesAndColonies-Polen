@@ -1,8 +1,10 @@
 package com.hivesandcolonies.hccharacters.common.npc.relationship;
 
 import java.util.List;
+import java.util.function.IntFunction;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -26,22 +28,73 @@ public final class NpcRelationshipInteraction {
             List<String> tier3,
             NpcRewardPool rewards
     ) {
-        NpcRelationshipMemory memory = new NpcRelationshipMemory(npc, profileId);
-        NpcRelationshipMemory.PlayerRecord record = memory.touch(player);
+        return interact(npc, player, profileId, speakerName, tier0, tier1, tier2, tier3, rewards, NpcRelationshipManager.DEFAULT_RANK_RESOLVER);
+    }
+
+    public static Result interact(
+            Entity npc,
+            Player player,
+            String profileId,
+            String speakerName,
+            List<String> tier0,
+            List<String> tier1,
+            List<String> tier2,
+            List<String> tier3,
+            NpcRewardPool rewards,
+            IntFunction<String> rankResolver
+    ) {
+        return interact(npc, player, profileId, speakerName, tier0, tier1, tier2, tier3, rewards, rankResolver, speakerName + " noto tu visita.");
+    }
+
+    public static Result interact(
+            Entity npc,
+            Player player,
+            String profileId,
+            String speakerName,
+            List<String> tier0,
+            List<String> tier1,
+            List<String> tier2,
+            List<String> tier3,
+            NpcRewardPool rewards,
+            IntFunction<String> rankResolver,
+            String interactionReasonText
+    ) {
+        NpcRelationshipRecord record;
+        if (player instanceof ServerPlayer serverPlayer) {
+            record = NpcRelationshipManager.touch(
+                    serverPlayer,
+                    profileId,
+                    speakerName,
+                    interactionReasonText,
+                    rankResolver
+            );
+        } else {
+            NpcRelationshipMemory memory = new NpcRelationshipMemory(npc, profileId);
+            NpcRelationshipMemory.PlayerRecord legacyRecord = memory.touch(player);
+            record = new NpcRelationshipRecord();
+            record.setAffinity(legacyRecord.trust);
+            record.setInteractions(legacyRecord.interactions);
+            record.setLastInteractionGameTime(legacyRecord.lastInteractionGameTime);
+            record.setNextRewardGameTime(legacyRecord.nextRewardGameTime);
+            record.setSpecialRewards(legacyRecord.specialRewards);
+        }
+
         int tier = record.trustTier();
         String dialogue = pickDialogue(npc, tier, tier0, tier1, tier2, tier3);
         player.displayClientMessage(Component.literal("<" + speakerName + "> " + dialogue), false);
 
         NpcRewardResult reward = NpcRewardResult.none();
         long now = npc.level().getGameTime();
-        if (tier >= REWARD_UNLOCK_TIER && now >= record.nextRewardGameTime) {
+        if (tier >= REWARD_UNLOCK_TIER && now >= record.nextRewardGameTime()) {
             reward = rewards.roll(player, npc.level().random);
             if (reward.hasReward()) {
                 give(player, reward.stack().copy());
                 long cooldown = cooldownFor(reward.tier());
-                record.nextRewardGameTime = now + cooldown;
-                record.specialRewards += 1;
-                memory.put(player, record);
+                record.setNextRewardGameTime(now + cooldown);
+                record.incrementSpecialRewards();
+                if (player instanceof ServerPlayer serverPlayer) {
+                    NpcRelationshipManager.markDirty(serverPlayer);
+                }
                 player.displayClientMessage(Component.literal("<" + speakerName + "> " + reward.message()), false);
             }
         }

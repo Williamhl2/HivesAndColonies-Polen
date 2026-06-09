@@ -1,9 +1,5 @@
 package com.hivesandcolonies.hccharacters.character.soa.world;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModEntities;
 import com.hivesandcolonies.hccharacters.character.soa.entity.SoaMarjorieEntity;
@@ -26,6 +22,7 @@ public final class SoaMarjorieEncounterManager {
     private static final int BOARD_SPAWN_RADIUS = 7;
     private static final int CAVE_SPAWN_HORIZONTAL_RADIUS = 18;
     private static final int CAVE_SPAWN_VERTICAL_RADIUS = 5;
+    private static final int CAVE_MAX_Y = 0;
     private static final int EXISTING_SOA_RADIUS = 56;
     private static final int BOARD_SPAWN_CHANCE = 8;
     private static final int CAVE_SPAWN_CHANCE = 12;
@@ -34,11 +31,6 @@ public final class SoaMarjorieEncounterManager {
             ResourceLocation.fromNamespaceAndPath("bountiful", "bountyboard"),
             ResourceLocation.fromNamespaceAndPath("bountiful", "bounty_board")
     };
-
-    private static final Map<UUID, Integer> BOARD_PLAYER_COOLDOWNS = new HashMap<>();
-    private static final Map<UUID, Integer> CAVE_PLAYER_COOLDOWNS = new HashMap<>();
-    private static final Map<Long, Integer> BOARD_POSITION_COOLDOWNS = new HashMap<>();
-
 
     private SoaMarjorieEncounterManager() {
     }
@@ -49,10 +41,6 @@ public final class SoaMarjorieEncounterManager {
             return;
         }
 
-        tickCooldowns(BOARD_PLAYER_COOLDOWNS, MANAGER_INTERVAL_TICKS);
-        tickCooldowns(CAVE_PLAYER_COOLDOWNS, MANAGER_INTERVAL_TICKS);
-        tickCooldowns(BOARD_POSITION_COOLDOWNS, MANAGER_INTERVAL_TICKS);
-
         if (!HcCharactersGameplayConfig.soaMarjorieEncountersEnabled()) {
             return;
         }
@@ -61,6 +49,8 @@ public final class SoaMarjorieEncounterManager {
             if (!level.dimension().equals(Level.OVERWORLD)) {
                 continue;
             }
+            SoaMarjorieEncounterSavedData savedData = SoaMarjorieEncounterSavedData.get(level);
+            savedData.cleanup(level.getGameTime());
             for (ServerPlayer player : level.players()) {
                 if (player.isSpectator()) {
                     continue;
@@ -71,23 +61,21 @@ public final class SoaMarjorieEncounterManager {
         }
     }
 
-    private static <K> void tickCooldowns(Map<K, Integer> cooldowns, int amount) {
-        cooldowns.replaceAll((key, value) -> Math.max(0, value - amount));
-        cooldowns.entrySet().removeIf(entry -> entry.getValue() <= 0);
-    }
 
     private static void tryBoardVisit(ServerLevel level, ServerPlayer player) {
         if (!HcCharactersGameplayConfig.soaMarjorieBoardVisitsEnabled()) {
             return;
         }
-        if (BOARD_PLAYER_COOLDOWNS.containsKey(player.getUUID())) {
+        SoaMarjorieEncounterSavedData savedData = SoaMarjorieEncounterSavedData.get(level);
+        long now = level.getGameTime();
+        if (savedData.isBoardPlayerOnCooldown(player.getUUID(), now)) {
             return;
         }
         if (player.getRandom().nextInt(BOARD_SPAWN_CHANCE) != 0) {
             return;
         }
         BlockPos boardPos = findNearestBountifulBoard(level, player.blockPosition());
-        if (boardPos == null || BOARD_POSITION_COOLDOWNS.containsKey(boardPos.asLong()) || hasNearbySoa(level, boardPos)) {
+        if (boardPos == null || savedData.isBoardPositionOnCooldown(boardPos.asLong(), now) || hasNearbySoa(level, boardPos)) {
             return;
         }
         BlockPos spawnPos = findSpawnNear(level, boardPos, BOARD_SPAWN_RADIUS);
@@ -99,20 +87,22 @@ public final class SoaMarjorieEncounterManager {
             return;
         }
         soa.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
-        soa.startBoardVisit(boardPos, HcCharactersGameplayConfig.soaMarjorieBoardVisitDurationTicks());
+        soa.startBoardVisit(boardPos, HcCharactersGameplayConfig.soaMarjorieBoardVisitDurationTicks(), player);
         level.addFreshEntity(soa);
-        BOARD_PLAYER_COOLDOWNS.put(player.getUUID(), HcCharactersGameplayConfig.soaMarjorieBoardPlayerCooldownTicks());
-        BOARD_POSITION_COOLDOWNS.put(boardPos.asLong(), HcCharactersGameplayConfig.soaMarjorieBoardPositionCooldownTicks());
+        savedData.setBoardPlayerCooldown(player.getUUID(), now + HcCharactersGameplayConfig.soaMarjorieBoardPlayerCooldownTicks());
+        savedData.setBoardPositionCooldown(boardPos.asLong(), now + HcCharactersGameplayConfig.soaMarjorieBoardPositionCooldownTicks());
     }
 
     private static void tryCaveEncounter(ServerLevel level, ServerPlayer player) {
         if (!HcCharactersGameplayConfig.soaMarjorieCaveMiningEncountersEnabled()) {
             return;
         }
-        if (CAVE_PLAYER_COOLDOWNS.containsKey(player.getUUID())) {
+        SoaMarjorieEncounterSavedData savedData = SoaMarjorieEncounterSavedData.get(level);
+        long now = level.getGameTime();
+        if (savedData.isCavePlayerOnCooldown(player.getUUID(), now)) {
             return;
         }
-        if (player.blockPosition().getY() > 48) {
+        if (player.blockPosition().getY() > CAVE_MAX_Y) {
             return;
         }
         if (level.canSeeSky(player.blockPosition())) {
@@ -130,9 +120,9 @@ public final class SoaMarjorieEncounterManager {
             return;
         }
         soa.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D, level.random.nextFloat() * 360.0F, 0.0F);
-        soa.startCaveMiningEncounter(HcCharactersGameplayConfig.soaMarjorieCaveEncounterDurationTicks());
+        soa.startCaveMiningEncounter(HcCharactersGameplayConfig.soaMarjorieCaveEncounterDurationTicks(), player);
         level.addFreshEntity(soa);
-        CAVE_PLAYER_COOLDOWNS.put(player.getUUID(), HcCharactersGameplayConfig.soaMarjorieCavePlayerCooldownTicks());
+        savedData.setCavePlayerCooldown(player.getUUID(), now + HcCharactersGameplayConfig.soaMarjorieCavePlayerCooldownTicks());
     }
 
     private static boolean hasNearbySoa(ServerLevel level, BlockPos pos) {
@@ -202,6 +192,9 @@ public final class SoaMarjorieEncounterManager {
             int y = level.random.nextInt(CAVE_SPAWN_VERTICAL_RADIUS * 2 + 1) - CAVE_SPAWN_VERTICAL_RADIUS;
             int z = level.random.nextInt(CAVE_SPAWN_HORIZONTAL_RADIUS * 2 + 1) - CAVE_SPAWN_HORIZONTAL_RADIUS;
             BlockPos pos = origin.offset(x, y, z);
+            if (pos.getY() > CAVE_MAX_Y) {
+                continue;
+            }
             if (distanceSqr(pos, origin) < 7.0D * 7.0D) {
                 continue;
             }

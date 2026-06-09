@@ -17,35 +17,35 @@ public final class SoaMarjorieDialogue {
     public static final String SPEAKER = "SoaMarjorie";
 
     public static final List<String> TIER_0 = List.of(
-            "Nunca bajes sin antorchas. La oscuridad no mata sola, pero invita a quien si lo hace.",
-            "El carbon es humilde, pero sin el no hay expedicion larga.",
-            "Si encuentras una cueva muy grande, primero ilumina la entrada. Luego exploras.",
-            "Un cubo de agua vale mas que media armadura cuando aparece lava.",
-            "Marca el camino de vuelta. La mejor minera del mundo tambien se pierde si se confia."
+            "Si vas a tocar una roca, al menos asegurate de que no sea la que sostiene el techo.",
+            "No te pongas delante del pico. Parece obvio, pero he conocido gente menos lista.",
+            "Camina detras de mi. No por confianza, por seguridad.",
+            "Si escuchas lava, no corras hacia ella. Si, he tenido que decirlo antes.",
+            "Un cubo de agua vale mas que media armadura cuando aparece lava. Aprende eso antes de presumir."
     );
 
     public static final List<String> TIER_1 = List.of(
-            "Para diamantes, baja cerca de Y -59. No es magia: es paciencia y buena capa.",
-            "El hierro abunda en montanas altas y tambien aparece bastante en cuevas. Si necesitas mucho, mira hacia arriba.",
-            "El oro ama los badlands. En el Nether tambien se deja ver, pero alli todo cobra peaje.",
-            "La redstone y el diamante suelen compartir las profundidades. Si ves una, presta atencion alrededor.",
-            "El lapislazuli no solo sirve para encantar. Tambien te dice que estas trabajando en una buena franja."
+            "Te reconozco. Sigues vivo, lo que en mineria ya es curriculum.",
+            "Marca el camino de vuelta. Una mina no se pierde: te convence de que tu sabes mas.",
+            "El carbon humilde salva mas viajes que el diamante orgulloso. Aprende eso primero.",
+            "Pica con ritmo, no con panico. La piedra nota la diferencia.",
+            "Para diamantes, baja cerca de Y -59. Para sobrevivir, baja con cerebro."
     );
 
     public static final List<String> TIER_2 = List.of(
-            "Las esmeraldas pertenecen a las montanas. Raras, orgullosas y faciles de pasar por alto.",
-            "Si el eco vuelve seco, hay una camara grande cerca. Entra con antorchas, no con orgullo.",
-            "La lava canta antes de morder. Cuando la oigas, pica con respeto.",
-            "Las mejores vetas suelen estar detras de una pared que nadie pensaria romper.",
-            "He pasado mas noches bajo tierra que bajo las estrellas. La roca ensena si sabes escuchar."
+            "Vas mejorando. Hoy casi no pareces una tragedia con botas.",
+            "Si vas a seguirme, pisa donde piso. Y si sobrevives, quizá te deje presumirlo.",
+            "No esta mal. No bien, pero no esta mal.",
+            "Te daria una pala, pero temo que la uses para cavarte una excusa.",
+            "Te guardé una veta decente. No digas que nunca hago cosas bonitas."
     );
 
     public static final List<String> TIER_3 = List.of(
-            "Ya reconoces el sonido de una cueva viva. Bien. Eso salva mas vidas que un escudo.",
-            "Si buscas netherita, no caves con prisa. La prisa alimenta lagos de lava.",
-            "Cuando una mina se vuelve demasiado silenciosa, revisa tus salidas antes de seguir.",
-            "Te he visto mejorar. Ya no caminas bajo tierra como turista.",
-            "La montana recompensa al paciente, no al codicioso. Recuerdalo cuando veas el primer diamante."
+            "Bien. Contigo cerca al menos tengo a quien culpar si algo explota.",
+            "Me caes bien. No lo arruines haciendo algo heroico.",
+            "Buen ojo. No tan bueno como el mio, claro. Pero buen ojo.",
+            "Si alguien pregunta, tu ayudaste. Si encontramos diamantes, yo los encontre.",
+            "Te confiaria una ruta de mina. No mi pico. No exageremos."
     );
 
     private SoaMarjorieDialogue() {}

@@ -8,6 +8,7 @@ import com.hivesandcolonies.hccharacters.character.polen.item.focus.HiveheartCha
 import com.hivesandcolonies.hccharacters.common.client.renderer.SimpleCharacterRenderer;
 import com.hivesandcolonies.hccharacters.character.soa.client.SoaMarjorieRenderer;
 import com.hivesandcolonies.hccharacters.character.soa.client.layer.SoaMarjorieMiningGearLayer;
+import com.hivesandcolonies.hccharacters.common.client.hud.NpcAffinityOverlayClient;
 
 import net.minecraft.client.renderer.item.CompassItemPropertyFunction;
 import net.minecraft.client.renderer.item.ItemProperties;
@@ -17,6 +18,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod(value = HcCharacters.MODID, dist = Dist.CLIENT)
@@ -30,6 +32,12 @@ public class HcCharactersClient {
                 ResourceLocation.withDefaultNamespace("angle"),
                 new CompassItemPropertyFunction((level, stack, entity) -> HiveheartCharmItem.getCompassTarget(stack))
         ));
+    }
+
+
+    @SubscribeEvent
+    static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
+        event.registerAboveAll(NpcAffinityOverlayClient.LAYER_ID, NpcAffinityOverlayClient::render);
     }
 
     @SubscribeEvent

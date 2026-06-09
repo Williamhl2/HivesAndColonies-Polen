@@ -11,6 +11,7 @@ import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModCreativeTabs;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModEntities;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModItems;
+import com.hivesandcolonies.hccharacters.common.network.HcCharactersNetwork;
 import com.mojang.logging.LogUtils;
 
 import net.neoforged.bus.api.IEventBus;
@@ -32,6 +33,7 @@ public class HcCharacters {
         ModItems.ITEMS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         ModEntities.ENTITY_TYPES.register(modEventBus);
+        modEventBus.addListener(HcCharactersNetwork::register);
 
         NeoForge.EVENT_BUS.addListener(PolenDebugCommands::register);
         NeoForge.EVENT_BUS.addListener(PolenSingularityManager::onEntityJoinLevel);
