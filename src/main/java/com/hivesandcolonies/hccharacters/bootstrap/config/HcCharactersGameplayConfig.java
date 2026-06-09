@@ -15,6 +15,7 @@ public final class HcCharactersGameplayConfig {
     private static final ModConfigSpec.IntValue SOA_MARJORIE_BOARD_VISIT_DURATION_SECONDS;
     private static final ModConfigSpec.IntValue SOA_MARJORIE_CAVE_ENCOUNTER_DURATION_SECONDS;
     private static final ModConfigSpec.IntValue SOA_MARJORIE_BOARD_PLAYER_COOLDOWN_SECONDS;
+    private static final ModConfigSpec.IntValue SOA_MARJORIE_BOARD_POSITION_COOLDOWN_SECONDS;
     private static final ModConfigSpec.IntValue SOA_MARJORIE_CAVE_PLAYER_COOLDOWN_SECONDS;
     private static final ModConfigSpec.IntValue SOA_MARJORIE_MAX_BLOCKS_PER_CAVE_ENCOUNTER;
 
@@ -58,6 +59,9 @@ public final class HcCharactersGameplayConfig {
         SOA_MARJORIE_BOARD_PLAYER_COOLDOWN_SECONDS = builder
                 .comment("Per-player cooldown after a Bountiful board visit spawn attempt succeeds.")
                 .defineInRange("board_player_cooldown_seconds", 1800, 60, 21600);
+        SOA_MARJORIE_BOARD_POSITION_COOLDOWN_SECONDS = builder
+        .comment("Cooldown for each individual Bountiful board after SoaMarjorie appears there.")
+        .defineInRange("board_position_cooldown_seconds", 3600, 300, 43200);
         SOA_MARJORIE_CAVE_PLAYER_COOLDOWN_SECONDS = builder
                 .comment("Per-player cooldown after a cave mining encounter spawn attempt succeeds.")
                 .defineInRange("cave_player_cooldown_seconds", 2400, 60, 21600);
@@ -115,4 +119,7 @@ public final class HcCharactersGameplayConfig {
     public static int soaMarjorieMaxBlocksPerCaveEncounter() {
         return SOA_MARJORIE_MAX_BLOCKS_PER_CAVE_ENCOUNTER.get();
     }
+    public static int soaMarjorieBoardPositionCooldownTicks() {
+    return SOA_MARJORIE_BOARD_POSITION_COOLDOWN_SECONDS.get() * 20;
+}
 }

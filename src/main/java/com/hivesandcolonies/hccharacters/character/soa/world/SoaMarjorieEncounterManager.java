@@ -37,6 +37,9 @@ public final class SoaMarjorieEncounterManager {
 
     private static final Map<UUID, Integer> BOARD_PLAYER_COOLDOWNS = new HashMap<>();
     private static final Map<UUID, Integer> CAVE_PLAYER_COOLDOWNS = new HashMap<>();
+    private static final Map<Long, Integer> BOARD_POSITION_COOLDOWNS = new HashMap<>();
+
+
     private SoaMarjorieEncounterManager() {
     }
 
@@ -48,6 +51,7 @@ public final class SoaMarjorieEncounterManager {
 
         tickCooldowns(BOARD_PLAYER_COOLDOWNS, MANAGER_INTERVAL_TICKS);
         tickCooldowns(CAVE_PLAYER_COOLDOWNS, MANAGER_INTERVAL_TICKS);
+        tickCooldowns(BOARD_POSITION_COOLDOWNS, MANAGER_INTERVAL_TICKS);
 
         if (!HcCharactersGameplayConfig.soaMarjorieEncountersEnabled()) {
             return;
@@ -67,8 +71,8 @@ public final class SoaMarjorieEncounterManager {
         }
     }
 
-    private static void tickCooldowns(Map<UUID, Integer> cooldowns, int amount) {
-        cooldowns.replaceAll((uuid, value) -> Math.max(0, value - amount));
+    private static <K> void tickCooldowns(Map<K, Integer> cooldowns, int amount) {
+        cooldowns.replaceAll((key, value) -> Math.max(0, value - amount));
         cooldowns.entrySet().removeIf(entry -> entry.getValue() <= 0);
     }
 
@@ -83,7 +87,7 @@ public final class SoaMarjorieEncounterManager {
             return;
         }
         BlockPos boardPos = findNearestBountifulBoard(level, player.blockPosition());
-        if (boardPos == null || hasNearbySoa(level, boardPos)) {
+        if (boardPos == null || BOARD_POSITION_COOLDOWNS.containsKey(boardPos.asLong()) || hasNearbySoa(level, boardPos)) {
             return;
         }
         BlockPos spawnPos = findSpawnNear(level, boardPos, BOARD_SPAWN_RADIUS);
@@ -98,6 +102,7 @@ public final class SoaMarjorieEncounterManager {
         soa.startBoardVisit(boardPos, HcCharactersGameplayConfig.soaMarjorieBoardVisitDurationTicks());
         level.addFreshEntity(soa);
         BOARD_PLAYER_COOLDOWNS.put(player.getUUID(), HcCharactersGameplayConfig.soaMarjorieBoardPlayerCooldownTicks());
+        BOARD_POSITION_COOLDOWNS.put(boardPos.asLong(), HcCharactersGameplayConfig.soaMarjorieBoardPositionCooldownTicks());
     }
 
     private static void tryCaveEncounter(ServerLevel level, ServerPlayer player) {
