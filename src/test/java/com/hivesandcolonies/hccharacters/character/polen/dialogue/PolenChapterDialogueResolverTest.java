@@ -1,6 +1,6 @@
-package com.hivesandcolonies.characters.character.polen.dialogue;
+package com.hivesandcolonies.hccharacters.character.polen.dialogue;
 
-import com.hivesandcolonies.characters.character.polen.progression.PolenChapterManager;
+import com.hivesandcolonies.hccharacters.character.polen.progression.PolenChapterManager;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

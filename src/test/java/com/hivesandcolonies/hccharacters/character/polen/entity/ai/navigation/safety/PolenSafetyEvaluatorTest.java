@@ -1,4 +1,4 @@
-package com.hivesandcolonies.characters.character.polen.entity.ai.navigation.safety;
+package com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety;
 
 import org.junit.jupiter.api.Test;
 
