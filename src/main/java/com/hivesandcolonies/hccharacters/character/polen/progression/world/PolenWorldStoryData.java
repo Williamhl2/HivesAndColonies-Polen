@@ -23,6 +23,7 @@ public final class PolenWorldStoryData {
     private BlockPos prologueClearingCenter;
     private BlockPos prologueShelterPos;
     private BlockPos prologueBeeBedPos;
+    private BlockPos lastKnownPolenPos;
 
     public PolenWorldStoryData() {
         this.currentChapter = 0;
@@ -146,5 +147,13 @@ public final class PolenWorldStoryData {
 
     public void setPrologueBeeBedPos(BlockPos prologueBeeBedPos) {
         this.prologueBeeBedPos = prologueBeeBedPos == null ? null : prologueBeeBedPos.immutable();
+    }
+
+    public BlockPos getLastKnownPolenPos() {
+        return this.lastKnownPolenPos;
+    }
+
+    public void setLastKnownPolenPos(BlockPos lastKnownPolenPos) {
+        this.lastKnownPolenPos = lastKnownPolenPos == null ? null : lastKnownPolenPos.immutable();
     }
 }

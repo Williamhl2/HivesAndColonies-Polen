@@ -6,13 +6,10 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.identit
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.interests.PolenInterest;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.interests.PolenInterestGenerator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.interests.PolenInterestProfile;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter.PolenShelterContextResolver;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenShelterValidator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.story.PolenStoryStage;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.story.PolenWorldMemory;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.identity.PolenWorldAffinity;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 
 public final class PolenWorldStateManager {
@@ -68,36 +65,21 @@ public final class PolenWorldStateManager {
             return false;
         }
 
-        ServerLevel level = (ServerLevel) polen.level();
-        boolean dirty = false;
+        // Polen's introduction is now intentionally simple: the Hiveheart Charm
+        // finds a nearby cherry grove and spawns Polen there. The world state must
+        // remember that first meeting point, but it must never infer, rebuild, or
+        // relocate an artificial prologue shelter later.
+        //
+        // This prevents duplicated starter houses when Polen is unloaded/reloaded,
+        // moved away from the original biome with Carry On, or loaded again after a
+        // player returns from far away. Shelter and bed discovery belong to her
+        // normal AI/residence systems, not to prologue world generation.
         if (data.getPrologueClearingCenter() == null) {
             data.setPrologueClearingCenter(polen.blockPosition());
-            dirty = true;
+            return true;
         }
 
-        if (data.getPrologueShelterPos() == null) {
-            BlockPos shelterPos = PolenShelterValidator.findStoryShelter(
-                    polen,
-                    data.getPrologueClearingCenter() == null ? polen.blockPosition() : data.getPrologueClearingCenter()
-            );
-            if (shelterPos != null) {
-                data.setPrologueShelterPos(shelterPos);
-                dirty = true;
-            }
-        }
-
-        if (data.getPrologueBeeBedPos() == null) {
-            BlockPos searchOrigin = data.getPrologueShelterPos() != null
-                    ? data.getPrologueShelterPos()
-                    : data.getPrologueClearingCenter();
-            BlockPos beeBedPos = PolenShelterContextResolver.findNearbyBeeBed(level, searchOrigin);
-            if (beeBedPos != null) {
-                data.setPrologueBeeBedPos(beeBedPos);
-                dirty = true;
-            }
-        }
-
-        return dirty;
+        return false;
     }
 
 
@@ -148,4 +130,24 @@ public final class PolenWorldStateManager {
         }
         return changed;
     }
+
+    public static void rememberLastKnownPosition(ServerLevel level, net.minecraft.core.BlockPos pos) {
+        if (level == null || pos == null) {
+            return;
+        }
+        PolenWorldStorySavedData savedData = PolenWorldStorySavedData.get(level);
+        savedData.getData().setLastKnownPolenPos(pos);
+        savedData.setDirty();
+    }
+
+    public static void rememberPolenHomeBed(ServerLevel level, net.minecraft.core.BlockPos bedPos) {
+        if (level == null || bedPos == null) {
+            return;
+        }
+        PolenWorldStorySavedData savedData = PolenWorldStorySavedData.get(level);
+        savedData.getData().setPrologueBeeBedPos(bedPos);
+        savedData.setDirty();
+    }
+
 }
+

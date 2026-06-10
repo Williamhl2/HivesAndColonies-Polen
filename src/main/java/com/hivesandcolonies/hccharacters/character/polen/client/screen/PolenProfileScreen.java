@@ -160,10 +160,10 @@ public final class PolenProfileScreen extends Screen {
         graphics.fill(x, y, x + w, y + 150, SECTION_COLOR);
         graphics.drawString(this.font, Component.translatable("screen.polen.profile.home.title"), x + 10, y + 10, GOLD, false);
         graphics.drawString(this.font, Component.translatable("screen.polen.profile.home.residence"), x + 10, y + 32, MUTED_TEXT, false);
-        graphics.drawString(this.font, Component.translatable("screen.polen.profile.home.none"), x + 100, y + 32, TEXT, false);
+        graphics.drawString(this.font, Component.translatable(this.profile.hasHome() ? "screen.polen.profile.home.assigned" : "screen.polen.profile.home.none"), x + 100, y + 32, TEXT, false);
         graphics.drawString(this.font, Component.translatable("screen.polen.profile.home.comfort"), x + 10, y + 48, MUTED_TEXT, false);
-        graphics.drawString(this.font, Component.translatable("screen.polen.profile.home.unknown"), x + 100, y + 48, TEXT, false);
-        graphics.drawString(this.font, Component.translatable("screen.polen.profile.home.hint"), x + 10, y + 78, MUTED_TEXT, false);
+        graphics.drawString(this.font, Component.translatable(this.profile.hasHome() ? "screen.polen.profile.home.safe_bed" : "screen.polen.profile.home.unknown"), x + 100, y + 48, TEXT, false);
+        graphics.drawString(this.font, Component.translatable(this.profile.hasHome() ? "screen.polen.profile.home.hint_assigned" : "screen.polen.profile.home.hint"), x + 10, y + 78, MUTED_TEXT, false);
     }
 
     private void drawMemoriesTab(GuiGraphics graphics, int mouseX, int mouseY) {

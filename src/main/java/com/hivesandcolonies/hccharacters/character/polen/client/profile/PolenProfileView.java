@@ -22,14 +22,16 @@ public final class PolenProfileView {
     private final PolenTaskType task;
     private final ItemStack charmStack;
     private final List<InterestBar> interestBars;
+    private final boolean hasHome;
 
-    private PolenProfileView(String displayName, PolenWorldAffinity affinity, PolenMood mood, PolenTaskType task, ItemStack charmStack, List<InterestBar> interestBars) {
+    private PolenProfileView(String displayName, PolenWorldAffinity affinity, PolenMood mood, PolenTaskType task, ItemStack charmStack, List<InterestBar> interestBars, boolean hasHome) {
         this.displayName = displayName;
         this.affinity = affinity;
         this.mood = mood;
         this.task = task;
         this.charmStack = charmStack;
         this.interestBars = interestBars;
+        this.hasHome = hasHome;
     }
 
     public static PolenProfileView from(PolenEntity polen) {
@@ -40,7 +42,8 @@ public final class PolenProfileView {
                 polen.getMood(),
                 polen.getCurrentTask(),
                 PolenCuriosBridge.stackForAffinity(affinity),
-                barsFor(affinity)
+                barsFor(affinity),
+                polen.hasAssignedHome()
         );
     }
 
@@ -66,6 +69,10 @@ public final class PolenProfileView {
 
     public List<InterestBar> interestBars() {
         return this.interestBars;
+    }
+
+    public boolean hasHome() {
+        return this.hasHome;
     }
 
     public String affinityTitle() {

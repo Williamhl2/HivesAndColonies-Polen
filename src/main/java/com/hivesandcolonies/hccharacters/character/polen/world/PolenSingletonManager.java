@@ -7,8 +7,6 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.world.Polen
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.AABB;
-
 import java.util.UUID;
 
 /**
@@ -37,15 +35,10 @@ public final class PolenSingletonManager {
             }
         }
 
-        for (ServerLevel serverLevel : server.getAllLevels()) {
-            for (PolenEntity polen : serverLevel.getEntitiesOfClass(PolenEntity.class, new AABB(-30000000.0D, -2048.0D, -30000000.0D, 30000000.0D, 2048.0D, 30000000.0D))) {
-                if (polen.isAlive() && !polen.isRemoved()) {
-                    remember(level, polen);
-                    return polen;
-                }
-            }
-        }
-
+        // Do not scan the whole world for Polen. A full-world entity AABB lookup can
+        // freeze heavily modded servers when called by items, login handlers, or tick
+        // paths. Polen is remembered by UUID when she spawns or loads, so a missing
+        // UUID lookup simply means she is not currently loaded.
         return null;
     }
 
@@ -62,12 +55,14 @@ public final class PolenSingletonManager {
         if (storedUuid == null) {
             data.setPolenEntityUuid(currentUuid);
             data.setPolenSpawned(true);
+            data.setLastKnownPolenPos(polen.blockPosition());
             savedData.setDirty();
             return true;
         }
 
         if (storedUuid.equals(currentUuid)) {
             data.setPolenSpawned(true);
+            data.setLastKnownPolenPos(polen.blockPosition());
             savedData.setDirty();
             return true;
         }
@@ -76,6 +71,7 @@ public final class PolenSingletonManager {
         if (storedPolen == null || storedPolen.isRemoved() || !storedPolen.isAlive()) {
             data.setPolenEntityUuid(currentUuid);
             data.setPolenSpawned(true);
+            data.setLastKnownPolenPos(polen.blockPosition());
             savedData.setDirty();
             return true;
         }
@@ -89,6 +85,7 @@ public final class PolenSingletonManager {
         PolenWorldStoryData data = savedData.getData();
         data.setPolenEntityUuid(polen.getUUID());
         data.setPolenSpawned(true);
+        data.setLastKnownPolenPos(polen.blockPosition());
         savedData.setDirty();
     }
 

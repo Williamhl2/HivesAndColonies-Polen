@@ -17,7 +17,8 @@ public class ResidenceCharmItem extends PolenColonyItem {
                 false,
                 new TooltipLine("tooltip.polen.residence_charm.line1", ChatFormatting.GREEN),
                 new TooltipLine("tooltip.polen.residence_charm.line2", ChatFormatting.GRAY),
-                new TooltipLine("tooltip.polen.residence_charm.line3", ChatFormatting.DARK_GRAY)
+                new TooltipLine("tooltip.polen.residence_charm.line3", ChatFormatting.DARK_GRAY),
+                new TooltipLine("tooltip.polen.residence_charm.line4", ChatFormatting.DARK_GRAY)
         );
     }
 

@@ -4,7 +4,9 @@ import com.hivesandcolonies.hccharacters.character.polen.item.base.PolenLoreItem
 import com.hivesandcolonies.hccharacters.character.polen.item.meta.PolenProgressionStage;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
+import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStateManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.prologue.PolenPrologueManager;
+import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStoryData;
 import com.hivesandcolonies.hccharacters.common.util.CharacterNbtHelper;
 import com.hivesandcolonies.hccharacters.common.item.base.TranslatableTooltipItem.TooltipLine;
 
@@ -18,6 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -32,7 +35,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public class HiveheartCharmItem extends PolenLoreItem {
-    private static final int USE_COOLDOWN = 30;
+    private static final int USE_COOLDOWN = 100;
     private static final String TARGET_POS_TAG = "PolenClearingTarget";
     private static final String TARGET_DIMENSION_TAG = "PolenClearingDimension";
 
@@ -43,7 +46,8 @@ public class HiveheartCharmItem extends PolenLoreItem {
                 true,
                 new TooltipLine("tooltip.polen.hiveheart_charm.line1", ChatFormatting.GOLD),
                 new TooltipLine("tooltip.polen.hiveheart_charm.line2", ChatFormatting.GRAY),
-                new TooltipLine("tooltip.polen.hiveheart_charm.line3", ChatFormatting.DARK_GRAY)
+                new TooltipLine("tooltip.polen.hiveheart_charm.line3", ChatFormatting.DARK_GRAY),
+                new TooltipLine("tooltip.polen.hiveheart_charm.line4", ChatFormatting.DARK_GRAY)
         );
     }
 
@@ -58,7 +62,17 @@ public class HiveheartCharmItem extends PolenLoreItem {
             return InteractionResultHolder.fail(stack);
         }
 
-        if (PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.NAME_REVEALED)) {
+        if (!serverLevel.dimension().equals(Level.OVERWORLD)) {
+            player.displayClientMessage(
+                    Component.translatable("message.polen.item.hiveheart_charm.no_resonance"),
+                    true
+            );
+            player.getCooldowns().addCooldown(this, USE_COOLDOWN);
+            return InteractionResultHolder.fail(stack);
+        }
+
+        ServerLevel overworld = serverLevel.getServer().overworld();
+        if (PolenStoryFlagsManager.hasFlag(overworld, PolenStoryFlag.NAME_REVEALED) || isPolenAlreadyKnown(overworld)) {
             player.displayClientMessage(
                     Component.translatable("message.polen.item.hiveheart_charm.dormant"),
                     true
@@ -66,17 +80,23 @@ public class HiveheartCharmItem extends PolenLoreItem {
             return InteractionResultHolder.fail(stack);
         }
 
-        BlockPos target = resolveOrBindTarget(stack, serverLevel);
-        if (target == null) {
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResultHolder.fail(stack);
+        }
+
+        BlockPos targetPos = PolenPrologueManager.spawnPolenAtNearbyCherryGrove(serverPlayer);
+        if (targetPos == null) {
             player.displayClientMessage(
                     Component.translatable("message.polen.item.hiveheart_charm.no_resonance"),
                     true
             );
+            player.getCooldowns().addCooldown(this, USE_COOLDOWN);
             return InteractionResultHolder.fail(stack);
         }
 
-        String directionKey = resolveDirectionKey(player, target);
-        int distanceBlocks = horizontalDistance(player.position(), target);
+        bindTarget(stack, overworld, targetPos);
+        String directionKey = resolveDirectionKey(player, targetPos);
+        int distanceBlocks = horizontalDistance(player.position(), targetPos);
         String distanceKey = resolveDistanceKey(distanceBlocks);
         player.displayClientMessage(
                 Component.translatable(
@@ -101,14 +121,10 @@ public class HiveheartCharmItem extends PolenLoreItem {
 
     @Override
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
-        if (!level.isClientSide && level instanceof ServerLevel serverLevel) {
-            PolenPrologueManager.ensurePrologueContent(serverLevel);
-            BlockPos desiredTarget = PolenPrologueManager.resolveLocatorTarget(serverLevel);
-            BlockPos storedTarget = readTarget(stack);
-            if (desiredTarget != null && !desiredTarget.equals(storedTarget)) {
-                bindTarget(stack, serverLevel, desiredTarget);
-            }
-        }
+        // Keep this tick intentionally lightweight. The charm used to rebuild or locate
+        // Polen's prologue site from inventoryTick, which can run every tick for every
+        // copy of the item and stall the integrated/dedicated server. Target refresh now
+        // happens only when the player actively uses the item.
         super.inventoryTick(stack, level, entity, slotId, isSelected);
     }
 
@@ -148,6 +164,15 @@ public class HiveheartCharmItem extends PolenLoreItem {
         return GlobalPos.of(dimension, target);
     }
 
+
+    private static boolean isPolenAlreadyKnown(ServerLevel level) {
+        if (level == null) {
+            return false;
+        }
+        PolenWorldStoryData data = PolenWorldStateManager.get(level);
+        return data.isPolenSpawned() || data.getPolenEntityUuid() != null;
+    }
+
     private static float pitchForDistance(int distance) {
         if (distance <= 32) {
             return 1.2F;
@@ -178,25 +203,6 @@ public class HiveheartCharmItem extends PolenLoreItem {
             return "message.polen.item.hiveheart_charm.distance.far";
         }
         return "message.polen.item.hiveheart_charm.distance.distant";
-    }
-
-    @Nullable
-    private static BlockPos resolveOrBindTarget(ItemStack stack, ServerLevel level) {
-        GlobalPos stored = getCompassTarget(stack);
-        if (stored != null && stored.dimension().equals(level.dimension())) {
-            return stored.pos();
-        }
-
-        PolenPrologueManager.ensurePrologueContent(level);
-        BlockPos target = PolenPrologueManager.resolveLocatorTarget(level);
-        bindTarget(stack, level, target);
-        return target;
-    }
-
-    @Nullable
-    private static BlockPos readTarget(ItemStack stack) {
-        GlobalPos target = getCompassTarget(stack);
-        return target == null ? null : target.pos();
     }
 
     private static String resolveDirectionKey(Player player, BlockPos target) {

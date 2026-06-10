@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:flowers",
+    "minecraft:cherry_sapling",
+    "hc_characters:royal_pollen"
+  ]
+}

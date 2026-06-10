@@ -16,6 +16,7 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.PolenAffini
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenAffinityManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
+import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStateManager;
 import com.hivesandcolonies.hccharacters.character.polen.world.PolenSingletonManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,6 +26,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -34,6 +36,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.player.Player;
+import java.util.UUID;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -55,6 +58,8 @@ public class PolenEntity extends PathfinderMob {
     private static final String TAG_ACTIVE_LIGHT_UNTIL = "ActiveLightUntil";
     private static final String TAG_NEEDS = "NeedState";
     private static final String TAG_INTENT = "IntentState";
+    private static final String TAG_TRUST_WALK_PLAYER = "TrustWalkPlayer";
+    private static final String TAG_TRUST_WALK_UNTIL = "TrustWalkUntil";
     private static final String TAG_EQUIPMENT = "PolenEquipment";
     private static final double DANGEROUS_SPOT_AVOID_RADIUS = 5.0D;
 
@@ -70,9 +75,13 @@ public class PolenEntity extends PathfinderMob {
             SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Integer> EQUIPPED_AFFINITY_CHARM =
             SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> HAS_ASSIGNED_HOME =
+            SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.BOOLEAN);
 
     private final PolenAiState aiState = new PolenAiState();
     private final PolenEquipmentInventory equipmentInventory = new PolenEquipmentInventory();
+    private UUID trustWalkPlayerUuid;
+    private long trustWalkUntilGameTime;
 
     public PolenEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -102,6 +111,7 @@ public class PolenEntity extends PathfinderMob {
         builder.define(CURRENT_GESTURE, PolenGesture.IDLE.getId());
         builder.define(CURRENT_GESTURE_TICKS, 0);
         builder.define(EQUIPPED_AFFINITY_CHARM, PolenWorldAffinity.NONE.getId());
+        builder.define(HAS_ASSIGNED_HOME, false);
     }
 
     public void refreshDisplayName() {
@@ -142,6 +152,7 @@ public class PolenEntity extends PathfinderMob {
         if (this.tickCount % 100 == 0) {
             PolenCuriosBridge.syncAffinityCharmToCurios(this);
         }
+        this.tickPolenFunctionalState();
         PolenAiFacade.tickServer(this);
     }
 
@@ -168,6 +179,11 @@ public class PolenEntity extends PathfinderMob {
         CompoundTag equipmentTag = new CompoundTag();
         this.equipmentInventory.save(equipmentTag);
         tag.put(TAG_EQUIPMENT, equipmentTag);
+
+        if (this.trustWalkPlayerUuid != null) {
+            tag.putUUID(TAG_TRUST_WALK_PLAYER, this.trustWalkPlayerUuid);
+            tag.putLong(TAG_TRUST_WALK_UNTIL, this.trustWalkUntilGameTime);
+        }
 
         this.aiState.save(
                 tag,
@@ -196,6 +212,11 @@ public class PolenEntity extends PathfinderMob {
             this.syncEquipmentState();
         }
 
+        if (tag.hasUUID(TAG_TRUST_WALK_PLAYER)) {
+            this.trustWalkPlayerUuid = tag.getUUID(TAG_TRUST_WALK_PLAYER);
+            this.trustWalkUntilGameTime = Math.max(0L, tag.getLong(TAG_TRUST_WALK_UNTIL));
+        }
+
         this.aiState.load(
                 tag,
                 TAG_FAVORITE_FLOWER_POS,
@@ -213,6 +234,7 @@ public class PolenEntity extends PathfinderMob {
                 TAG_NEEDS,
                 TAG_INTENT
         );
+        this.syncHomeState();
     }
 
     @Override
@@ -363,6 +385,52 @@ public class PolenEntity extends PathfinderMob {
 
     public void rememberResidence(BlockPos pos) {
         PolenAiFacade.rememberResidence(this, pos);
+        this.syncHomeState();
+    }
+
+
+    public boolean hasAssignedHome() {
+        return this.entityData.get(HAS_ASSIGNED_HOME);
+    }
+
+    public void syncHomeState() {
+        this.entityData.set(HAS_ASSIGNED_HOME, this.aiState.getResidenceUsePos() != null);
+    }
+
+    public boolean isTrustWalkActive() {
+        return this.trustWalkPlayerUuid != null && this.level().getGameTime() < this.trustWalkUntilGameTime;
+    }
+
+    public ServerPlayer getTrustWalkPlayer() {
+        if (!(this.level() instanceof ServerLevel serverLevel) || this.trustWalkPlayerUuid == null) {
+            return null;
+        }
+        return serverLevel.getServer().getPlayerList().getPlayer(this.trustWalkPlayerUuid);
+    }
+
+    public void startTrustWalk(ServerPlayer player, int durationTicks) {
+        if (player == null || durationTicks <= 0) {
+            return;
+        }
+        this.trustWalkPlayerUuid = player.getUUID();
+        this.trustWalkUntilGameTime = this.level().getGameTime() + durationTicks;
+        this.stopQuietActivity();
+    }
+
+    public void stopTrustWalk() {
+        this.trustWalkPlayerUuid = null;
+        this.trustWalkUntilGameTime = 0L;
+        this.getNavigation().stop();
+    }
+
+    private void tickPolenFunctionalState() {
+        if (this.tickCount % 200 == 0 && this.level() instanceof ServerLevel serverLevel) {
+            PolenWorldStateManager.rememberLastKnownPosition(serverLevel, this.blockPosition());
+        }
+
+        if (this.trustWalkPlayerUuid != null && this.level().getGameTime() >= this.trustWalkUntilGameTime) {
+            this.stopTrustWalk();
+        }
     }
 
     double getDangerousSpotAvoidRadius() {

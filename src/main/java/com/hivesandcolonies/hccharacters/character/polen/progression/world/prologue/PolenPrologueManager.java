@@ -52,6 +52,9 @@ public final class PolenPrologueManager {
     private static final int BIOME_LOCATE_MAX_RANGE = 65536;
     private static final int BIOME_LOCATE_VERTICAL_RANGE = 96;
     private static final int BIOME_LOCATE_STEP = 32;
+    private static final int HIVEHEART_CHERRY_SEARCH_RANGE = 4096;
+    private static final int HIVEHEART_CHERRY_SITE_SCAN_RADIUS = 96;
+    private static final int HIVEHEART_CHERRY_SITE_SCAN_STEP = 12;
     private static final int BIOME_SAMPLE_STEPS = 24;
     private static final int LOCAL_SITE_SCAN_RADIUS = 192;
     private static final int LOCAL_SITE_SCAN_STEP = 12;
@@ -68,7 +71,9 @@ public final class PolenPrologueManager {
     }
 
     public static void onServerStarted(ServerStartedEvent event) {
-        ensurePrologueContent(event.getServer().overworld());
+        // Prologue content is no longer generated on server start. The Hiveheart
+        // Charm is the explicit one-time trigger that locates a nearby cherry grove
+        // and spawns Polen there.
     }
 
     public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
@@ -76,8 +81,7 @@ public final class PolenPrologueManager {
             return;
         }
 
-        ServerLevel overworld = player.serverLevel().getServer().overworld();
-        ensurePrologueContent(overworld);
+        grantOpeningClueMapIfNeeded(player, player.serverLevel().getServer().overworld());
     }
 
     public static void ensurePrologueContent(ServerLevel level) {
@@ -85,54 +89,49 @@ public final class PolenPrologueManager {
             return;
         }
 
-        PolenWorldStorySavedData savedData = PolenWorldStorySavedData.get(level);
-        PolenWorldStoryData data = savedData.getData();
         PolenEntity polen = PolenSingletonManager.findLivingPolen(level);
-        boolean prologueResolved = PolenStoryFlagsManager.hasFlag(level, PolenStoryFlag.NAME_REVEALED)
-                || PolenStoryFlagsManager.hasFlag(level, PolenStoryFlag.CHAPTER_0_COMPLETE);
-
-        BlockPos clearingCenter = data.getPrologueClearingCenter();
-        if (clearingCenter == null || !prologueResolved && !isStoredPrologueSiteUsable(level, clearingCenter, data.getPrologueShelterPos(), data.getPrologueBeeBedPos())) {
-            clearingCenter = polen != null ? polen.blockPosition() : findPrologueClearing(level);
-            if (clearingCenter == null) {
-                clearingCenter = fallbackClearing(level);
-            }
-            data.setPrologueClearingCenter(clearingCenter);
-            data.setPrologueShelterPos(null);
-            data.setPrologueBeeBedPos(null);
-            savedData.setDirty();
-        }
-
-        BlockPos shelterPos = data.getPrologueShelterPos();
-        boolean shelterRefreshed = false;
-        if (shelterPos == null || !prologueResolved && !isShelterStillPresent(level, shelterPos)) {
-            shelterPos = buildOrRefreshPrologueSite(level, clearingCenter);
-            shelterRefreshed = true;
-        }
-        if (shelterPos != null && !shelterPos.equals(data.getPrologueShelterPos())) {
-            data.setPrologueShelterPos(shelterPos);
-            savedData.setDirty();
-        }
-
-        BlockPos beeBedPos = shelterPos == null ? null : data.getPrologueBeeBedPos();
-        if (shelterPos != null && (shelterRefreshed || !isBeeBedStillPresent(level, beeBedPos))) {
-            beeBedPos = resolveBeeBedMarkerPos(level, shelterPos);
-        }
-        if (beeBedPos == null && data.getPrologueBeeBedPos() != null
-                || beeBedPos != null && !beeBedPos.equals(data.getPrologueBeeBedPos())) {
-            data.setPrologueBeeBedPos(beeBedPos);
-            savedData.setDirty();
-        }
-
-        if (polen == null) {
-            BlockPos spawnPos = beeBedPos != null ? beeBedPos : shelterPos == null ? clearingCenter : shelterPos;
-            polen = spawnPolen(level, spawnPos);
-        }
-
         if (polen != null) {
-            rememberTemporaryResidence(polen, shelterPos, beeBedPos);
             PolenWorldStateManager.ensureFor(level, polen);
         }
+    }
+
+    public static BlockPos spawnPolenAtNearbyCherryGrove(ServerPlayer player) {
+        if (player == null) {
+            return null;
+        }
+
+        ServerLevel overworld = player.serverLevel().getServer().overworld();
+        PolenWorldStorySavedData savedData = PolenWorldStorySavedData.get(overworld);
+        PolenWorldStoryData data = savedData.getData();
+
+        PolenEntity existing = PolenSingletonManager.findLivingPolen(overworld);
+        if (existing != null) {
+            return existing.blockPosition().immutable();
+        }
+        if (data.getPolenEntityUuid() != null || data.isPolenSpawned()) {
+            return data.getPrologueClearingCenter();
+        }
+
+        BlockPos origin = player.serverLevel().dimension().equals(Level.OVERWORLD)
+                ? player.blockPosition()
+                : overworld.getSharedSpawnPos();
+        BlockPos spawnPos = findHiveheartCherrySpawnPos(overworld, origin);
+        if (spawnPos == null) {
+            return null;
+        }
+
+        data.setPrologueClearingCenter(spawnPos);
+        data.setPrologueShelterPos(null);
+        data.setPrologueBeeBedPos(null);
+        savedData.setDirty();
+
+        PolenEntity polen = spawnPolen(overworld, spawnPos);
+        if (polen == null) {
+            return null;
+        }
+
+        PolenWorldStateManager.ensureFor(overworld, polen);
+        return polen.blockPosition().immutable();
     }
 
     public static boolean grantOpeningClueMap(ServerPlayer player) {
@@ -147,12 +146,7 @@ public final class PolenPrologueManager {
     }
 
     public static ItemStack createOpeningClueMap(ServerLevel level) {
-        ItemStack stack = createOpeningClueMap();
-        if (level != null) {
-            ensurePrologueContent(level);
-            HiveheartCharmItem.bindTarget(stack, level, resolveLocatorTarget(level));
-        }
-        return stack;
+        return createOpeningClueMap();
     }
 
     public static BlockPos resolveLocatorTarget(ServerLevel level) {
@@ -198,6 +192,60 @@ public final class PolenPrologueManager {
         return true;
     }
 
+    private static BlockPos findHiveheartCherrySpawnPos(ServerLevel level, BlockPos origin) {
+        Pair<BlockPos, Holder<Biome>> located = locateBiome(level, origin, Biomes.CHERRY_GROVE, HIVEHEART_CHERRY_SEARCH_RANGE);
+        if (located == null || located.getFirst() == null) {
+            return null;
+        }
+
+        BlockPos directSurface = surfacePos(level, located.getFirst());
+        if (isValidSimplePolenSpawnPos(level, directSurface)) {
+            return directSurface.immutable();
+        }
+
+        for (int radius = HIVEHEART_CHERRY_SITE_SCAN_STEP; radius <= HIVEHEART_CHERRY_SITE_SCAN_RADIUS; radius += HIVEHEART_CHERRY_SITE_SCAN_STEP) {
+            for (int step = 0; step < BIOME_SAMPLE_STEPS; step++) {
+                double angle = step * (Math.PI * 2.0D / BIOME_SAMPLE_STEPS);
+                int x = located.getFirst().getX() + (int) Math.round(Math.cos(angle) * radius);
+                int z = located.getFirst().getZ() + (int) Math.round(Math.sin(angle) * radius);
+                BlockPos candidate = surfacePos(level, new BlockPos(x, located.getFirst().getY(), z));
+                if (isValidSimplePolenSpawnPos(level, candidate)) {
+                    return candidate.immutable();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static boolean isValidSimplePolenSpawnPos(ServerLevel level, BlockPos candidate) {
+        if (level == null || candidate == null) {
+            return false;
+        }
+        if (!isBiomeMatch(level, candidate, Biomes.CHERRY_GROVE)) {
+            return false;
+        }
+        if (candidate.getY() < level.getSeaLevel() + 1 || candidate.getY() > 180) {
+            return false;
+        }
+        if (!level.canSeeSky(candidate)) {
+            return false;
+        }
+
+        BlockPos groundPos = candidate.below();
+        BlockState groundState = level.getBlockState(groundPos);
+        if (!groundState.isFaceSturdy(level, groundPos, Direction.UP)
+                || groundState.is(Blocks.WATER)
+                || groundState.is(Blocks.LAVA)) {
+            return false;
+        }
+
+        BlockState feetState = level.getBlockState(candidate);
+        BlockState headState = level.getBlockState(candidate.above());
+        return (feetState.isAir() || feetState.canBeReplaced())
+                && (headState.isAir() || headState.canBeReplaced());
+    }
+
     private static PolenEntity spawnPolen(ServerLevel level, BlockPos spawnPos) {
         PolenEntity polen = ModEntities.POLEN.get().create(level);
         if (polen == null || spawnPos == null) {
@@ -220,19 +268,10 @@ public final class PolenPrologueManager {
     }
 
     private static BlockPos buildOrRefreshPrologueSite(ServerLevel level, BlockPos clearingCenter) {
-        if (level == null || clearingCenter == null) {
-            return null;
-        }
-
-        BlockPos shelterPos = resolveShelterPos(level, clearingCenter);
-        if (shelterPos == null) {
-            return null;
-        }
-        clearClearing(level, clearingCenter);
-        seedClearingFlowers(level, clearingCenter);
-        flattenShelterFootprint(level, shelterPos);
-        buildShelter(level, shelterPos);
-        return shelterPos;
+        // Disabled by design. The prologue no longer creates or refreshes an
+        // artificial starter house. The Hiveheart Charm only spawns Polen in a
+        // nearby cherry grove and records that first meeting position.
+        return null;
     }
 
     private static boolean isShelterStillPresent(ServerLevel level, BlockPos shelterPos) {

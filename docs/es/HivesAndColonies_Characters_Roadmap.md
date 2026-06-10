@@ -1,5 +1,7 @@
 # Hives & Colonies: Characters — Development Roadmap
 
+> Working roadmap for continuing development if the planning conversation is lost.  
+> Language: Spanish-first development notes with English code/package names preserved where useful.  
 > Scope: `Hives & Colonies: Characters`, currently centered on Polen and SoaMarjorie.
 
 ---
@@ -537,14 +539,14 @@ player right-clicks Polen with item
 
 ### Suggested gift categories
 
-| Category    | Example items                                   | Effect                     |
-| ----------- | ----------------------------------------------- | -------------------------- |
-| Gentle food | bread, sweet berries, honey bottle              | small trust, comfort       |
-| Bees        | honeycomb, honey bottle, resonant wax           | bee interest, trust        |
-| Nature      | flowers, petals, saplings                       | nature interest            |
-| Source      | source-touched petal, amethyst-like/magic items | Source interest, memories  |
-| Home        | lantern, candle, bed-related items              | home/safety interest       |
-| Story       | journal, letter, seal                           | chapter/memory progression |
+| Category | Example items | Effect |
+|---|---|---|
+| Gentle food | bread, sweet berries, honey bottle | small trust, comfort |
+| Bees | honeycomb, honey bottle, resonant wax | bee interest, trust |
+| Nature | flowers, petals, saplings | nature interest |
+| Source | source-touched petal, amethyst-like/magic items | Source interest, memories |
+| Home | lantern, candle, bed-related items | home/safety interest |
+| Story | journal, letter, seal | chapter/memory progression |
 
 ### Suggested tags
 
@@ -773,21 +775,21 @@ Soa is beta-functional. Continue only polish and balance.
 
 Existing items should not be removed casually. They should receive clear purposes, tooltips, and interactions.
 
-| Item                                        | Intended purpose                                   | Status goal                          |
-| ------------------------------------------- | -------------------------------------------------- | ------------------------------------ |
-| `Hiveheart Charm`                           | One-shot Polen awakening in nearby cherry grove    | Make dormant after Polen exists      |
-| `Polen Bee Bed`                             | Polen's canonical home/refuge anchor               | Must become core loop item           |
-| `Residence Charm`                           | Bind Polen Bee Bed or safe location as residence   | Should prioritize Polen Bee Bed      |
-| `Settlement Charm`                          | Temporary safe area/settlement marker              | Define later; avoid overlap with bed |
-| `Bloom Focus`                               | Mark/inspect natural/bee/flower points of interest | Connect to nature/bee interest       |
-| `Affinity Charm` / `PolenAffinityCharmItem` | Curios/accessory affecting expression/affinities   | Keep, clarify effects                |
-| `Source-Touched Petal`                      | Source/magic gift or crafting material             | Connect to Source interest/memory    |
-| `Resonant Wax`                              | Bee-related material/gift                          | Connect to bee interest/crafting     |
-| `Royal Pollen`                              | Rare story/crafting/progression item               | Gate important memory/crafting       |
-| `Polen Journal`                             | Memory/story record                                | Should show unlocked memories        |
-| `Princess Letter`                           | Story item                                         | Trigger/reflect narrative memory     |
-| `Princess Seal`                             | Advanced story item                                | Reserve for later chapter            |
-| `Polen Lantern`                             | Safe night lighting / comfort                      | Keep as Polen-safe utility           |
+| Item | Intended purpose | Status goal |
+|---|---|---|
+| `Hiveheart Charm` | One-shot Polen awakening in nearby cherry grove | Make dormant after Polen exists |
+| `Polen Bee Bed` | Polen's canonical home/refuge anchor | Must become core loop item |
+| `Residence Charm` | Bind Polen Bee Bed or safe location as residence | Should prioritize Polen Bee Bed |
+| `Settlement Charm` | Temporary safe area/settlement marker | Define later; avoid overlap with bed |
+| `Bloom Focus` | Mark/inspect natural/bee/flower points of interest | Connect to nature/bee interest |
+| `Affinity Charm` / `PolenAffinityCharmItem` | Curios/accessory affecting expression/affinities | Keep, clarify effects |
+| `Source-Touched Petal` | Source/magic gift or crafting material | Connect to Source interest/memory |
+| `Resonant Wax` | Bee-related material/gift | Connect to bee interest/crafting |
+| `Royal Pollen` | Rare story/crafting/progression item | Gate important memory/crafting |
+| `Polen Journal` | Memory/story record | Should show unlocked memories |
+| `Princess Letter` | Story item | Trigger/reflect narrative memory |
+| `Princess Seal` | Advanced story item | Reserve for later chapter |
+| `Polen Lantern` | Safe night lighting / comfort | Keep as Polen-safe utility |
 
 ### Tooltip standard
 

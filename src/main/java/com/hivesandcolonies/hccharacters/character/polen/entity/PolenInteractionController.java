@@ -7,10 +7,13 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.PolenAffini
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenChapterManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
+import com.hivesandcolonies.hccharacters.character.polen.progression.PolenRelationshipEvents;
+import com.hivesandcolonies.hccharacters.character.polen.item.interaction.PolenItemInteractionController;
 import com.hivesandcolonies.hccharacters.character.polen.progression.player.PolenPlayerRelationshipManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenShelterValidator;
 import com.hivesandcolonies.hccharacters.character.polen.story.PolenStoryEventManager;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -26,12 +29,26 @@ public final class PolenInteractionController {
         }
 
         if (polen.level().isClientSide) {
-            openClientProfile(polen);
+            if (player.getItemInHand(hand).isEmpty() && !player.isShiftKeyDown()) {
+                openClientProfile(polen);
+            }
             return InteractionResult.SUCCESS;
+        }
+
+        if (!player.getItemInHand(hand).isEmpty()) {
+            InteractionResult itemResult = PolenItemInteractionController.useItemOnPolen(polen, player, hand);
+            if (itemResult.consumesAction()) {
+                return itemResult;
+            }
+        }
+
+        if (player.isShiftKeyDown()) {
+            return toggleTrustWalk(polen, player);
         }
 
         polen.refreshDisplayName();
         PolenPlayerRelationshipManager.recordInteraction(player);
+        PolenRelationshipEvents.firstMeeting(player);
 
         if (player instanceof ServerPlayer serverPlayer) {
             PolenAdvancementManager.grantFirstMeeting(serverPlayer);
@@ -68,6 +85,30 @@ public final class PolenInteractionController {
         );
 
         polen.refreshDisplayName();
+        return InteractionResult.SUCCESS;
+    }
+
+
+    private static InteractionResult toggleTrustWalk(PolenEntity polen, Player player) {
+        if (!(player instanceof ServerPlayer serverPlayer)) {
+            return InteractionResult.SUCCESS;
+        }
+
+        int affinity = PolenAffinityManager.getAffinity(player);
+        if (affinity < PolenAffinityLevels.FIRST_TRUST) {
+            player.displayClientMessage(Component.translatable("message.polen.trust_walk.not_enough_trust"), true);
+            return InteractionResult.SUCCESS;
+        }
+
+        if (polen.isTrustWalkActive() && polen.getTrustWalkPlayer() == serverPlayer) {
+            polen.stopTrustWalk();
+            player.displayClientMessage(Component.translatable("message.polen.trust_walk.stopped"), true);
+            return InteractionResult.SUCCESS;
+        }
+
+        polen.startTrustWalk(serverPlayer, 20 * 60 * 4);
+        PolenRelationshipEvents.trustWalkStarted(player);
+        player.displayClientMessage(Component.translatable("message.polen.trust_walk.started"), true);
         return InteractionResult.SUCCESS;
     }
 

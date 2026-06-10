@@ -32,6 +32,9 @@ public final class PolenPlayerRelationshipManager {
     private static final String TAG_TASKS_COMPLETED = "tasksCompletedForPolen";
     private static final String TAG_LAST_INTERACTION_GAME_TIME = "lastInteractionGameTime";
     private static final String TAG_PLAYER_FLAGS = "playerFlags";
+    private static final String TAG_COOLDOWNS = "cooldowns";
+    private static final String TAG_KEY = "key";
+    private static final String TAG_LONG_VALUE = "longValue";
 
     private PolenPlayerRelationshipManager() {}
 
@@ -58,6 +61,44 @@ public final class PolenPlayerRelationshipManager {
 
     public static void removeAffinity(Player player, int amount) {
         changeAffinity(player, current -> current - amount, "Polen recuerda este momento con cautela.");
+    }
+
+    public static boolean addAffinityWithCooldown(Player player, int amount, String cooldownKey, long cooldownTicks, String reasonText) {
+        SavedRelationships savedData = getSavedData(player);
+        if (savedData == null || cooldownKey == null || cooldownKey.isBlank()) {
+            return false;
+        }
+
+        PolenPlayerRelationshipData data = savedData.getOrCreate(player.getUUID());
+        long now = player.level().getGameTime();
+        if (cooldownTicks > 0L && data.isCooldownActive(cooldownKey, now)) {
+            return false;
+        }
+
+        if (cooldownTicks > 0L) {
+            data.setCooldown(cooldownKey, now + cooldownTicks);
+        }
+
+        int oldAffinity = data.getAffinity();
+        data.setAffinity(oldAffinity + amount);
+        int newAffinity = data.getAffinity();
+        data.setLastInteractionGameTime(now);
+        savedData.setDirty();
+
+        if (oldAffinity != newAffinity && player instanceof ServerPlayer serverPlayer) {
+            NpcRelationshipManager.notifyAffinityChange(
+                    serverPlayer,
+                    "Polen",
+                    newAffinity - oldAffinity,
+                    oldAffinity,
+                    newAffinity,
+                    rankName(newAffinity),
+                    NpcRelationshipLevels.rankIndex(newAffinity) > NpcRelationshipLevels.rankIndex(oldAffinity),
+                    reasonText
+            );
+        }
+
+        return oldAffinity != newAffinity;
     }
 
     public static void resetAffinity(Player player) {
@@ -211,6 +252,13 @@ public final class PolenPlayerRelationshipManager {
                     }
                 }
 
+                ListTag cooldowns = entry.getList(TAG_COOLDOWNS, Tag.TAG_COMPOUND);
+                for (Tag cooldownTag : cooldowns) {
+                    if (cooldownTag instanceof CompoundTag cooldown) {
+                        data.setCooldown(cooldown.getString(TAG_KEY), cooldown.getLong(TAG_LONG_VALUE));
+                    }
+                }
+
                 relationships.put(playerUuid, data);
             }
 
@@ -244,6 +292,16 @@ public final class PolenPlayerRelationshipManager {
                 }
 
                 relationshipTag.put(TAG_PLAYER_FLAGS, playerFlags);
+
+                ListTag cooldowns = new ListTag();
+                for (Map.Entry<String, Long> cooldownEntry : data.getCooldowns().entrySet()) {
+                    CompoundTag cooldownTag = new CompoundTag();
+                    cooldownTag.putString(TAG_KEY, cooldownEntry.getKey());
+                    cooldownTag.putLong(TAG_LONG_VALUE, cooldownEntry.getValue());
+                    cooldowns.add(cooldownTag);
+                }
+                relationshipTag.put(TAG_COOLDOWNS, cooldowns);
+
                 entries.add(relationshipTag);
             }
 

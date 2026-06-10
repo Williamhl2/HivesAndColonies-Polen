@@ -2,7 +2,9 @@ package com.hivesandcolonies.hccharacters.character.polen.progression.player;
 
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenAffinityLevels;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public final class PolenPlayerRelationshipData {
@@ -11,10 +13,12 @@ public final class PolenPlayerRelationshipData {
     private int tasksCompletedForPolen;
     private long lastInteractionGameTime;
     private final Set<String> playerFlags;
+    private final Map<String, Long> cooldowns;
 
     public PolenPlayerRelationshipData() {
         this.affinity = PolenAffinityLevels.STRANGER;
         this.playerFlags = new HashSet<>();
+        this.cooldowns = new HashMap<>();
     }
 
     public int getAffinity() {
@@ -71,5 +75,24 @@ public final class PolenPlayerRelationshipData {
 
     public void resetAffinity() {
         this.affinity = PolenAffinityLevels.STRANGER;
+    }
+
+    public boolean isCooldownActive(String key, long gameTime) {
+        return key != null && cooldowns.getOrDefault(key, 0L) > gameTime;
+    }
+
+    public void setCooldown(String key, long untilGameTime) {
+        if (key == null || key.isBlank()) {
+            return;
+        }
+        if (untilGameTime <= 0L) {
+            cooldowns.remove(key);
+        } else {
+            cooldowns.put(key, untilGameTime);
+        }
+    }
+
+    public Map<String, Long> getCooldowns() {
+        return Map.copyOf(cooldowns);
     }
 }

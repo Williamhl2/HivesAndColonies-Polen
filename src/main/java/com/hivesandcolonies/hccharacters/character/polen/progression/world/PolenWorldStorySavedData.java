@@ -40,6 +40,7 @@ public final class PolenWorldStorySavedData extends SavedData {
     private static final String TAG_PROLOGUE_CLEARING_CENTER = "prologueClearingCenter";
     private static final String TAG_PROLOGUE_SHELTER_POS = "prologueShelterPos";
     private static final String TAG_PROLOGUE_BEE_BED_POS = "prologueBeeBedPos";
+    private static final String TAG_LAST_KNOWN_POLEN_POS = "lastKnownPolenPos";
 
     private final PolenWorldStoryData data;
 
@@ -136,6 +137,7 @@ public final class PolenWorldStorySavedData extends SavedData {
         data.setPrologueClearingCenter(CharacterNbtHelper.loadBlockPos(tag, TAG_PROLOGUE_CLEARING_CENTER));
         data.setPrologueShelterPos(CharacterNbtHelper.loadBlockPos(tag, TAG_PROLOGUE_SHELTER_POS));
         data.setPrologueBeeBedPos(CharacterNbtHelper.loadBlockPos(tag, TAG_PROLOGUE_BEE_BED_POS));
+        data.setLastKnownPolenPos(CharacterNbtHelper.loadBlockPos(tag, TAG_LAST_KNOWN_POLEN_POS));
 
         return new PolenWorldStorySavedData(data);
     }
@@ -188,6 +190,7 @@ public final class PolenWorldStorySavedData extends SavedData {
         CharacterNbtHelper.saveBlockPos(tag, TAG_PROLOGUE_CLEARING_CENTER, data.getPrologueClearingCenter());
         CharacterNbtHelper.saveBlockPos(tag, TAG_PROLOGUE_SHELTER_POS, data.getPrologueShelterPos());
         CharacterNbtHelper.saveBlockPos(tag, TAG_PROLOGUE_BEE_BED_POS, data.getPrologueBeeBedPos());
+        CharacterNbtHelper.saveBlockPos(tag, TAG_LAST_KNOWN_POLEN_POS, data.getLastKnownPolenPos());
 
         return tag;
     }

@@ -1,6 +1,7 @@
 package com.hivesandcolonies.hccharacters.character.polen.block;
 
 import com.mojang.serialization.MapCodec;
+import com.hivesandcolonies.hccharacters.character.polen.item.interaction.PolenItemInteractionController;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -43,6 +44,9 @@ public class PolenBeeBedBlock extends BedBlock {
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if (player.isShiftKeyDown()) {
+            return PolenItemInteractionController.tryBindBeeBed(player, level, pos);
+        }
         if (!level.isClientSide) {
             player.displayClientMessage(Component.translatable("message.polen.block.bee_bed.reserved"), true);
         }

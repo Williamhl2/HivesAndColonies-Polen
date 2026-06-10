@@ -5,6 +5,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.routine
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
+import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStateManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 
@@ -29,8 +30,12 @@ public final class PolenHomeManager {
             polen.getAiState().setRestingPos(normalizedRestingPos);
         }
 
+        polen.syncHomeState();
+
         if (polen.level() instanceof ServerLevel serverLevel) {
             PolenStoryFlagsManager.setFlag(serverLevel, PolenStoryFlag.POLEN_FOUND_RESIDENCE);
+            PolenStoryFlagsManager.setFlag(serverLevel, PolenStoryFlag.PLAYER_HAS_SHELTER);
+            PolenWorldStateManager.rememberPolenHomeBed(serverLevel, target.anchorPos());
         }
     }
 
