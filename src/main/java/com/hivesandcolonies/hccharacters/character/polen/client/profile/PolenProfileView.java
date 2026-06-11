@@ -16,6 +16,7 @@ import java.util.List;
  * from PolenEntity and derives display labels. It must not own gameplay state.
  */
 public final class PolenProfileView {
+    private final int entityId;
     private final String displayName;
     private final PolenWorldAffinity affinity;
     private final PolenMood mood;
@@ -23,8 +24,15 @@ public final class PolenProfileView {
     private final ItemStack charmStack;
     private final List<InterestBar> interestBars;
     private final boolean hasHome;
+    private final boolean trustWalkActive;
+    private final int safety;
+    private final int social;
+    private final int curiosity;
+    private final int rest;
+    private final int magic;
 
-    private PolenProfileView(String displayName, PolenWorldAffinity affinity, PolenMood mood, PolenTaskType task, ItemStack charmStack, List<InterestBar> interestBars, boolean hasHome) {
+    private PolenProfileView(int entityId, String displayName, PolenWorldAffinity affinity, PolenMood mood, PolenTaskType task, ItemStack charmStack, List<InterestBar> interestBars, boolean hasHome, boolean trustWalkActive, int safety, int social, int curiosity, int rest, int magic) {
+        this.entityId = entityId;
         this.displayName = displayName;
         this.affinity = affinity;
         this.mood = mood;
@@ -32,19 +40,36 @@ public final class PolenProfileView {
         this.charmStack = charmStack;
         this.interestBars = interestBars;
         this.hasHome = hasHome;
+        this.trustWalkActive = trustWalkActive;
+        this.safety = safety;
+        this.social = social;
+        this.curiosity = curiosity;
+        this.rest = rest;
+        this.magic = magic;
     }
 
     public static PolenProfileView from(PolenEntity polen) {
         PolenWorldAffinity affinity = polen.getEquippedAffinityCharm();
         return new PolenProfileView(
+                polen.getId(),
                 polen.getDisplayName().getString(),
                 affinity,
                 polen.getMood(),
                 polen.getCurrentTask(),
                 PolenCuriosBridge.stackForAffinity(affinity),
                 barsFor(affinity),
-                polen.hasAssignedHome()
+                polen.hasAssignedHome(),
+                polen.isTrustWalkSyncedActive(),
+                polen.getProfileNeedSafety(),
+                polen.getProfileNeedSocial(),
+                polen.getProfileNeedCuriosity(),
+                polen.getProfileNeedRest(),
+                polen.getProfileNeedMagic()
         );
+    }
+
+    public int entityId() {
+        return this.entityId;
     }
 
     public String displayName() {
@@ -73,6 +98,61 @@ public final class PolenProfileView {
 
     public boolean hasHome() {
         return this.hasHome;
+    }
+
+    public boolean trustWalkActive() {
+        return this.trustWalkActive;
+    }
+
+    public int safety() {
+        return this.safety;
+    }
+
+    public int social() {
+        return this.social;
+    }
+
+    public int curiosity() {
+        return this.curiosity;
+    }
+
+    public int rest() {
+        return this.rest;
+    }
+
+    public int magic() {
+        return this.magic;
+    }
+
+    public String strongestNeedKey() {
+        int lowest = this.safety;
+        String key = "safety";
+        if (this.rest < lowest) {
+            lowest = this.rest;
+            key = "rest";
+        }
+        if (this.social < lowest) {
+            lowest = this.social;
+            key = "social";
+        }
+        if (this.curiosity < lowest) {
+            lowest = this.curiosity;
+            key = "curiosity";
+        }
+        if (this.magic < lowest) {
+            key = "magic";
+        }
+        return key;
+    }
+
+    public String giftHintKey() {
+        return switch (strongestNeedKey()) {
+            case "safety", "rest" -> "home";
+            case "social" -> "food";
+            case "curiosity" -> "nature";
+            case "magic" -> "source";
+            default -> "bees";
+        };
     }
 
     public String affinityTitle() {

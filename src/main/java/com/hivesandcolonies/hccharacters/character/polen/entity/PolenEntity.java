@@ -77,6 +77,18 @@ public class PolenEntity extends PathfinderMob {
             SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> HAS_ASSIGNED_HOME =
             SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> TRUST_WALK_ACTIVE =
+            SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> NEED_SAFETY =
+            SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> NEED_SOCIAL =
+            SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> NEED_CURIOSITY =
+            SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> NEED_REST =
+            SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> NEED_MAGIC =
+            SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
 
     private final PolenAiState aiState = new PolenAiState();
     private final PolenEquipmentInventory equipmentInventory = new PolenEquipmentInventory();
@@ -112,6 +124,12 @@ public class PolenEntity extends PathfinderMob {
         builder.define(CURRENT_GESTURE_TICKS, 0);
         builder.define(EQUIPPED_AFFINITY_CHARM, PolenWorldAffinity.NONE.getId());
         builder.define(HAS_ASSIGNED_HOME, false);
+        builder.define(TRUST_WALK_ACTIVE, false);
+        builder.define(NEED_SAFETY, 24);
+        builder.define(NEED_SOCIAL, 36);
+        builder.define(NEED_CURIOSITY, 44);
+        builder.define(NEED_REST, 28);
+        builder.define(NEED_MAGIC, 24);
     }
 
     public void refreshDisplayName() {
@@ -393,8 +411,42 @@ public class PolenEntity extends PathfinderMob {
         return this.entityData.get(HAS_ASSIGNED_HOME);
     }
 
+    public boolean isTrustWalkSyncedActive() {
+        return this.entityData.get(TRUST_WALK_ACTIVE);
+    }
+
+    public int getProfileNeedSafety() {
+        return this.entityData.get(NEED_SAFETY);
+    }
+
+    public int getProfileNeedSocial() {
+        return this.entityData.get(NEED_SOCIAL);
+    }
+
+    public int getProfileNeedCuriosity() {
+        return this.entityData.get(NEED_CURIOSITY);
+    }
+
+    public int getProfileNeedRest() {
+        return this.entityData.get(NEED_REST);
+    }
+
+    public int getProfileNeedMagic() {
+        return this.entityData.get(NEED_MAGIC);
+    }
+
     public void syncHomeState() {
+        this.syncProfileState();
+    }
+
+    public void syncProfileState() {
         this.entityData.set(HAS_ASSIGNED_HOME, this.aiState.getResidenceUsePos() != null);
+        this.entityData.set(TRUST_WALK_ACTIVE, this.trustWalkPlayerUuid != null && this.level().getGameTime() < this.trustWalkUntilGameTime);
+        this.entityData.set(NEED_SAFETY, this.aiState.getNeedState().safety());
+        this.entityData.set(NEED_SOCIAL, this.aiState.getNeedState().social());
+        this.entityData.set(NEED_CURIOSITY, this.aiState.getNeedState().curiosity());
+        this.entityData.set(NEED_REST, this.aiState.getNeedState().rest());
+        this.entityData.set(NEED_MAGIC, this.aiState.getNeedState().magic());
     }
 
     public boolean isTrustWalkActive() {
@@ -414,16 +466,21 @@ public class PolenEntity extends PathfinderMob {
         }
         this.trustWalkPlayerUuid = player.getUUID();
         this.trustWalkUntilGameTime = this.level().getGameTime() + durationTicks;
+        this.entityData.set(TRUST_WALK_ACTIVE, true);
         this.stopQuietActivity();
     }
 
     public void stopTrustWalk() {
         this.trustWalkPlayerUuid = null;
         this.trustWalkUntilGameTime = 0L;
+        this.entityData.set(TRUST_WALK_ACTIVE, false);
         this.getNavigation().stop();
     }
 
     private void tickPolenFunctionalState() {
+        if (this.tickCount % 20 == 0) {
+            this.syncProfileState();
+        }
         if (this.tickCount % 200 == 0 && this.level() instanceof ServerLevel serverLevel) {
             PolenWorldStateManager.rememberLastKnownPosition(serverLevel, this.blockPosition());
         }

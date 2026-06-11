@@ -11,6 +11,8 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.PolenRelati
 import com.hivesandcolonies.hccharacters.character.polen.item.interaction.PolenItemInteractionController;
 import com.hivesandcolonies.hccharacters.character.polen.progression.player.PolenPlayerRelationshipManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenShelterValidator;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
+import net.minecraft.core.BlockPos;
 import com.hivesandcolonies.hccharacters.character.polen.story.PolenStoryEventManager;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
@@ -89,7 +91,7 @@ public final class PolenInteractionController {
     }
 
 
-    private static InteractionResult toggleTrustWalk(PolenEntity polen, Player player) {
+    public static InteractionResult toggleTrustWalk(PolenEntity polen, Player player) {
         if (!(player instanceof ServerPlayer serverPlayer)) {
             return InteractionResult.SUCCESS;
         }
@@ -109,6 +111,26 @@ public final class PolenInteractionController {
         polen.startTrustWalk(serverPlayer, 20 * 60 * 4);
         PolenRelationshipEvents.trustWalkStarted(player);
         player.displayClientMessage(Component.translatable("message.polen.trust_walk.started"), true);
+        return InteractionResult.SUCCESS;
+    }
+
+    public static InteractionResult requestReturnHome(PolenEntity polen, Player player) {
+        if (polen == null || player == null) {
+            return InteractionResult.PASS;
+        }
+
+        BlockPos homePos = PolenHomeManager.getHomeCenterPos(polen);
+        if (homePos == null) {
+            player.displayClientMessage(Component.translatable("message.polen.ui.action.no_home"), true);
+            return InteractionResult.SUCCESS;
+        }
+
+        polen.stopTrustWalk();
+        boolean moving = polen.getNavigation().moveTo(homePos.getX() + 0.5D, homePos.getY(), homePos.getZ() + 0.5D, 0.9D);
+        player.displayClientMessage(
+                Component.translatable(moving ? "message.polen.ui.action.return_home" : "message.polen.ui.action.return_home_failed"),
+                true
+        );
         return InteractionResult.SUCCESS;
     }
 
