@@ -1,6 +1,5 @@
 # Hives & Colonies: Characters — Development Roadmap
 
-> Working roadmap for continuing development if the planning conversation is lost.  
 > Language: Spanish-first development notes with English code/package names preserved where useful.  
 > Scope: `Hives & Colonies: Characters`, currently centered on Polen and SoaMarjorie.
 

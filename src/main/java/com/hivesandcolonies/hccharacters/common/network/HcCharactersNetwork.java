@@ -20,6 +20,11 @@ public final class HcCharactersNetwork {
                 ClientboundNpcAffinityNotificationPayload.STREAM_CODEC,
                 HcCharactersNetwork::handleAffinityNotification
         );
+        registrar.playToServer(
+                ServerboundPolenUiActionPayload.TYPE,
+                ServerboundPolenUiActionPayload.STREAM_CODEC,
+                PolenUiActionServerHandler::handle
+        );
     }
 
     private static void handleAffinityNotification(ClientboundNpcAffinityNotificationPayload payload, IPayloadContext context) {

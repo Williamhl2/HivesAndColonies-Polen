@@ -68,6 +68,12 @@ public final class PolenItemInteractionController {
 
         GiftResult gift = classifyGift(stack);
         if (gift == null) {
+            if (isRejectedGift(stack)) {
+                sendStatus(player, "message.polen.gift.rejected");
+                PolenRelationshipEvents.gift(player, "rejected", -1, "Polen remembers being offered something that felt unsafe.");
+                player.getCooldowns().addCooldown(stack.getItem(), 40);
+                return InteractionResult.SUCCESS;
+            }
             return InteractionResult.PASS;
         }
 
@@ -107,6 +113,49 @@ public final class PolenItemInteractionController {
             return InteractionResult.FAIL;
         }
 
+        return bindBeeBed(player, level, polen, clickedPos);
+    }
+
+    public static InteractionResult tryBindNearestBeeBed(Player player, ServerLevel level, PolenEntity polen) {
+        if (player == null || level == null || polen == null) {
+            return InteractionResult.FAIL;
+        }
+
+        BlockPos origin = polen.blockPosition();
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int dx = -8; dx <= 8; dx++) {
+            for (int dy = -3; dy <= 3; dy++) {
+                for (int dz = -8; dz <= 8; dz++) {
+                    cursor.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
+                    BlockState state = level.getBlockState(cursor);
+                    if (!(state.getBlock() instanceof PolenBeeBedBlock)) {
+                        continue;
+                    }
+                    BlockPos footPos = PolenBeeBedBlock.getFootPos(state, cursor).immutable();
+                    double distance = footPos.distSqr(origin);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        best = footPos;
+                    }
+                }
+            }
+        }
+
+        if (best == null) {
+            sendStatus(player, "message.polen.ui.action.no_nearby_bed");
+            return InteractionResult.FAIL;
+        }
+        return bindBeeBed(player, level, polen, best);
+    }
+
+    private static InteractionResult bindBeeBed(Player player, Level level, PolenEntity polen, BlockPos clickedPos) {
+        BlockState state = level.getBlockState(clickedPos);
+        if (!(state.getBlock() instanceof PolenBeeBedBlock)) {
+            return InteractionResult.FAIL;
+        }
+
         BlockPos footPos = PolenBeeBedBlock.getFootPos(state, clickedPos).immutable();
         BlockPos usePos = findSafeBedAccessPos(polen, footPos);
         if (usePos == null) {
@@ -121,11 +170,13 @@ public final class PolenItemInteractionController {
                 PolenResidenceStage.OWN_SPACE
         );
         PolenHomeManager.rememberResidence(polen, target);
-        PolenWorldStateManager.rememberPolenHomeBed(serverLevel, footPos);
-        PolenRelationshipEvents.homeAssigned(player);
-        spawnResidenceBurst(serverLevel, usePos);
-        spawnPolenResponse(serverLevel, polen);
-        PolenAmbientDialogueController.tryPlay(polen, PolenDialogueManager.AMBIENT_REFLECTION);
+        if (level instanceof ServerLevel serverLevel) {
+            PolenWorldStateManager.rememberPolenHomeBed(serverLevel, footPos);
+            PolenRelationshipEvents.homeAssigned(player);
+            spawnResidenceBurst(serverLevel, usePos);
+            spawnPolenResponse(serverLevel, polen);
+            PolenAmbientDialogueController.tryPlay(polen, PolenDialogueManager.AMBIENT_REFLECTION);
+        }
         sendStatus(player, "message.polen.bee_bed.bind.success");
         return InteractionResult.SUCCESS;
     }
@@ -228,6 +279,19 @@ public final class PolenItemInteractionController {
         }
 
         return null;
+    }
+
+    private static boolean isRejectedGift(ItemStack stack) {
+        Item item = stack.getItem();
+        return item == Items.ROTTEN_FLESH
+                || item == Items.POISONOUS_POTATO
+                || item == Items.SPIDER_EYE
+                || item == Items.FERMENTED_SPIDER_EYE
+                || item == Items.GUNPOWDER
+                || item == Items.TNT
+                || item == Items.BONE
+                || item == Items.BONE_MEAL
+                || item == Items.WITHER_ROSE;
     }
 
     private static boolean isFlowerLike(ItemStack stack) {
