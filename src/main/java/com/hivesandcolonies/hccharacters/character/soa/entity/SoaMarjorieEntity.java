@@ -3,6 +3,7 @@ package com.hivesandcolonies.hccharacters.character.soa.entity;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.UUID;
 
 import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
@@ -30,6 +31,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -39,6 +41,7 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.animal.allay.Allay;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -62,6 +65,11 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private static final int BOARD_GIFT_RANDOM_DELAY = 20 * 50;
     private static final int HOSTILE_SCAN_INTERVAL_TICKS = 30;
     private static final double HOSTILE_SCAN_RADIUS = 10.0D;
+    private static final String MARTA_TAG = "hc_characters_soa_marta";
+    private static final String MARTA_OWNER_TAG = "SoaMarjorieOwner";
+    private static final String MARTA_COMPANION_UUID_TAG = "SoaMarjorieMartaUuid";
+    private static final double MARTA_FOLLOW_DISTANCE_SQR = 7.0D * 7.0D;
+    private static final double MARTA_TELEPORT_DISTANCE_SQR = 36.0D * 36.0D;
 
     public static final String CURIOS_BACKPACK_SLOT = "backpack";
     public static final String CURIOS_TOOL_RIGHT_SLOT = "tool_right";
@@ -86,6 +94,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private int ambientDialogueCooldown;
     private int equipmentSyncCooldown;
     private int hostileScanCooldown;
+    private UUID martaUuid;
 
     public SoaMarjorieEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -109,7 +118,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             SoaMarjorieRelationship.recordBoardVisit(witness);
             this.sayTo(witness, SoaMarjorieRelationship.arrivalBoardLine(witness));
         } else {
-            this.sayNearby("Vi el tablon desde la entrada del pueblo. A veces las mejores vetas empiezan con un encargo.");
+            this.sayNearby("dialogue.soa.marjorie.nearby.board_spawn");
         }
     }
 
@@ -128,7 +137,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             SoaMarjorieRelationship.recordCaveEncounter(witness);
             this.sayTo(witness, SoaMarjorieRelationship.arrivalCaveLine(witness));
         } else {
-            this.sayNearby("Si vienes conmigo, manten la luz cerca y las manos lejos de mi pico.");
+            this.sayNearby("dialogue.soa.marjorie.nearby.cave_spawn");
         }
     }
 
@@ -162,7 +171,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
                     SoaMarjorieDialogue.TIER_3,
                     SoaMarjorieDialogue.rewardPool(),
                     SoaMarjorieRelationship.RANK_RESOLVER,
-                    "Soa tomo nota de que sigues vivo. Buen comienzo."
+                    "relationship.soa.reason.interaction"
             );
             if (this.isBoardVisit() && !this.boardGiftGiven) {
                 this.tryGiveBoardGift(player);
@@ -225,12 +234,117 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             --this.torchDrawTicks;
         }
         if (!this.level().isClientSide) {
+            this.tickMartaCompanion();
             this.tickEncounterLifetime();
             this.tickSurvivabilityAndThreats();
             this.equipExpertMiningTools();
             this.syncMiningEquipmentToCurios();
         }
         this.tickAmbientDialogue();
+    }
+
+    private void tickMartaCompanion() {
+        if (!(this.level() instanceof ServerLevel serverLevel) || !this.isAlive()) {
+            return;
+        }
+        Allay marta = this.getOrCreateMarta(serverLevel);
+        if (marta == null || !marta.isAlive()) {
+            return;
+        }
+        this.keepMartaUntamperable(marta);
+        double distanceSqr = marta.distanceToSqr(this);
+        if (distanceSqr > MARTA_TELEPORT_DISTANCE_SQR) {
+            marta.teleportTo(this.getX() + 1.0D, this.getY() + 0.5D, this.getZ() + 1.0D);
+            marta.getNavigation().stop();
+            return;
+        }
+        if (distanceSqr > MARTA_FOLLOW_DISTANCE_SQR && marta.getNavigation().isDone()) {
+            marta.getNavigation().moveTo(this, 0.55D);
+        }
+    }
+
+    private Allay getOrCreateMarta(ServerLevel serverLevel) {
+        Allay existing = this.findMarta(serverLevel);
+        if (existing != null) {
+            return existing;
+        }
+        Allay marta = EntityType.ALLAY.create(serverLevel);
+        if (marta == null) {
+            return null;
+        }
+        marta.moveTo(this.getX() + 1.0D, this.getY() + 0.25D, this.getZ() + 1.0D, this.getYRot(), 0.0F);
+        this.keepMartaUntamperable(marta);
+        if (serverLevel.addFreshEntity(marta)) {
+            this.martaUuid = marta.getUUID();
+            return marta;
+        }
+        return null;
+    }
+
+    private Allay findMarta(ServerLevel serverLevel) {
+        if (this.martaUuid != null && serverLevel.getEntity(this.martaUuid) instanceof Allay marta && this.isMarta(marta)) {
+            return marta;
+        }
+        AABB searchArea = this.getBoundingBox().inflate(48.0D);
+        List<Allay> candidates = serverLevel.getEntitiesOfClass(Allay.class, searchArea, this::isMarta);
+        if (candidates.isEmpty()) {
+            this.martaUuid = null;
+            return null;
+        }
+        Allay nearest = candidates.get(0);
+        double nearestDistance = nearest.distanceToSqr(this);
+        for (int i = 1; i < candidates.size(); i++) {
+            Allay candidate = candidates.get(i);
+            double distance = candidate.distanceToSqr(this);
+            if (distance < nearestDistance) {
+                nearest = candidate;
+                nearestDistance = distance;
+            }
+        }
+        this.martaUuid = nearest.getUUID();
+        return nearest;
+    }
+
+    private boolean isMarta(Allay allay) {
+        return allay.getTags().contains(MARTA_TAG)
+                && allay.getPersistentData().getString(MARTA_OWNER_TAG).equals(this.getStringUUID());
+    }
+
+    private void keepMartaUntamperable(Allay marta) {
+        marta.addTag(MARTA_TAG);
+        marta.getPersistentData().putString(MARTA_OWNER_TAG, this.getStringUUID());
+        marta.setCustomName(Component.translatable("entity.hc_characters.marta"));
+        marta.setCustomNameVisible(true);
+        marta.setPersistenceRequired();
+        marta.setCanPickUpLoot(false);
+        marta.setInvulnerable(true);
+        // marta.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND));
+        if (marta instanceof Mob mob) {
+            mob.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
+        }
+    }
+
+    private void discardMartaCompanion() {
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        Allay marta = this.findMarta(serverLevel);
+        if (marta != null) {
+            marta.discard();
+        }
+        this.martaUuid = null;
+    }
+
+    public static boolean isProtectedMarta(Entity entity) {
+        return entity instanceof Allay && entity.getTags().contains(MARTA_TAG);
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        if (!this.level().isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK) {
+            this.discardMartaCompanion();
+        }
+        super.remove(reason);
     }
 
     private void tickEncounterLifetime() {
@@ -247,8 +361,8 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         }
         if (this.encounterTicksLeft <= 0) {
             this.sayNearby(this.encounterMode == EncounterMode.BOARD_VISIT
-                    ? "El tablón ya dijo suficiente por hoy. Nos veremos bajo piedra."
-                    : "La veta se está enfriando. Me muevo antes de que la cueva aprenda mi nombre.");
+                    ? "dialogue.soa.marjorie.encounter_end.board"
+                    : "dialogue.soa.marjorie.encounter_end.cave");
             this.discard();
         }
     }
@@ -315,7 +429,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         if (player instanceof ServerPlayer serverPlayer) {
             SoaMarjorieRelationship.recordBoardGift(serverPlayer);
         }
-        this.sayTo(player, "Toma. No es tesoro, pero en una mina esto vale mas de lo que parece.");
+        this.sayTo(player, "dialogue.soa.marjorie.board_gift");
     }
 
     private ItemStack createBoardGift() {
@@ -356,17 +470,17 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             String[] lines;
             if (this.isBoardVisit()) {
                 lines = new String[] {
-                        "Los tablones atraen aventureros. Los aventureros atraen historias. Y a veces, problemas.",
-                        "No todos los encargos se aceptan por recompensa. Algunos se aceptan por curiosidad.",
-                        "Si buscas mina, no sigas solo el brillo. Sigue el aire frio.",
-                        "Un buen trabajo empieza antes del primer golpe de pico."
+                        "dialogue.soa.marjorie.nearby.board_idle.1",
+                        "dialogue.soa.marjorie.nearby.board_idle.2",
+                        "dialogue.soa.marjorie.nearby.board_idle.3",
+                        "dialogue.soa.marjorie.nearby.board_idle.4"
                 };
             } else {
                 lines = new String[] {
-                        "Esta veta no esta sola... hay algo bueno cerca.",
-                        "Antorcha cada pocos pasos. La oscuridad cobra intereses.",
-                        "Si el eco vuelve seco, hay camara grande adelante.",
-                        "La netherita no perdona manos torpes. Por suerte, las mias no lo son."
+                        "dialogue.soa.marjorie.nearby.cave_idle.1",
+                        "dialogue.soa.marjorie.nearby.cave_idle.2",
+                        "dialogue.soa.marjorie.nearby.cave_idle.3",
+                        "dialogue.soa.marjorie.nearby.cave_idle.4"
                 };
             }
             this.sayNearby(lines[this.getRandom().nextInt(lines.length)]);
@@ -383,7 +497,23 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     }
 
     private void sayTo(Player player, String text) {
-        player.displayClientMessage(Component.literal("<SoaMarjorie> " + text), false);
+        player.displayClientMessage(
+                Component.literal("<")
+                        .append(Component.translatable(SOA_KEY))
+                        .append("> ")
+                        .append(asDialogueComponent(text)),
+                false
+        );
+    }
+
+    private static Component asDialogueComponent(String text) {
+        if (text == null || text.isBlank()) {
+            return Component.empty();
+        }
+        if (!text.contains(" ")) {
+            return Component.translatable(text);
+        }
+        return Component.literal(text);
     }
 
     private Player findNearestPlayer(double radius) {
@@ -494,7 +624,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         if (player instanceof ServerPlayer serverPlayer) {
             SoaMarjorieRelationship.recordAttack(serverPlayer);
         }
-        this.sayTo(player, "Una advertencia basta. La siguiente abre hasta bedrock.");
+        this.sayTo(player, "dialogue.soa.marjorie.attack_warning");
         this.getLookControl().setLookAt(player, 30.0F, 30.0F);
 
         double distanceSqr = this.distanceToSqr(player);
@@ -574,6 +704,9 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         if (this.encounterAnchor != null) {
             compound.putLong("SoaMarjorieEncounterAnchor", this.encounterAnchor.asLong());
         }
+        if (this.martaUuid != null) {
+            compound.putUUID(MARTA_COMPANION_UUID_TAG, this.martaUuid);
+        }
     }
 
     @Override
@@ -591,6 +724,11 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             this.encounterAnchor = BlockPos.of(compound.getLong("SoaMarjorieEncounterAnchor"));
         } else {
             this.encounterAnchor = null;
+        }
+        if (compound.hasUUID(MARTA_COMPANION_UUID_TAG)) {
+            this.martaUuid = compound.getUUID(MARTA_COMPANION_UUID_TAG);
+        } else {
+            this.martaUuid = null;
         }
     }
 
@@ -718,7 +856,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             if (this.targetPos != null && this.placeTorch(this.targetPos)) {
                 this.soa.drawTorchBriefly();
                 if (this.soa.getRandom().nextInt(4) == 0) {
-                    this.soa.sayNearby("Aquí faltaba luz. Los monstruos no pagan alquiler.");
+                    this.soa.sayNearby("dialogue.soa.marjorie.torch_place");
                 }
                 this.lastTorchPos = this.targetPos.immutable();
                 this.cooldown = PLACE_COOLDOWN_TICKS + this.soa.getRandom().nextInt(80);
@@ -841,7 +979,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             this.workTicks = WORK_TICKS_PER_BLOCK + this.soa.getRandom().nextInt(30);
             this.soa.drawMiningPickaxeBriefly();
             if (this.soa.getRandom().nextInt(3) == 0) {
-                this.soa.sayNearby("Esa veta está expuesta. Un golpe limpio y seguimos.");
+                this.soa.sayNearby("dialogue.soa.marjorie.mining_start");
             }
             this.moveToStandPos();
         }
@@ -909,7 +1047,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             serverLevel.setBlock(this.orePos, Blocks.AIR.defaultBlockState(), 3);
             this.shareCompanionReward(drops);
             if (this.soa.getRandom().nextInt(5) == 0) {
-                this.soa.sayNearby("Buena compañía merece una parte. Pequeña, pero justa.");
+                this.soa.sayNearby("dialogue.soa.marjorie.share_reward");
             }
             return true;
         }

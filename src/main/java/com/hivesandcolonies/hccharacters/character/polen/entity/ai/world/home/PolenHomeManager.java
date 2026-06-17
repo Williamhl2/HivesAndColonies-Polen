@@ -1,5 +1,7 @@
 package com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home;
 
+import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
+import com.hivesandcolonies.hccharacters.character.polen.block.PolenBeeBedBlock;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
@@ -8,8 +10,12 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryF
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStateManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
 
 public final class PolenHomeManager {
+    private static final int AUTO_BEE_BED_HORIZONTAL_RADIUS = 8;
+    private static final int AUTO_BEE_BED_VERTICAL_RADIUS = 3;
+
     private PolenHomeManager() {
     }
 
@@ -63,6 +69,101 @@ public final class PolenHomeManager {
         }
 
         return target;
+    }
+
+    public static boolean hasRememberedResidence(PolenEntity polen) {
+        if (polen == null) {
+            return false;
+        }
+
+        return polen.getAiState().getResidenceStage() != PolenResidenceStage.NONE
+                && polen.getAiState().getResidenceAnchorPos() != null
+                && polen.getAiState().getResidenceUsePos() != null;
+    }
+
+    public static boolean hasValidRememberedResidence(PolenEntity polen) {
+        return getRememberedResidence(polen) != null;
+    }
+
+    public static boolean clearInvalidResidence(PolenEntity polen) {
+        if (!hasRememberedResidence(polen) || hasValidRememberedResidence(polen)) {
+            return false;
+        }
+
+        polen.getAiState().setResidenceState(null, null, "", PolenResidenceStage.NONE);
+        polen.syncHomeState();
+        return true;
+    }
+
+    public static boolean tryAutoAssignNearbyBeeBed(PolenEntity polen) {
+        if (polen == null || hasValidRememberedResidence(polen)) {
+            return false;
+        }
+
+        PolenResidenceTarget target = findNearbyBeeBedResidence(
+                polen,
+                polen.blockPosition(),
+                AUTO_BEE_BED_HORIZONTAL_RADIUS,
+                AUTO_BEE_BED_VERTICAL_RADIUS
+        );
+        if (target == null) {
+            return false;
+        }
+
+        rememberResidence(polen, target);
+        return true;
+    }
+
+    public static PolenResidenceTarget findNearbyBeeBedResidence(
+            PolenEntity polen,
+            BlockPos origin,
+            int horizontalRadius,
+            int verticalRadius
+    ) {
+        if (polen == null || origin == null) {
+            return null;
+        }
+
+        BlockPos bestAnchorPos = null;
+        BlockPos bestUsePos = null;
+        double bestDistance = Double.MAX_VALUE;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+
+        for (int dx = -horizontalRadius; dx <= horizontalRadius; dx++) {
+            for (int dz = -horizontalRadius; dz <= horizontalRadius; dz++) {
+                for (int dy = -verticalRadius; dy <= verticalRadius; dy++) {
+                    cursor.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
+                    BlockState state = polen.level().getBlockState(cursor);
+                    if (!state.is(ModBlocks.POLEN_BEE_BED.get())) {
+                        continue;
+                    }
+
+                    BlockPos anchorPos = PolenBeeBedBlock.getFootPos(state, cursor).immutable();
+                    BlockPos usePos = PolenSleepController.findBestBedAccessPos(polen, anchorPos);
+                    if (usePos == null) {
+                        continue;
+                    }
+
+                    double distance = anchorPos.distSqr(origin);
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        bestAnchorPos = anchorPos;
+                        bestUsePos = usePos.immutable();
+                    }
+                }
+            }
+        }
+
+        if (bestAnchorPos == null || bestUsePos == null) {
+            return null;
+        }
+
+        return new PolenResidenceTarget(
+                bestAnchorPos,
+                bestUsePos,
+                "bee_bed",
+                PolenResidenceStage.OWN_SPACE
+        );
     }
 
     public static BlockPos getValidResidenceUsePos(PolenEntity polen) {

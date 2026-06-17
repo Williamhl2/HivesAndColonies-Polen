@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.FlowerBlock;
 import com.hivesandcolonies.hccharacters.character.polen.dialogue.PolenDialogueManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenResidenceStage;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenResidenceTarget;
@@ -26,7 +27,6 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryF
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
 import com.hivesandcolonies.hccharacters.character.polen.story.PolenWorldEventTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -121,33 +121,12 @@ public final class PolenItemInteractionController {
             return InteractionResult.FAIL;
         }
 
-        BlockPos origin = polen.blockPosition();
-        BlockPos best = null;
-        double bestDistance = Double.MAX_VALUE;
-        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-        for (int dx = -8; dx <= 8; dx++) {
-            for (int dy = -3; dy <= 3; dy++) {
-                for (int dz = -8; dz <= 8; dz++) {
-                    cursor.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
-                    BlockState state = level.getBlockState(cursor);
-                    if (!(state.getBlock() instanceof PolenBeeBedBlock)) {
-                        continue;
-                    }
-                    BlockPos footPos = PolenBeeBedBlock.getFootPos(state, cursor).immutable();
-                    double distance = footPos.distSqr(origin);
-                    if (distance < bestDistance) {
-                        bestDistance = distance;
-                        best = footPos;
-                    }
-                }
-            }
-        }
-
-        if (best == null) {
+        PolenResidenceTarget target = PolenHomeManager.findNearbyBeeBedResidence(polen, polen.blockPosition(), 8, 3);
+        if (target == null) {
             sendStatus(player, "message.polen.ui.action.no_nearby_bed");
             return InteractionResult.FAIL;
         }
-        return bindBeeBed(player, level, polen, best);
+        return bindBeeBed(player, level, polen, target.anchorPos());
     }
 
     private static InteractionResult bindBeeBed(Player player, Level level, PolenEntity polen, BlockPos clickedPos) {
@@ -157,7 +136,7 @@ public final class PolenItemInteractionController {
         }
 
         BlockPos footPos = PolenBeeBedBlock.getFootPos(state, clickedPos).immutable();
-        BlockPos usePos = findSafeBedAccessPos(polen, footPos);
+        BlockPos usePos = PolenSleepController.findBestBedAccessPos(polen, footPos);
         if (usePos == null) {
             sendStatus(player, "message.polen.bee_bed.bind.no_access");
             return InteractionResult.FAIL;
@@ -172,6 +151,7 @@ public final class PolenItemInteractionController {
         PolenHomeManager.rememberResidence(polen, target);
         if (level instanceof ServerLevel serverLevel) {
             PolenWorldStateManager.rememberPolenHomeBed(serverLevel, footPos);
+            PolenWorldStateManager.adjustInterest(serverLevel, PolenInterest.COLONIES, 4);
             PolenRelationshipEvents.homeAssigned(player);
             spawnResidenceBurst(serverLevel, usePos);
             spawnPolenResponse(serverLevel, polen);
@@ -179,30 +159,6 @@ public final class PolenItemInteractionController {
         }
         sendStatus(player, "message.polen.bee_bed.bind.success");
         return InteractionResult.SUCCESS;
-    }
-
-    private static BlockPos findSafeBedAccessPos(PolenEntity polen, BlockPos footPos) {
-        BlockState state = polen.level().getBlockState(footPos);
-        if (!(state.getBlock() instanceof PolenBeeBedBlock)) {
-            return null;
-        }
-
-        for (Direction direction : Direction.Plane.HORIZONTAL) {
-            BlockPos candidate = footPos.relative(direction);
-            if (PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)) {
-                return candidate;
-            }
-        }
-
-        BlockPos headPos = PolenBeeBedBlock.getHeadPos(state, footPos);
-        for (Direction direction : Direction.Plane.HORIZONTAL) {
-            BlockPos candidate = headPos.relative(direction);
-            if (PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)) {
-                return candidate;
-            }
-        }
-
-        return PolenSafetyEvaluator.isSafeStandingSpot(polen, footPos) ? footPos : null;
     }
 
     private static GiftResult classifyGift(ItemStack stack) {
@@ -336,6 +292,11 @@ public final class PolenItemInteractionController {
 
         if (clickedState.is(BlockTags.FLOWERS) || isHive(clickedState)) {
             polen.rememberInterestingSpot(clickedPos);
+            PolenWorldStateManager.adjustInterest(
+                    serverLevel,
+                    clickedState.is(BlockTags.FLOWERS) ? PolenInterest.EXPLORATION : PolenInterest.BEES,
+                    4
+            );
             PolenRelationshipEvents.focus(
                     player,
                     clickedState.is(BlockTags.FLOWERS) ? "nature" : "bees",
@@ -365,6 +326,7 @@ public final class PolenItemInteractionController {
 
         if (isSourceLike(clickedState)) {
             polen.rememberInterestingSpot(clickedPos);
+            PolenWorldStateManager.adjustInterest(serverLevel, PolenInterest.MAGIC, 5);
             PolenWorldEventTriggers.onFirstSourceDiscovered(serverLevel, clickedPos);
             PolenRelationshipEvents.focus(player, "source", 1, "A faint thread of Source answers near Polen.");
             spawnSourceBurst(serverLevel, clickedPos);
@@ -416,6 +378,7 @@ public final class PolenItemInteractionController {
         }
 
         PolenRelationshipEvents.restingMarker(player);
+        PolenWorldStateManager.adjustInterest(serverLevel, PolenInterest.COLONIES, 3);
         PolenWorldEventTriggers.onFirstColonyFounded(serverLevel, targetPos);
         spawnRestingBurst(serverLevel, targetPos);
         spawnPolenResponse(serverLevel, polen);
@@ -473,6 +436,7 @@ public final class PolenItemInteractionController {
         }
 
         PolenRelationshipEvents.homeAssigned(player);
+        PolenWorldStateManager.adjustInterest(serverLevel, PolenInterest.COLONIES, 4);
         PolenWorldEventTriggers.onFirstResidenceClaimed(serverLevel, residenceTarget.usePos());
         spawnResidenceBurst(serverLevel, residenceTarget.usePos());
         spawnPolenResponse(serverLevel, polen);

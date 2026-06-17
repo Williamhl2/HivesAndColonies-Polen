@@ -25,6 +25,8 @@ public class PolenSeekSafetyGoal extends Goal {
     private static final int MAX_FAILED_REPATHS = 6;
     private static final int BLINK_COOLDOWN_TICKS = 30;
     private static final int STUCK_TICKS_BEFORE_BLINK = 18;
+    private static final int IMMEDIATE_BLINK_SEARCH_RADIUS = 8;
+    private static final int IMMEDIATE_BLINK_DISTANCE = 8;
 
     private final PolenEntity polen;
 
@@ -124,6 +126,12 @@ public class PolenSeekSafetyGoal extends Goal {
         PolenTaskController.markActive(this.polen, PolenTaskType.SEEK_SAFETY, "seeking_safety");
         PolenGestureController.triggerGesture(this.polen, PolenGesture.STARTLED);
         playUnsafeDialogueIfNeeded();
+        if (PolenSafetyNavigator.hasImmediateHostileThreat(this.polen)
+                && PolenSafetyNavigator.tryImmediateHostileBlink(this.polen, IMMEDIATE_BLINK_SEARCH_RADIUS, IMMEDIATE_BLINK_DISTANCE)) {
+            this.blinkCooldownTicks = BLINK_COOLDOWN_TICKS;
+            this.stuckTicks = 0;
+            planSafeEscapeRoute(24);
+        }
         this.polen.getAiState().setSearchState(
                 getSearchType(),
                 PolenSearchStatus.PATHING,
@@ -182,9 +190,38 @@ public class PolenSeekSafetyGoal extends Goal {
             return;
         }
 
+        if (this.blinkCooldownTicks == 0
+                && PolenSafetyNavigator.hasImmediateHostileThreat(this.polen)
+                && PolenSafetyNavigator.tryImmediateHostileBlink(this.polen, IMMEDIATE_BLINK_SEARCH_RADIUS, IMMEDIATE_BLINK_DISTANCE)) {
+            this.polen.getAiState().setSearchState(
+                    getSearchType(),
+                    PolenSearchStatus.BLINKING,
+                    this.targetSpot,
+                    this.targetSpot,
+                    contextualSearchNote("immediate_hostile_blink")
+            );
+            this.blinkCooldownTicks = BLINK_COOLDOWN_TICKS;
+            this.stuckTicks = 0;
+            this.lastDistanceSqr = Double.MAX_VALUE;
+            if (!planSafeEscapeRoute(24)) {
+                planFallbackExploration(20);
+            }
+            moveToTargetSpot();
+            return;
+        }
+
         double distanceSqr = this.polen.distanceToSqr(Vec3.atCenterOf(this.targetSpot));
         boolean reachedTarget = distanceSqr <= STOP_DISTANCE_SQR;
         updateStuckCounter(distanceSqr);
+
+        if (!PolenSafetyNavigator.isEscapeTargetStillUseful(this.polen, this.targetSpot) && this.repathCooldownTicks == 0) {
+            if (planSafeEscapeRoute(24 + this.failedRepathAttempts * 6)) {
+                this.failedRepathAttempts = 0;
+                this.repathCooldownTicks = REPATH_COOLDOWN_TICKS;
+                moveToTargetSpot();
+                return;
+            }
+        }
 
         if (!reachedTarget && this.blinkCooldownTicks == 0
                 && (this.stuckTicks >= STUCK_TICKS_BEFORE_BLINK || this.polen.getNavigation().isDone())) {
@@ -274,7 +311,10 @@ public class PolenSeekSafetyGoal extends Goal {
     }
 
     private boolean planSafeEscapeRoute(int radius) {
-        if (PolenSafetyNavigator.shouldSeekRainShelter(this.polen)) {
+        BlockPos immediateEscape = PolenSafetyNavigator.findImmediateHostileEscapeSpot(this.polen, Math.max(8, radius));
+        if (immediateEscape != null) {
+            this.targetSpot = immediateEscape;
+        } else if (PolenSafetyNavigator.shouldSeekRainShelter(this.polen)) {
             this.targetSpot = PolenSafetyNavigator.findNearbyShelteredSpot(this.polen, Math.max(8, radius));
         } else if (PolenSafetyNavigator.shouldSeekNightLight(this.polen)) {
             this.targetSpot = PolenSafetyNavigator.findNearbyNightLightSpot(this.polen, Math.max(10, radius));

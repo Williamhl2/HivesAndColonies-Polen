@@ -3,7 +3,11 @@ package com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.g
 import java.util.EnumSet;
 
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.goal.Goal;
 
@@ -38,9 +42,24 @@ public class PolenTrustWalkGoal extends Goal {
             return;
         }
 
+        if (this.polen.isSleeping()) {
+            stopTrustWalk("message.polen.trust_walk.sleeping");
+            return;
+        }
+        if (this.polen.getCurrentTask().isUrgent()
+                || PolenSleepController.hasImmediateThreat(this.polen)
+                || PolenSafetyNavigator.isInUnsafeArea(this.polen)) {
+            stopTrustWalk("message.polen.trust_walk.unsafe");
+            return;
+        }
+        if (this.polen.hasAssignedHome() && PolenHomeManager.isNearHomeCenter(this.polen, 3.0D)) {
+            stopTrustWalk("message.polen.trust_walk.reached_home");
+            return;
+        }
+
         double distance = this.polen.distanceToSqr(player);
         if (distance > CANCEL_DISTANCE_SQR) {
-            this.polen.stopTrustWalk();
+            stopTrustWalk("message.polen.trust_walk.too_far");
             return;
         }
 
@@ -55,5 +74,13 @@ public class PolenTrustWalkGoal extends Goal {
     @Override
     public void stop() {
         this.polen.getNavigation().stop();
+    }
+
+    private void stopTrustWalk(String translationKey) {
+        ServerPlayer player = this.polen.getTrustWalkPlayer();
+        this.polen.stopTrustWalk();
+        if (player != null) {
+            player.displayClientMessage(Component.translatable(translationKey), true);
+        }
     }
 }

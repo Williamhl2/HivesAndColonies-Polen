@@ -8,19 +8,29 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.PolenChapte
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenRelationshipEvents;
+import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStateManager;
 import com.hivesandcolonies.hccharacters.character.polen.item.interaction.PolenItemInteractionController;
 import com.hivesandcolonies.hccharacters.character.polen.progression.player.PolenPlayerRelationshipManager;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenShelterValidator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.interests.PolenInterest;
+import com.hivesandcolonies.hccharacters.common.network.ClientboundPolenProfilePayload;
 import net.minecraft.core.BlockPos;
 import com.hivesandcolonies.hccharacters.character.polen.story.PolenStoryEventManager;
+import com.hivesandcolonies.hccharacters.character.polen.story.PolenMemoryType;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.neoforged.neoforge.network.PacketDistributor;
+
+import java.util.Locale;
 
 public final class PolenInteractionController {
+    private static final int TRUST_WALK_DURATION_TICKS = 20 * 60 * 4;
 
     private PolenInteractionController() {
     }
@@ -31,9 +41,6 @@ public final class PolenInteractionController {
         }
 
         if (polen.level().isClientSide) {
-            if (player.getItemInHand(hand).isEmpty() && !player.isShiftKeyDown()) {
-                openClientProfile(polen);
-            }
             return InteractionResult.SUCCESS;
         }
 
@@ -67,12 +74,14 @@ public final class PolenInteractionController {
         if (shouldRevealName(player, affinity)) {
             PolenStoryEventManager.playNameReveal(player);
             polen.refreshDisplayName();
+            sendProfileToClient(polen, player);
             return InteractionResult.SUCCESS;
         }
 
         if (shouldRecognizeShelter(polen, player, currentChapter)) {
             PolenStoryEventManager.playShelterRecognition(player);
             polen.refreshDisplayName();
+            sendProfileToClient(polen, player);
             return InteractionResult.SUCCESS;
         }
 
@@ -87,6 +96,7 @@ public final class PolenInteractionController {
         );
 
         polen.refreshDisplayName();
+        sendProfileToClient(polen, player);
         return InteractionResult.SUCCESS;
     }
 
@@ -96,19 +106,27 @@ public final class PolenInteractionController {
             return InteractionResult.SUCCESS;
         }
 
-        int affinity = PolenAffinityManager.getAffinity(player);
-        if (affinity < PolenAffinityLevels.FIRST_TRUST) {
-            player.displayClientMessage(Component.translatable("message.polen.trust_walk.not_enough_trust"), true);
-            return InteractionResult.SUCCESS;
-        }
-
-        if (polen.isTrustWalkActive() && polen.getTrustWalkPlayer() == serverPlayer) {
+        if (polen.isTrustWalkActive()) {
+            ServerPlayer activePlayer = polen.getTrustWalkPlayer();
+            if (activePlayer == serverPlayer) {
+                polen.stopTrustWalk();
+                player.displayClientMessage(Component.translatable("message.polen.trust_walk.stopped"), true);
+                return InteractionResult.SUCCESS;
+            }
+            if (activePlayer != null && activePlayer.isAlive()) {
+                player.displayClientMessage(Component.translatable("message.polen.trust_walk.busy"), true);
+                return InteractionResult.SUCCESS;
+            }
             polen.stopTrustWalk();
-            player.displayClientMessage(Component.translatable("message.polen.trust_walk.stopped"), true);
+        }
+
+        String blockedReasonKey = getTrustWalkBlockedReason(polen, player);
+        if (blockedReasonKey != null) {
+            player.displayClientMessage(Component.translatable(blockedReasonKey), true);
             return InteractionResult.SUCCESS;
         }
 
-        polen.startTrustWalk(serverPlayer, 20 * 60 * 4);
+        polen.startTrustWalk(serverPlayer, TRUST_WALK_DURATION_TICKS);
         PolenRelationshipEvents.trustWalkStarted(player);
         player.displayClientMessage(Component.translatable("message.polen.trust_walk.started"), true);
         return InteractionResult.SUCCESS;
@@ -143,9 +161,56 @@ public final class PolenInteractionController {
         }
     }
 
+    private static void sendProfileToClient(PolenEntity polen, Player player) {
+        if (!(player instanceof ServerPlayer serverPlayer) || polen == null) {
+            return;
+        }
+
+        String storyStageKey = "screen.polen.profile.story."
+                + PolenWorldStateManager.storyStage(serverPlayer.serverLevel()).name().toLowerCase(Locale.ROOT);
+        PacketDistributor.sendToPlayer(serverPlayer, new ClientboundPolenProfilePayload(
+                polen.getId(),
+                PolenPlayerRelationshipManager.getAffinity(serverPlayer),
+                PolenPlayerRelationshipManager.getNextAffinityThreshold(serverPlayer),
+                PolenPlayerRelationshipManager.getInteractionCount(serverPlayer),
+                PolenChapterManager.getCurrentChapter(serverPlayer),
+                PolenPlayerRelationshipManager.isTrustWalkUnlocked(serverPlayer),
+                PolenPlayerRelationshipManager.hasAnyGiftCooldown(serverPlayer),
+                PolenPlayerRelationshipManager.getRelationshipRankText(serverPlayer),
+                storyStageKey,
+                PolenWorldStateManager.interest(serverPlayer.serverLevel(), PolenInterest.BEES),
+                PolenWorldStateManager.interest(serverPlayer.serverLevel(), PolenInterest.MAGIC),
+                PolenWorldStateManager.interest(serverPlayer.serverLevel(), PolenInterest.COLONIES),
+                PolenWorldStateManager.interest(serverPlayer.serverLevel(), PolenInterest.FOOD),
+                PolenWorldStateManager.interest(serverPlayer.serverLevel(), PolenInterest.DECORATION),
+                PolenWorldStateManager.interest(serverPlayer.serverLevel(), PolenInterest.EXPLORATION),
+                PolenStoryFlagsManager.hasFlag(serverPlayer.serverLevel(), PolenMemoryType.FIRST_FLOWER.getFlag()),
+                PolenStoryFlagsManager.hasFlag(serverPlayer.serverLevel(), PolenMemoryType.FIRST_HIVE.getFlag()),
+                PolenStoryFlagsManager.hasFlag(serverPlayer.serverLevel(), PolenMemoryType.FIRST_SOURCE.getFlag()),
+                PolenStoryFlagsManager.hasFlag(serverPlayer.serverLevel(), PolenMemoryType.FIRST_COLONY.getFlag()),
+                PolenStoryFlagsManager.hasFlag(serverPlayer.serverLevel(), PolenMemoryType.FIRST_RESIDENCE.getFlag())
+        ));
+    }
+
     private static boolean shouldRevealName(Player player, int affinity) {
         return !PolenStoryFlagsManager.hasFlag(player, PolenStoryFlag.NAME_REVEALED)
                 && affinity >= PolenAffinityLevels.NAME_REVEAL;
+    }
+
+    private static String getTrustWalkBlockedReason(PolenEntity polen, Player player) {
+        int affinity = PolenAffinityManager.getAffinity(player);
+        if (affinity < PolenAffinityLevels.FIRST_TRUST) {
+            return "message.polen.trust_walk.not_enough_trust";
+        }
+        if (polen.isSleeping()) {
+            return "message.polen.trust_walk.sleeping";
+        }
+        if (polen.getCurrentTask().isUrgent()
+                || PolenSleepController.hasImmediateThreat(polen)
+                || PolenSafetyNavigator.isInUnsafeArea(polen)) {
+            return "message.polen.trust_walk.unsafe";
+        }
+        return null;
     }
 
     private static boolean shouldRecognizeShelter(PolenEntity polen, Player player, int currentChapter) {

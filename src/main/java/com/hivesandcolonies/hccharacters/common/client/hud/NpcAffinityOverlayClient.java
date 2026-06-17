@@ -11,6 +11,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -97,11 +98,20 @@ public final class NpcAffinityOverlayClient {
 
         int scaledTextWidth = (int) ((WIDTH - PADDING * 2) / TEXT_SCALE);
         String deltaText = payload.delta() > 0 ? "+" + payload.delta() : Integer.toString(payload.delta());
-        String title = payload.levelUp() ? "Nuevo rango con " + payload.characterName() : payload.characterName() + "  " + deltaText + " afinidad";
-        drawScaledString(guiGraphics, font, trim(font, title, scaledTextWidth), x + PADDING, y + 6, text);
+        Component characterName = componentFromTextOrKey(payload.characterName());
+        Component title = payload.levelUp()
+                ? Component.translatable("overlay.hc_characters.affinity.title.level_up", characterName)
+                : Component.translatable("overlay.hc_characters.affinity.title.delta", characterName, deltaText);
+        drawScaledString(guiGraphics, font, trim(font, title.getString(), scaledTextWidth), x + PADDING, y + 6, text);
 
-        String message = payload.levelUp() ? payload.rankName() + ": " + payload.message() : payload.message();
-        List<FormattedCharSequence> messageLines = font.split(Component.literal(message), scaledTextWidth);
+        Component message = payload.levelUp()
+                ? Component.translatable(
+                        "overlay.hc_characters.affinity.message.level_up",
+                        componentFromTextOrKey(payload.rankName()),
+                        componentFromTextOrKey(payload.message())
+                )
+                : componentFromTextOrKey(payload.message());
+        List<FormattedCharSequence> messageLines = font.split(message, scaledTextWidth);
         if (!messageLines.isEmpty()) {
             drawScaledString(guiGraphics, font, messageLines.get(0), x + PADDING, y + 18, muted);
         }
@@ -148,6 +158,15 @@ public final class NpcAffinityOverlayClient {
             return text;
         }
         return font.plainSubstrByWidth(text, Math.max(0, maxWidth - font.width("..."))) + "...";
+    }
+
+    private static Component componentFromTextOrKey(String textOrKey) {
+        if (textOrKey == null || textOrKey.isBlank()) {
+            return Component.empty();
+        }
+        return Language.getInstance().has(textOrKey)
+                ? Component.translatable(textOrKey)
+                : Component.literal(textOrKey);
     }
 
     private record Notification(ClientboundNpcAffinityNotificationPayload payload, long createdAtMillis) {

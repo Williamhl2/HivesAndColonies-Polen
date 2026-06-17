@@ -18,6 +18,7 @@ public class PolenReturnToBedGoal extends Goal {
     private static final double MOVE_SPEED = 1.0D;
     private static final double BED_REACHED_DISTANCE_SQR = 5.0D * 5.0D;
     private static final double ACCESS_REACHED_DISTANCE_SQR = 2.0D * 2.0D;
+    private static final double THREAT_COMMIT_DISTANCE_SQR = 6.0D * 6.0D;
     private static final int REPATH_COOLDOWN_TICKS = 12;
     private static final int STUCK_TICKS_BEFORE_REPATH = 24;
     private static final int STUCK_TICKS_BEFORE_BLINK = 55;
@@ -52,6 +53,10 @@ public class PolenReturnToBedGoal extends Goal {
             return false;
         }
 
+        if (shouldYieldToImmediateThreat()) {
+            return false;
+        }
+
         if (PolenSleepController.tryBeginSleeping(this.polen, this.bedPos, "sleeping_after_bed_return")) {
             return false;
         }
@@ -67,6 +72,7 @@ public class PolenReturnToBedGoal extends Goal {
                 && this.accessPos != null
                 && this.failedRepathAttempts <= MAX_FAILED_REPATHS
                 && shouldReturnToBedNow()
+                && !shouldYieldToImmediateThreat()
                 && PolenSleepController.isUsableBed(this.polen.level(), this.bedPos);
     }
 
@@ -88,6 +94,19 @@ public class PolenReturnToBedGoal extends Goal {
     @Override
     public void tick() {
         if (this.bedPos == null || this.accessPos == null) {
+            return;
+        }
+
+        if (shouldYieldToImmediateThreat()) {
+            this.failedRepathAttempts = MAX_FAILED_REPATHS + 1;
+            this.polen.getNavigation().stop();
+            this.polen.getAiState().setSearchState(
+                    PolenSearchType.REST,
+                    PolenSearchStatus.FAILED,
+                    this.accessPos,
+                    this.bedPos,
+                    "yielding_to_immediate_threat"
+            );
             return;
         }
 
@@ -166,6 +185,19 @@ public class PolenReturnToBedGoal extends Goal {
 
     private boolean shouldReturnToBedNow() {
         return PolenSleepController.shouldReturnToSafeBedNow(this.polen);
+    }
+
+    private boolean shouldYieldToImmediateThreat() {
+        if (!PolenSleepController.hasImmediateThreat(this.polen)) {
+            return false;
+        }
+
+        if (this.bedPos == null || this.accessPos == null) {
+            return true;
+        }
+
+        return this.polen.distanceToSqr(Vec3.atCenterOf(this.bedPos)) > THREAT_COMMIT_DISTANCE_SQR
+                && this.polen.distanceToSqr(Vec3.atCenterOf(this.accessPos)) > THREAT_COMMIT_DISTANCE_SQR;
     }
 
     private void resetPathState() {

@@ -19,11 +19,19 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.afforda
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.List;
+
 public final class PolenSafetyNavigator {
     private static final double MIN_RELOCATION_DISTANCE_SQR = 4.0D;
+    private static final double HOSTILE_MEMORY_RANGE = 8.0D;
+    private static final double HOSTILE_REJECTION_DISTANCE_SQR = 3.5D * 3.5D;
+    private static final double HOSTILE_AWARENESS_DISTANCE_SQR = 9.0D * 9.0D;
+    private static final double IMMEDIATE_HOSTILE_THREAT_RANGE = 5.5D;
+    private static final double IMMEDIATE_ESCAPE_MIN_GAIN_SQR = 6.0D;
     private static final int LOCAL_ESCAPE_VERTICAL_RANGE = 6;
     private static final int[] LOCAL_Y_OFFSETS = {1, 2, 0, 3, -1, 4, 5, -2, 6};
     private static final int[] SURFACE_Y_OFFSETS = {0, -1, 1, 2, -2};
@@ -77,12 +85,14 @@ public final class PolenSafetyNavigator {
 
     public static boolean isInUnsafeArea(PolenEntity polen) {
         BlockPos currentPos = polen.blockPosition();
+        BlockPos nearestHostilePos = findNearestHostilePos(polen, HOSTILE_MEMORY_RANGE);
+        boolean hostileNearby = nearestHostilePos != null;
         boolean unsafe = !PolenSafetyEvaluator.isSafeStandingSpot(polen, currentPos)
-                || hasNearbyHostile(polen, 5.0D);
+                || hostileNearby;
 
         if (PolenSafetyEvaluator.isTrulyDangerousStandingSpot(polen, currentPos)
-                || hasNearbyHostile(polen, 5.0D)) {
-            PolenDangerMemoryTracker.rememberDangerousSpot(polen, currentPos);
+                || hostileNearby) {
+            PolenDangerMemoryTracker.rememberDangerousSpot(polen, hostileNearby ? nearestHostilePos : currentPos);
         }
 
         return unsafe;
@@ -90,10 +100,11 @@ public final class PolenSafetyNavigator {
 
     public static boolean shouldSeekSafety(PolenEntity polen) {
         BlockPos currentPos = polen.blockPosition();
+        BlockPos nearestHostilePos = findNearestHostilePos(polen, 6.0D);
         boolean dangerous = PolenSafetyEvaluator.isTrulyDangerousStandingSpot(polen, currentPos)
-                || hasNearbyHostile(polen, 6.0D);
+                || nearestHostilePos != null;
         if (dangerous) {
-            PolenDangerMemoryTracker.rememberDangerousSpot(polen, currentPos);
+            PolenDangerMemoryTracker.rememberDangerousSpot(polen, nearestHostilePos != null ? nearestHostilePos : currentPos);
             return true;
         }
 
@@ -242,6 +253,125 @@ public final class PolenSafetyNavigator {
         return PolenMagicController.blinkToSafety(polen, target);
     }
 
+    public static boolean hasImmediateHostileThreat(PolenEntity polen) {
+        return findNearestHostilePos(polen, IMMEDIATE_HOSTILE_THREAT_RANGE) != null;
+    }
+
+    public static BlockPos getNearestHostileThreatPos(PolenEntity polen, double radius) {
+        return findNearestHostilePos(polen, radius);
+    }
+
+    public static BlockPos findImmediateHostileEscapeSpot(PolenEntity polen, int radius) {
+        Level level = polen.level();
+        BlockPos origin = polen.blockPosition();
+        Vec3 originCenter = Vec3.atCenterOf(origin);
+        List<Monster> hostiles = level.getEntitiesOfClass(
+                Monster.class,
+                new AABB(origin).inflate(Math.max(6, radius)),
+                monster -> monster.isAlive() && !monster.isSpectator()
+        );
+        if (hostiles.isEmpty()) {
+            return null;
+        }
+
+        Monster anchorHostile = hostiles.stream()
+                .min((left, right) -> Double.compare(left.distanceToSqr(originCenter), right.distanceToSqr(originCenter)))
+                .orElse(null);
+        if (anchorHostile == null) {
+            return null;
+        }
+
+        Vec3 anchorPos = anchorHostile.position();
+        Vec3 awayVector = originCenter.subtract(anchorPos);
+        if (awayVector.lengthSqr() < 0.001D) {
+            awayVector = new Vec3(1.0D, 0.0D, 0.0D);
+        } else {
+            awayVector = awayVector.normalize();
+        }
+
+        BlockPos bestPos = null;
+        double bestScore = Double.MAX_VALUE;
+        for (int dx = -radius; dx <= radius; dx++) {
+            for (int dz = -radius; dz <= radius; dz++) {
+                for (int dy = -2; dy <= 4; dy++) {
+                    BlockPos candidate = origin.offset(dx, dy, dz);
+                    if (candidate.equals(origin)
+                            || candidate.distSqr(origin) > (double) (radius * radius)
+                            || !PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)
+                            || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)) {
+                        continue;
+                    }
+
+                    Vec3 candidateCenter = Vec3.atCenterOf(candidate);
+                    Vec3 stepVector = candidateCenter.subtract(originCenter);
+                    if (stepVector.lengthSqr() < 0.001D) {
+                        continue;
+                    }
+
+                    double awayDot = stepVector.normalize().dot(awayVector);
+                    if (awayDot < 0.45D) {
+                        continue;
+                    }
+
+                    double score = candidate.distSqr(origin) * 0.65D - awayDot * 42.0D;
+                    boolean rejected = false;
+                    for (Monster hostile : hostiles) {
+                        double currentDistanceSqr = hostile.distanceToSqr(originCenter);
+                        double candidateDistanceSqr = hostile.distanceToSqr(candidateCenter);
+                        if (candidateDistanceSqr <= HOSTILE_REJECTION_DISTANCE_SQR
+                                || candidateDistanceSqr <= currentDistanceSqr + IMMEDIATE_ESCAPE_MIN_GAIN_SQR) {
+                            rejected = true;
+                            break;
+                        }
+
+                        score -= Math.min(80.0D, candidateDistanceSqr * 0.24D);
+                    }
+
+                    if (rejected) {
+                        continue;
+                    }
+
+                    if (level.canSeeSky(candidate)) {
+                        score -= 14.0D;
+                    }
+
+                    if (score < bestScore) {
+                        bestScore = score;
+                        bestPos = candidate.immutable();
+                    }
+                }
+            }
+        }
+
+        return bestPos;
+    }
+
+    public static boolean tryImmediateHostileBlink(PolenEntity polen, int searchRadius, int blinkDistance) {
+        BlockPos blinkTarget = findImmediateHostileBlinkTarget(polen, Math.max(4, searchRadius), Math.max(4, blinkDistance));
+        if (blinkTarget == null) {
+            return false;
+        }
+
+        polen.getNavigation().stop();
+        polen.stopQuietActivity();
+        return PolenMagicController.blinkToSafety(polen, blinkTarget);
+    }
+
+    public static boolean isEscapeTargetStillUseful(PolenEntity polen, BlockPos target) {
+        if (target == null) {
+            return false;
+        }
+
+        Monster nearestHostile = findNearestHostile(polen, Vec3.atCenterOf(polen.blockPosition()), HOSTILE_MEMORY_RANGE);
+        if (nearestHostile == null) {
+            return true;
+        }
+
+        double currentDistanceSqr = nearestHostile.distanceToSqr(Vec3.atCenterOf(polen.blockPosition()));
+        double targetDistanceSqr = nearestHostile.distanceToSqr(Vec3.atCenterOf(target));
+        return targetDistanceSqr >= currentDistanceSqr + 4.0D;
+    }
+
     private static BlockPos findBestReachableLocalEscapeSpot(PolenEntity polen, int radius) {
         BlockPos origin = polen.blockPosition();
         return PolenSearchPlanner.findBestReachable(
@@ -321,6 +451,91 @@ public final class PolenSafetyNavigator {
         return null;
     }
 
+    private static BlockPos findImmediateHostileBlinkTarget(PolenEntity polen, int searchRadius, int blinkDistance) {
+        Level level = polen.level();
+        BlockPos origin = polen.blockPosition();
+        Vec3 originCenter = Vec3.atCenterOf(origin);
+        List<Monster> hostiles = level.getEntitiesOfClass(
+                Monster.class,
+                new AABB(origin).inflate(searchRadius + 2),
+                monster -> monster.isAlive() && !monster.isSpectator()
+        );
+        if (hostiles.isEmpty()) {
+            return null;
+        }
+
+        Monster anchorHostile = hostiles.stream()
+                .min((left, right) -> Double.compare(left.distanceToSqr(originCenter), right.distanceToSqr(originCenter)))
+                .orElse(null);
+        if (anchorHostile == null) {
+            return null;
+        }
+
+        Vec3 hostileCenter = anchorHostile.position();
+        Vec3 awayVector = originCenter.subtract(hostileCenter);
+        if (awayVector.lengthSqr() < 0.001D) {
+            awayVector = new Vec3(1.0D, 0.0D, 0.0D);
+        } else {
+            awayVector = awayVector.normalize();
+        }
+
+        BlockPos bestPos = null;
+        double bestScore = Double.MAX_VALUE;
+        for (int dx = -blinkDistance; dx <= blinkDistance; dx++) {
+            for (int dz = -blinkDistance; dz <= blinkDistance; dz++) {
+                for (int dy = -2; dy <= 3; dy++) {
+                    BlockPos candidate = origin.offset(dx, dy, dz);
+                    if (candidate.equals(origin)
+                            || candidate.distSqr(origin) > (double) (blinkDistance * blinkDistance)
+                            || !PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)
+                            || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)) {
+                        continue;
+                    }
+
+                    Vec3 candidateCenter = Vec3.atCenterOf(candidate);
+                    Vec3 stepVector = candidateCenter.subtract(originCenter);
+                    if (stepVector.lengthSqr() < 0.001D) {
+                        continue;
+                    }
+
+                    double awayDot = stepVector.normalize().dot(awayVector);
+                    if (awayDot < 0.35D) {
+                        continue;
+                    }
+
+                    double score = candidate.distSqr(origin) * 0.45D - awayDot * 36.0D;
+                    boolean rejected = false;
+                    for (Monster hostile : hostiles) {
+                        double candidateDistanceSqr = hostile.distanceToSqr(candidateCenter);
+                        double currentDistanceSqr = hostile.distanceToSqr(originCenter);
+                        if (candidateDistanceSqr <= HOSTILE_REJECTION_DISTANCE_SQR
+                                || candidateDistanceSqr <= currentDistanceSqr + 1.0D) {
+                            rejected = true;
+                            break;
+                        }
+
+                        score -= Math.min(60.0D, candidateDistanceSqr * 0.18D);
+                    }
+
+                    if (rejected) {
+                        continue;
+                    }
+
+                    if (level.canSeeSky(candidate)) {
+                        score -= 12.0D;
+                    }
+
+                    if (score < bestScore) {
+                        bestScore = score;
+                        bestPos = candidate.immutable();
+                    }
+                }
+            }
+        }
+
+        return bestPos;
+    }
+
     private static BlockPos findSurfaceShelteredSpot(PolenEntity polen, int radius) {
         BlockPos origin = polen.blockPosition();
         return PolenSearchPlanner.findBestReachable(
@@ -340,6 +555,11 @@ public final class PolenSafetyNavigator {
 
         double distanceSqr = candidate.distSqr(origin);
         double score = distanceSqr;
+        double hostilePenalty = scoreHostileExposure(polen, origin, candidate);
+        if (hostilePenalty == Double.MAX_VALUE) {
+            return Double.MAX_VALUE;
+        }
+        score += hostilePenalty;
 
         int climb = candidate.getY() - origin.getY();
         if (climb > 0) {
@@ -363,6 +583,11 @@ public final class PolenSafetyNavigator {
         }
 
         double score = candidate.distSqr(origin);
+        double hostilePenalty = scoreHostileExposure(polen, origin, candidate);
+        if (hostilePenalty == Double.MAX_VALUE) {
+            return Double.MAX_VALUE;
+        }
+        score += hostilePenalty;
         score -= Math.max(0, candidate.getY() - origin.getY()) * 10.0D;
         score -= polen.level().getMaxLocalRawBrightness(candidate) * 0.75D;
 
@@ -391,6 +616,11 @@ public final class PolenSafetyNavigator {
         }
 
         double score = candidate.distSqr(origin);
+        double hostilePenalty = scoreHostileExposure(polen, origin, candidate);
+        if (hostilePenalty == Double.MAX_VALUE) {
+            return Double.MAX_VALUE;
+        }
+        score += hostilePenalty;
 
         if (kind == PolenShelterKind.TREE) {
             score -= 60.0D;
@@ -417,11 +647,65 @@ public final class PolenSafetyNavigator {
 
 
     private static boolean hasNearbyHostile(PolenEntity polen, double radius) {
-        return !polen.level().getEntitiesOfClass(
+        return findNearestHostilePos(polen, radius) != null;
+    }
+
+    private static BlockPos findNearestHostilePos(PolenEntity polen, double radius) {
+        Monster nearestHostile = findNearestHostile(polen, Vec3.atCenterOf(polen.blockPosition()), radius);
+        return nearestHostile == null ? null : nearestHostile.blockPosition().immutable();
+    }
+
+    private static double scoreHostileExposure(PolenEntity polen, BlockPos origin, BlockPos candidate) {
+        Vec3 originCenter = Vec3.atCenterOf(origin);
+        Vec3 candidateCenter = Vec3.atCenterOf(candidate);
+        List<Monster> hostiles = polen.level().getEntitiesOfClass(
                 Monster.class,
-                polen.getBoundingBox().inflate(radius),
+                new AABB(candidate).inflate(Math.sqrt(HOSTILE_AWARENESS_DISTANCE_SQR)),
                 monster -> monster.isAlive() && !monster.isSpectator()
-        ).isEmpty();
+        );
+        if (hostiles.isEmpty()) {
+            return 0.0D;
+        }
+
+        double penalty = 0.0D;
+        double currentNearestSqr = Double.MAX_VALUE;
+        double candidateNearestSqr = Double.MAX_VALUE;
+
+        for (Monster hostile : hostiles) {
+            double currentDistanceSqr = hostile.distanceToSqr(originCenter);
+            double candidateDistanceSqr = hostile.distanceToSqr(candidateCenter);
+            currentNearestSqr = Math.min(currentNearestSqr, currentDistanceSqr);
+            candidateNearestSqr = Math.min(candidateNearestSqr, candidateDistanceSqr);
+
+            if (candidateDistanceSqr <= HOSTILE_REJECTION_DISTANCE_SQR) {
+                return Double.MAX_VALUE;
+            }
+
+            double proximityPenalty = Math.max(0.0D, HOSTILE_AWARENESS_DISTANCE_SQR - candidateDistanceSqr);
+            penalty += proximityPenalty * (hostile.hasLineOfSight(polen) ? 1.8D : 0.9D);
+
+            if (candidateDistanceSqr < currentDistanceSqr) {
+                penalty += (currentDistanceSqr - candidateDistanceSqr) * 1.4D;
+            }
+        }
+
+        if (candidateNearestSqr >= currentNearestSqr) {
+            penalty -= Math.min(24.0D, (candidateNearestSqr - currentNearestSqr) * 0.20D);
+        } else {
+            penalty += (currentNearestSqr - candidateNearestSqr) * 2.2D;
+        }
+
+        return penalty;
+    }
+
+    private static Monster findNearestHostile(PolenEntity polen, Vec3 center, double radius) {
+        return polen.level().getEntitiesOfClass(
+                        Monster.class,
+                        new AABB(center, center).inflate(radius),
+                        monster -> monster.isAlive() && !monster.isSpectator()
+                ).stream()
+                .min((left, right) -> Double.compare(left.distanceToSqr(center), right.distanceToSqr(center)))
+                .orElse(null);
     }
 
     private static PolenSearchProfile withRadii(PolenSearchProfile baseProfile, int... radii) {

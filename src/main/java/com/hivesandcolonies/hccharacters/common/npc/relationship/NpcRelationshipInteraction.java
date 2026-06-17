@@ -81,7 +81,7 @@ public final class NpcRelationshipInteraction {
 
         int tier = record.trustTier();
         String dialogue = pickDialogue(npc, tier, tier0, tier1, tier2, tier3);
-        player.displayClientMessage(Component.literal("<" + speakerName + "> " + dialogue), false);
+        player.displayClientMessage(formatSpeech(speakerName, dialogue), false);
 
         NpcRewardResult reward = NpcRewardResult.none();
         long now = npc.level().getGameTime();
@@ -95,7 +95,7 @@ public final class NpcRelationshipInteraction {
                 if (player instanceof ServerPlayer serverPlayer) {
                     NpcRelationshipManager.markDirty(serverPlayer);
                 }
-                player.displayClientMessage(Component.literal("<" + speakerName + "> " + reward.message()), false);
+                player.displayClientMessage(formatSpeech(speakerName, reward.message()), false);
             }
         }
         return new Result(tier, reward);
@@ -109,9 +109,26 @@ public final class NpcRelationshipInteraction {
             default -> tier3.isEmpty() ? tier2 : tier3;
         };
         if (pool.isEmpty()) {
-            return "Sigue caminando. El mundo siempre ensena algo.";
+            return "dialogue.hc_characters.common.relationship.fallback";
         }
         return pool.get(npc.level().random.nextInt(pool.size()));
+    }
+
+    private static Component formatSpeech(String speakerName, String textOrKey) {
+        return Component.literal("<")
+                .append(componentFromTextOrKey(speakerName))
+                .append("> ")
+                .append(componentFromTextOrKey(textOrKey));
+    }
+
+    private static Component componentFromTextOrKey(String textOrKey) {
+        if (textOrKey == null || textOrKey.isBlank()) {
+            return Component.empty();
+        }
+        if (!textOrKey.contains(" ")) {
+            return Component.translatable(textOrKey);
+        }
+        return Component.literal(textOrKey);
     }
 
     private static void give(Player player, ItemStack stack) {

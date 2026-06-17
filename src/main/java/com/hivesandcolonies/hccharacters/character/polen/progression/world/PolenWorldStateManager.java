@@ -9,6 +9,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.interes
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.story.PolenStoryStage;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.story.PolenWorldMemory;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.identity.PolenWorldAffinity;
+import com.hivesandcolonies.hccharacters.character.polen.world.PolenSingletonManager;
 
 import net.minecraft.server.level.ServerLevel;
 
@@ -108,6 +109,7 @@ public final class PolenWorldStateManager {
         PolenWorldStorySavedData savedData = PolenWorldStorySavedData.get(level);
         savedData.getData().adjustInterest(interest, amount);
         savedData.setDirty();
+        syncEquippedAffinity(level);
     }
 
     public static PolenStoryStage storyStage(ServerLevel level) {
@@ -147,6 +149,19 @@ public final class PolenWorldStateManager {
         PolenWorldStorySavedData savedData = PolenWorldStorySavedData.get(level);
         savedData.getData().setPrologueBeeBedPos(bedPos);
         savedData.setDirty();
+    }
+
+    private static void syncEquippedAffinity(ServerLevel level) {
+        if (level == null) {
+            return;
+        }
+
+        PolenEntity polen = PolenSingletonManager.findLivingPolen(level);
+        if (polen == null) {
+            return;
+        }
+
+        polen.equipAffinityCharm(PolenAffinityFactory.fromProfile(get(level).getInterestProfile()));
     }
 
 }
