@@ -89,7 +89,6 @@ public final class PolenAffordanceResolver {
             PolenAffordanceTarget candidate = shelterAffordance(generalShelter, generalShelter, kind);
             double candidateScore = scoreShelterCandidate(polen, origin, candidate.usePos());
             if (candidateScore < bestScore) {
-                bestScore = candidateScore;
                 bestTarget = candidate;
             }
         }
@@ -182,7 +181,6 @@ public final class PolenAffordanceResolver {
             );
             double candidateScore = scoreLocalRestCandidate(polen, origin, target.usePos());
             if (candidateScore < bestScore) {
-                bestScore = candidateScore;
                 bestTarget = target;
             }
         }

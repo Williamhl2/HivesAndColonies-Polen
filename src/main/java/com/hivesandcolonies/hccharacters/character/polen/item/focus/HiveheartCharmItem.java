@@ -8,7 +8,6 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.world.Polen
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.prologue.PolenPrologueManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStoryData;
 import com.hivesandcolonies.hccharacters.common.util.CharacterNbtHelper;
-import com.hivesandcolonies.hccharacters.common.item.base.TranslatableTooltipItem.TooltipLine;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -28,7 +27,6 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -94,9 +92,14 @@ public class HiveheartCharmItem extends PolenLoreItem {
             return InteractionResultHolder.fail(stack);
         }
 
-        bindTarget(stack, overworld, targetPos);
-        String directionKey = resolveDirectionKey(player, targetPos);
-        int distanceBlocks = horizontalDistance(player.position(), targetPos);
+        BlockPos locatorTarget = PolenPrologueManager.resolveLocatorTarget(overworld);
+        if (locatorTarget == null) {
+            locatorTarget = targetPos;
+        }
+
+        bindTarget(stack, overworld, locatorTarget);
+        String directionKey = resolveDirectionKey(player, locatorTarget);
+        int distanceBlocks = horizontalDistance(player.position(), locatorTarget);
         String distanceKey = resolveDistanceKey(distanceBlocks);
         player.displayClientMessage(
                 Component.translatable(

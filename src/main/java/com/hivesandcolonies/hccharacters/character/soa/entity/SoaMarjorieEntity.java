@@ -11,6 +11,7 @@ import com.hivesandcolonies.hccharacters.character.soa.dialogue.SoaMarjorieDialo
 import com.hivesandcolonies.hccharacters.character.soa.progression.SoaMarjorieRelationship;
 import com.hivesandcolonies.hccharacters.common.entity.SimpleCharacterEntity;
 import com.hivesandcolonies.hccharacters.common.npc.relationship.NpcRelationshipInteraction;
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import com.hivesandcolonies.hccharacters.integration.curios.PolenCuriosBridge;
 
 import net.minecraft.core.BlockPos;
@@ -867,7 +868,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         }
 
         private boolean isDarkEnough() {
-            return this.soa.level().getMaxLocalRawBrightness(this.soa.blockPosition()) <= LIGHT_THRESHOLD;
+            return LevelBrightnessHelper.maxLocalRawBrightness(this.soa.level(), this.soa.blockPosition()) <= LIGHT_THRESHOLD;
         }
 
         private BlockPos findTorchPos() {

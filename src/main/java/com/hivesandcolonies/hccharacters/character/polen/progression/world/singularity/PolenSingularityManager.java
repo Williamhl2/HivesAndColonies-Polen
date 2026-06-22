@@ -7,7 +7,6 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.world.Polen
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStorySavedData;
 
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 

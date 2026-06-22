@@ -6,6 +6,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.se
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSpotSelectionHelper;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -67,7 +68,6 @@ public final class PolenShelterSpotHelper {
         }
 
         BlockPos origin = polen.blockPosition();
-        Level level = polen.level();
         List<PolenScoredSpot> shortlist = PolenSpotSelectionHelper.createShortlist();
 
         for (int dx = -radius; dx <= radius; dx++) {
@@ -170,7 +170,7 @@ public final class PolenShelterSpotHelper {
 
         BlockPos origin = polen.blockPosition();
         double score = candidate.distSqr(origin);
-        score -= level.getMaxLocalRawBrightness(candidate) * 2.25D;
+        score -= LevelBrightnessHelper.maxLocalRawBrightness(level, candidate) * 2.25D;
         score -= 34.0D;
 
         if (PolenShelterContextResolver.hasNearbyBed(level, candidate)) {
@@ -190,7 +190,7 @@ public final class PolenShelterSpotHelper {
 
         BlockPos origin = polen.blockPosition();
         double score = candidate.distSqr(origin);
-        score -= level.getMaxLocalRawBrightness(candidate) * 2.0D;
+        score -= LevelBrightnessHelper.maxLocalRawBrightness(level, candidate) * 2.0D;
         score -= 24.0D;
 
         if (PolenShelterContextResolver.hasNearbyDoor(level, candidate)) {
@@ -223,7 +223,7 @@ public final class PolenShelterSpotHelper {
         }
 
         double score = candidate.distSqr(origin);
-        score -= level.getMaxLocalRawBrightness(candidate) * 1.35D;
+        score -= LevelBrightnessHelper.maxLocalRawBrightness(level, candidate) * 1.35D;
 
         if (PolenSafetyEvaluator.hasOverheadCover(level, candidate)) {
             score -= 4.0D;
@@ -267,7 +267,7 @@ public final class PolenShelterSpotHelper {
 
         double score = candidate.distSqr(origin);
         score -= 55.0D;
-        score -= level.getMaxLocalRawBrightness(candidate) * 0.75D;
+        score -= LevelBrightnessHelper.maxLocalRawBrightness(level, candidate) * 0.75D;
 
         if (PolenShelterContextResolver.isFlowerFriendlyShelter(level, candidate)) {
             score -= 18.0D;
@@ -292,7 +292,7 @@ public final class PolenShelterSpotHelper {
                         continue;
                     }
 
-                    if (state.getLightEmission() >= 10) {
+                    if (state.getLightEmission(level, candidate) >= 10) {
                         return true;
                     }
                 }

@@ -4,6 +4,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.PolenDangerMemor
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
@@ -242,7 +243,7 @@ public final class PolenInterestLocator {
     private static boolean shouldPreferLightInterest(PolenEntity polen) {
         return polen.level().isNight()
                 || polen.level().isRaining()
-                || polen.level().getMaxLocalRawBrightness(polen.blockPosition()) <= 7;
+                || LevelBrightnessHelper.maxLocalRawBrightness(polen.level(), polen.blockPosition()) <= 7;
     }
 
     private static boolean shouldNoticeLightInterest(PolenEntity polen) {
@@ -257,7 +258,7 @@ public final class PolenInterestLocator {
         return !state.isAir()
                 && !state.is(ModBlocks.POLEN_LANTERN.get())
                 && level.getFluidState(pos).isEmpty()
-                && state.getLightEmission() >= INTERESTING_LIGHT_EMISSION;
+                && state.getLightEmission(level, pos) >= INTERESTING_LIGHT_EMISSION;
     }
 
     private static BlockPos resolveObservationSpot(PolenEntity polen, BlockPos focusPos, PolenInterestType type) {
@@ -281,7 +282,7 @@ public final class PolenInterestLocator {
 
                     double score = candidate.distSqr(polen.blockPosition()) + candidate.distSqr(focusPos) * 0.45D;
                     if (type == PolenInterestType.LIGHT) {
-                        score -= level.getMaxLocalRawBrightness(candidate) * 1.1D;
+                        score -= LevelBrightnessHelper.maxLocalRawBrightness(level, candidate) * 1.1D;
                         if (level.isRaining() && PolenSafetyEvaluator.isRainShelteredStandingSpot(level, candidate)) {
                             score -= 6.0D;
                         }

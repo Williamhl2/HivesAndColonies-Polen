@@ -51,7 +51,6 @@ public class SoaMarjorieMiningGearLayer extends RenderLayer<SoaMarjorieEntity, S
     private static final ResourceLocation SOPHISTICATED_BACKPACK = ResourceLocation.fromNamespaceAndPath("sophisticatedbackpacks", "backpack");
 
     private final ItemInHandRenderer itemRenderer;
-    private final ModelPart backpack;
     private final ModelPart belt;
 
     public SoaMarjorieMiningGearLayer(
@@ -61,7 +60,6 @@ public class SoaMarjorieMiningGearLayer extends RenderLayer<SoaMarjorieEntity, S
     ) {
         super(renderer);
         this.itemRenderer = itemRenderer;
-        this.backpack = root.getChild("backpack");
         this.belt = root.getChild("belt");
     }
 
@@ -71,26 +69,6 @@ public class SoaMarjorieMiningGearLayer extends RenderLayer<SoaMarjorieEntity, S
 
         // Body coordinates use vanilla humanoid pixels: x -4..4, y 0..12, z -2..2.  Positive z is the back.
         // The backpack is intentionally full player-backpack size: broad, deep and centered like Sophisticated Backpacks.
-        root.addOrReplaceChild(
-                "backpack",
-                CubeListBuilder.create()
-                        // Main pack body.
-                        .texOffs(0, 0).addBox(-4.25F, 1.45F, 2.15F, 8.5F, 9.2F, 3.55F, new CubeDeformation(0.04F))
-                        // Front lid/face panel.
-                        .texOffs(25, 0).addBox(-3.35F, 3.0F, 5.72F, 6.7F, 5.6F, 0.55F, new CubeDeformation(0.02F))
-                        // Top roll/lip.
-                        .texOffs(0, 14).addBox(-3.15F, 0.75F, 2.35F, 6.3F, 0.95F, 3.05F, new CubeDeformation(0.03F))
-                        // Side thickness and clasp accents.
-                        .texOffs(0, 18).addBox(-4.75F, 3.0F, 2.65F, 0.65F, 5.7F, 2.6F, new CubeDeformation(0.02F))
-                        .texOffs(7, 18).addBox(4.1F, 3.0F, 2.65F, 0.65F, 5.7F, 2.6F, new CubeDeformation(0.02F))
-                        .texOffs(15, 18).addBox(-3.6F, 8.35F, 5.78F, 1.05F, 1.15F, 0.62F, new CubeDeformation(0.02F))
-                        .texOffs(20, 18).addBox(2.55F, 8.35F, 5.78F, 1.05F, 1.15F, 0.62F, new CubeDeformation(0.02F))
-                        // Shoulder straps visible from the sides/front edge, like the real backpack silhouette.
-                        .texOffs(26, 18).addBox(-3.9F, 1.65F, 1.78F, 0.58F, 8.55F, 0.42F, new CubeDeformation(0.02F))
-                        .texOffs(30, 18).addBox(3.32F, 1.65F, 1.78F, 0.58F, 8.55F, 0.42F, new CubeDeformation(0.02F)),
-                PartPose.ZERO
-        );
-
         root.addOrReplaceChild(
                 "belt",
                 CubeListBuilder.create()

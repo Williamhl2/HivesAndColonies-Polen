@@ -3,7 +3,6 @@ package com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.g
 import com.hivesandcolonies.hccharacters.character.polen.dialogue.PolenDialogueManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.intent.PolenIntent;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;

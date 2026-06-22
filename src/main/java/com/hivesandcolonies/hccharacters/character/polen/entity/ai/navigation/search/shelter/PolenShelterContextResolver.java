@@ -208,7 +208,8 @@ public final class PolenShelterContextResolver {
         for (int dx = -LIGHT_RADIUS; dx <= LIGHT_RADIUS; dx++) {
             for (int dz = -LIGHT_RADIUS; dz <= LIGHT_RADIUS; dz++) {
                 for (int dy = -1; dy <= 2; dy++) {
-                    if (level.getBlockState(origin.offset(dx, dy, dz)).getLightEmission() >= 10) {
+                    BlockPos candidate = origin.offset(dx, dy, dz);
+                    if (level.getBlockState(candidate).getLightEmission(level, candidate) >= 10) {
                         return true;
                     }
                 }

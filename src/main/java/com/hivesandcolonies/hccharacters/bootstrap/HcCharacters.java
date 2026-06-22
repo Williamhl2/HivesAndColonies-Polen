@@ -1,5 +1,7 @@
 package com.hivesandcolonies.hccharacters.bootstrap;
 
+import java.util.Objects;
+
 import org.slf4j.Logger;
 
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
@@ -29,13 +31,16 @@ public class HcCharacters {
 
     @SuppressWarnings("unused")
     public HcCharacters(IEventBus modEventBus, ModContainer modContainer) {
-        modContainer.registerConfig(ModConfig.Type.COMMON, HcCharactersGameplayConfig.SPEC, "hc-characters-common.toml");
+        IEventBus bus = Objects.requireNonNull(modEventBus, "modEventBus");
+        ModContainer container = Objects.requireNonNull(modContainer, "modContainer");
 
-        ModBlocks.BLOCKS.register(modEventBus);
-        ModItems.ITEMS.register(modEventBus);
-        ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
-        ModEntities.ENTITY_TYPES.register(modEventBus);
-        modEventBus.addListener(HcCharactersNetwork::register);
+        container.registerConfig(ModConfig.Type.COMMON, HcCharactersGameplayConfig.SPEC, "hc-characters-common.toml");
+
+        ModBlocks.BLOCKS.register(bus);
+        ModItems.ITEMS.register(bus);
+        ModCreativeTabs.CREATIVE_MODE_TABS.register(bus);
+        ModEntities.ENTITY_TYPES.register(bus);
+        bus.addListener(HcCharactersNetwork::register);
 
         NeoForge.EVENT_BUS.addListener(PolenDebugCommands::register);
         NeoForge.EVENT_BUS.addListener(PolenHostileDetectionManager::onEntityJoinLevel);

@@ -1,6 +1,7 @@
 package com.hivesandcolonies.hccharacters.character.polen.client.screen;
 
 import com.hivesandcolonies.hccharacters.character.polen.client.profile.PolenProfileClientActions;
+import com.hivesandcolonies.hccharacters.character.polen.client.profile.PolenProfileInterestMetric;
 import com.hivesandcolonies.hccharacters.character.polen.client.profile.PolenProfileView;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -54,13 +55,11 @@ public final class PolenProfileScreen extends Screen {
         int buttonStartX = this.panelX + (PANEL_WIDTH - (buttonWidth * 2 + buttonGap)) / 2;
 
         Button followButton = Button.builder(
-                        Component.translatable(this.profile.trustWalkActive()
-                                ? "screen.polen.profile.action.stay"
-                                : "screen.polen.profile.action.follow"),
+                        Component.translatable(this.profile.actions().followButtonLabelKey()),
                         button -> PolenProfileClientActions.send(this.profile.entityId(), PolenProfileClientActions.FOLLOW_TOGGLE))
                 .bounds(buttonStartX, buttonY, buttonWidth, 20)
                 .build();
-        followButton.active = this.profile.canAskToFollow();
+        followButton.active = this.profile.actions().canAskToFollow();
         this.addRenderableWidget(followButton);
 
         Button returnButton = Button.builder(
@@ -68,7 +67,7 @@ public final class PolenProfileScreen extends Screen {
                         button -> PolenProfileClientActions.send(this.profile.entityId(), PolenProfileClientActions.RETURN_HOME))
                 .bounds(buttonStartX + buttonWidth + buttonGap, buttonY, buttonWidth, 20)
                 .build();
-        returnButton.active = this.profile.canReturnHome();
+        returnButton.active = this.profile.actions().canReturnHome();
         this.addRenderableWidget(returnButton);
     }
 
@@ -100,9 +99,9 @@ public final class PolenProfileScreen extends Screen {
     private void drawHeader(GuiGraphics graphics) {
         int x = this.panelX + 18;
         int y = this.panelY + 12;
-        graphics.drawString(this.font, this.profile.displayName(), x, y, TEXT, false);
-        graphics.drawString(this.font, Component.translatable(this.profile.currentPurposeTitleKey()), x, y + 14, GOLD, false);
-        graphics.drawString(this.font, Component.translatable(this.profile.currentStatusKey()), x, y + 27, MUTED_TEXT, false);
+        graphics.drawString(this.font, this.profile.display().displayName(), x, y, TEXT, false);
+        graphics.drawString(this.font, Component.translatable(this.profile.display().currentPurposeTitleKey()), x, y + 14, GOLD, false);
+        graphics.drawString(this.font, Component.translatable(this.profile.display().currentStatusKey()), x, y + 27, MUTED_TEXT, false);
     }
 
     private void drawOverviewCard(GuiGraphics graphics) {
@@ -112,16 +111,23 @@ public final class PolenProfileScreen extends Screen {
         graphics.fill(x, y, x + w, y + 68, SECTION_COLOR);
 
         graphics.drawString(this.font, Component.translatable("screen.polen.profile.relationship"), x + 10, y + 8, MUTED_TEXT, false);
-        graphics.drawString(this.font, Component.literal(this.profile.relationshipRankText()), x + 74, y + 8, TEXT, false);
-        drawCompactProgress(graphics, x + 10, y + 22, Component.translatable("screen.polen.profile.trust"), this.profile.relationshipAffinity(), this.profile.nextAffinityThreshold());
+        graphics.drawString(this.font, Component.literal(this.profile.display().relationshipRankText()), x + 74, y + 8, TEXT, false);
+        drawCompactProgress(
+                graphics,
+                x + 10,
+                y + 22,
+                Component.translatable("screen.polen.profile.trust"),
+                this.profile.display().relationshipAffinity(),
+                this.profile.display().nextAffinityThreshold()
+        );
 
-        graphics.drawString(this.font, Component.translatable(this.profile.followSummaryKey()), x + 10, y + 44, TEXT, false);
-        graphics.drawString(this.font, Component.translatable(this.profile.homeSummaryKey()), x + 176, y + 44, TEXT, false);
-        graphics.drawString(this.font, Component.translatable(this.profile.giftSummaryKey()), x + 10, y + 56, MUTED_TEXT, false);
+        graphics.drawString(this.font, Component.translatable(this.profile.actions().followSummaryKey()), x + 10, y + 44, TEXT, false);
+        graphics.drawString(this.font, Component.translatable(this.profile.actions().homeSummaryKey()), x + 176, y + 44, TEXT, false);
+        graphics.drawString(this.font, Component.translatable(this.profile.actions().giftSummaryKey()), x + 10, y + 56, MUTED_TEXT, false);
 
         drawWrappedText(
                 graphics,
-                Component.translatable("screen.polen.profile.next_action.short", Component.translatable(this.profile.nextActionKey())),
+                Component.translatable("screen.polen.profile.next_action.short", Component.translatable(this.profile.actions().nextActionKey())),
                 x + 176,
                 y + 55,
                 w - 186,
@@ -138,7 +144,7 @@ public final class PolenProfileScreen extends Screen {
 
         graphics.drawString(this.font, Component.translatable("screen.polen.profile.help_now"), x + 10, y + 8, GOLD, false);
         graphics.drawString(this.font, Component.translatable("screen.polen.profile.gifts.wants"), x + 10, y + 24, MUTED_TEXT, false);
-        drawWrappedText(graphics, Component.translatable("screen.polen.profile.gifts.hint." + this.profile.giftHintKey()), x + 10, y + 36, w - 20, TEXT, 2);
+        drawWrappedText(graphics, Component.translatable("screen.polen.profile.gifts.hint." + this.profile.help().giftHintKey()), x + 10, y + 36, w - 20, TEXT, 2);
         graphics.drawString(this.font, Component.translatable("screen.polen.profile.hover_more"), x + 10, y + 60, MUTED_TEXT, false);
     }
 
@@ -154,7 +160,7 @@ public final class PolenProfileScreen extends Screen {
         drawWrappedText(graphics, topInterestsComponent(), x + 84, y + 32, w - 94, TEXT, 2);
         drawWrappedText(
                 graphics,
-                Component.translatable("screen.polen.profile.memories.unlocked", this.profile.unlockedMemoryCount(), this.profile.memoryEntries().size()),
+                Component.translatable("screen.polen.profile.memories.unlocked", this.profile.display().unlockedMemoryCount(), this.profile.help().memoryEntries().size()),
                 x + 84,
                 y + 56,
                 w - 94,
@@ -257,9 +263,9 @@ public final class PolenProfileScreen extends Screen {
                     graphics,
                     mouseX,
                     mouseY,
-                    Component.translatable(this.profile.currentPurposeTitleKey()),
-                    Component.translatable(this.profile.currentPurposeBodyKey()),
-                    Component.translatable(this.profile.currentStatusKey())
+                    Component.translatable(this.profile.display().currentPurposeTitleKey()),
+                    Component.translatable(this.profile.display().currentPurposeBodyKey()),
+                    Component.translatable(this.profile.display().currentStatusKey())
             );
             return;
         }
@@ -269,9 +275,9 @@ public final class PolenProfileScreen extends Screen {
                     graphics,
                     mouseX,
                     mouseY,
-                    pair(Component.translatable("screen.polen.profile.relationship"), Component.literal(this.profile.relationshipRankText())),
-                    pair(Component.translatable("screen.polen.profile.trust"), Component.literal(this.profile.relationshipAffinity() + "/100")),
-                    Component.translatable("screen.polen.profile.next_threshold", this.profile.nextAffinityThreshold())
+                    pair(Component.translatable("screen.polen.profile.relationship"), Component.literal(this.profile.display().relationshipRankText())),
+                    pair(Component.translatable("screen.polen.profile.trust"), Component.literal(this.profile.display().relationshipAffinity() + "/100")),
+                    Component.translatable("screen.polen.profile.next_threshold", this.profile.display().nextAffinityThreshold())
             );
             return;
         }
@@ -281,8 +287,8 @@ public final class PolenProfileScreen extends Screen {
                     graphics,
                     mouseX,
                     mouseY,
-                    Component.translatable(this.profile.followSummaryKey()),
-                    Component.translatable(this.profile.trustWalkStateKey())
+                    Component.translatable(this.profile.actions().followSummaryKey()),
+                    Component.translatable(this.profile.actions().trustWalkStateKey())
             );
             return;
         }
@@ -292,8 +298,8 @@ public final class PolenProfileScreen extends Screen {
                     graphics,
                     mouseX,
                     mouseY,
-                    Component.translatable("screen.polen.profile.next_action.short", Component.translatable(this.profile.nextActionKey())),
-                    Component.translatable(this.profile.focusHintKey())
+                    Component.translatable("screen.polen.profile.next_action.short", Component.translatable(this.profile.actions().nextActionKey())),
+                    Component.translatable(this.profile.help().focusHintKey())
             );
             return;
         }
@@ -303,10 +309,8 @@ public final class PolenProfileScreen extends Screen {
                     graphics,
                     mouseX,
                     mouseY,
-                    Component.translatable(this.profile.homeSummaryKey()),
-                    Component.translatable(this.profile.hasHome()
-                            ? "screen.polen.profile.actions.home.assigned"
-                            : "screen.polen.profile.actions.home.missing"),
+                    Component.translatable(this.profile.actions().homeSummaryKey()),
+                    Component.translatable(this.profile.help().homeStatusDetailKey()),
                     Component.translatable("screen.polen.profile.home.bed_instruction")
             );
             return;
@@ -320,7 +324,7 @@ public final class PolenProfileScreen extends Screen {
                     Component.translatable("screen.polen.profile.help_now"),
                     pair(
                             Component.translatable("screen.polen.profile.gifts.wants"),
-                            Component.translatable("screen.polen.profile.gifts.hint." + this.profile.giftHintKey())
+                            Component.translatable("screen.polen.profile.gifts.hint." + this.profile.help().giftHintKey())
                     ),
                     pair(
                             Component.translatable("screen.polen.profile.gifts.dislikes"),
@@ -337,8 +341,8 @@ public final class PolenProfileScreen extends Screen {
             for (String label : RADAR_LABELS) {
                 lines.add(pair(interestLabel(label), Component.literal(String.valueOf(interestValue(label)))));
             }
-            lines.add(Component.translatable(this.profile.focusHintKey()));
-            lines.add(Component.translatable("screen.polen.profile.memories.unlocked", this.profile.unlockedMemoryCount(), this.profile.memoryEntries().size()));
+            lines.add(Component.translatable(this.profile.help().focusHintKey()));
+            lines.add(Component.translatable("screen.polen.profile.memories.unlocked", this.profile.display().unlockedMemoryCount(), this.profile.help().memoryEntries().size()));
             graphics.renderComponentTooltip(this.font, lines, mouseX, mouseY);
         }
     }
@@ -358,7 +362,7 @@ public final class PolenProfileScreen extends Screen {
     private Component topInterestsComponent() {
         MutableComponent result = Component.empty();
         boolean first = true;
-        for (PolenProfileView.InterestBar bar : this.profile.strongestInterests(2)) {
+        for (PolenProfileInterestMetric bar : this.profile.help().topInterests()) {
             if (!first) {
                 result.append(Component.literal(", "));
             }
@@ -369,7 +373,7 @@ public final class PolenProfileScreen extends Screen {
     }
 
     private int interestValue(String label) {
-        for (PolenProfileView.InterestBar bar : this.profile.interestBars()) {
+        for (PolenProfileInterestMetric bar : this.profile.help().interestMetrics()) {
             if (bar.label().equals(label)) {
                 return bar.value();
             }

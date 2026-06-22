@@ -4,7 +4,6 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenGoalRegistry;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.expression.activity.PolenQuietActivityController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.action.PolenAutonomousActionPlan;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenAutonomyController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.expression.gesture.PolenGestureController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.ability.magic.PolenMagicController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.memory.PolenMemoryHandler;

@@ -5,6 +5,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter.PolenShelterContextResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter.PolenShelterKind;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 
@@ -169,7 +170,7 @@ public final class PolenResidenceValidator {
     ) {
         double score = candidate.distSqr(hintPos);
         score -= habitableSpots * 2.5D;
-        score -= level.getMaxLocalRawBrightness(candidate) * 1.5D;
+        score -= LevelBrightnessHelper.maxLocalRawBrightness(level, candidate) * 1.5D;
 
         if (shelterKind == PolenShelterKind.HOUSE) {
             score -= 10.0D;

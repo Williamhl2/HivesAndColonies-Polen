@@ -15,6 +15,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.afforda
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeSnapshot;
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 
@@ -111,7 +112,7 @@ public final class PolenRoutinePlanner {
 
         int surfaceY = polen.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
         boolean nearSurface = pos.getY() >= surfaceY - 2;
-        boolean brightEnough = polen.level().getMaxLocalRawBrightness(pos.above()) >= MIN_INTEREST_BRIGHTNESS;
+        boolean brightEnough = LevelBrightnessHelper.maxLocalRawBrightness(polen.level(), pos.above()) >= MIN_INTEREST_BRIGHTNESS;
 
         return nearSurface && brightEnough;
     }
@@ -192,10 +193,6 @@ public final class PolenRoutinePlanner {
         return findHomeAnchoredSafeWanderTarget(polen, HOME_RETURN_RADIUS);
     }
 
-    private static BlockPos findPreferredHomeRoutineTarget(PolenEntity polen) {
-        return findPreferredHomeRoutineTarget(polen, PolenHomeManager.getHomeSnapshot(polen));
-    }
-
     private static BlockPos findPreferredHomeRoutineTarget(PolenEntity polen, PolenHomeSnapshot homeSnapshot) {
         int maxRadius = polen.level().isNight() || polen.level().isRaining()
                 ? BAD_WEATHER_HOME_ROUTINE_RADIUS
@@ -241,7 +238,7 @@ public final class PolenRoutinePlanner {
                     double score = preferClosestToHome
                             ? distanceToHome + distanceToPolen * 0.20D
                             : distanceToHome * 0.85D + distanceToPolen * 0.25D;
-                    score -= polen.level().getMaxLocalRawBrightness(candidate) * 0.35D;
+                    score -= LevelBrightnessHelper.maxLocalRawBrightness(polen.level(), candidate) * 0.35D;
                     if (!polen.level().isNight() && !polen.level().isRaining() && polen.level().canSeeSky(candidate)) {
                         score -= 2.5D;
                     }

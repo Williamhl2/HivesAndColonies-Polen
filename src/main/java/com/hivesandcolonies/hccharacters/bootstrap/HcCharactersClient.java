@@ -1,5 +1,7 @@
 package com.hivesandcolonies.hccharacters.bootstrap;
 
+import java.util.Objects;
+
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModEntities;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModItems;
 import com.hivesandcolonies.hccharacters.character.befsh.client.BefshRenderer;
@@ -14,19 +16,24 @@ import net.minecraft.client.renderer.item.CompassItemPropertyFunction;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 
 @Mod(value = HcCharacters.MODID, dist = Dist.CLIENT)
-@EventBusSubscriber(modid = HcCharacters.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public class HcCharactersClient {
+    @SuppressWarnings("unused")
+    public HcCharactersClient(IEventBus modEventBus) {
+        IEventBus bus = Objects.requireNonNull(modEventBus, "modEventBus");
+        bus.addListener(HcCharactersClient::onClientSetup);
+        bus.addListener(HcCharactersClient::onRegisterGuiLayers);
+        bus.addListener(HcCharactersClient::onRegisterLayerDefinitions);
+        bus.addListener(HcCharactersClient::onEntityRenderersSetup);
+    }
 
-    @SubscribeEvent
-    static void onClientSetup(FMLClientSetupEvent event) {
+    private static void onClientSetup(FMLClientSetupEvent event) {
         event.enqueueWork(() -> ItemProperties.register(
                 ModItems.HIVEHEART_CHARM.get(),
                 ResourceLocation.withDefaultNamespace("angle"),
@@ -34,19 +41,15 @@ public class HcCharactersClient {
         ));
     }
 
-
-    @SubscribeEvent
-    static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
+    private static void onRegisterGuiLayers(RegisterGuiLayersEvent event) {
         event.registerAboveAll(NpcAffinityOverlayClient.LAYER_ID, NpcAffinityOverlayClient::render);
     }
 
-    @SubscribeEvent
-    static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
+    private static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event) {
         event.registerLayerDefinition(SoaMarjorieMiningGearLayer.LAYER_LOCATION, SoaMarjorieMiningGearLayer::createLayer);
     }
 
-    @SubscribeEvent
-    static void onEntityRenderersSetup(EntityRenderersEvent.RegisterRenderers event) {
+    private static void onEntityRenderersSetup(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(ModEntities.POLEN.get(), PolenRenderer::new);
         event.registerEntityRenderer(ModEntities.BEFSH.get(), BefshRenderer::new);
         event.registerEntityRenderer(ModEntities.LUNA.get(), context -> new SimpleCharacterRenderer<>(context, "luna"));

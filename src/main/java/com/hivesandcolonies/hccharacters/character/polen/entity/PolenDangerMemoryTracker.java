@@ -1,7 +1,6 @@
 package com.hivesandcolonies.hccharacters.character.polen.entity;
 
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
-import com.hivesandcolonies.hccharacters.common.util.CharacterNbtHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 

@@ -5,6 +5,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.sa
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
@@ -28,12 +29,12 @@ public final class PolenMovementHelper {
     private PolenMovementHelper() {
     }
 
-    public static void configureNavigation(PolenEntity polen) {
-        if (polen == null) {
+    public static void configureNavigation(PathNavigation navigation) {
+        if (navigation == null) {
             return;
         }
 
-        if (polen.getNavigation() instanceof GroundPathNavigation groundNavigation) {
+        if (navigation instanceof GroundPathNavigation groundNavigation) {
             groundNavigation.setCanOpenDoors(true);
             groundNavigation.setCanPassDoors(true);
             groundNavigation.setCanFloat(true);

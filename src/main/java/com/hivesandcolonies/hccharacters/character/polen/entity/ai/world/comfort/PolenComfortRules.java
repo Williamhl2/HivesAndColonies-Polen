@@ -7,7 +7,9 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.se
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter.PolenShelterKind;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.interests.PolenAffinityBehaviorHooks;
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -92,7 +94,7 @@ final class PolenComfortRules {
             PolenComfortProfile profile,
             List<PolenComfortSignal> signals
     ) {
-        int brightness = level.getMaxLocalRawBrightness(origin);
+        int brightness = LevelBrightnessHelper.maxLocalRawBrightness(level, origin);
         if (brightness >= 13) {
             signals.add(new PolenComfortSignal(PolenComfortCategory.LIGHT, "warm_bright", 16));
         } else if (brightness >= 9) {
@@ -149,7 +151,7 @@ final class PolenComfortRules {
                 origin.offset(profile.scanRadius(), profile.verticalRadius(), profile.scanRadius())
         )) {
             BlockState state = level.getBlockState(candidate);
-            String path = state.getBlock().builtInRegistryHolder().key().location().getPath().toLowerCase(Locale.ROOT);
+            String path = BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath().toLowerCase(Locale.ROOT);
 
             hasBed = hasBed || state.is(BlockTags.BEDS);
             hasPolenLight = hasPolenLight || state.is(ModBlocks.POLEN_LANTERN.get());
@@ -217,7 +219,7 @@ final class PolenComfortRules {
                 origin.offset(-profile.scanRadius(), -profile.verticalRadius(), -profile.scanRadius()),
                 origin.offset(profile.scanRadius(), profile.verticalRadius(), profile.scanRadius())
         )) {
-            String namespace = level.getBlockState(candidate).getBlock().builtInRegistryHolder().key().location().getNamespace();
+            String namespace = BuiltInRegistries.BLOCK.getKey(level.getBlockState(candidate).getBlock()).getNamespace();
             colony = colony || namespace.equals("minecolonies") || namespace.equals("domum_ornamentum") || namespace.equals("structurize");
             magic = magic || namespace.equals("ars_nouveau") || namespace.equals("ars_elemental") || namespace.equals("ars_creo");
             handcrafted = handcrafted || namespace.equals("handcrafted") || namespace.equals("chipped") || namespace.startsWith("mcw") || namespace.equals("decorative_blocks");

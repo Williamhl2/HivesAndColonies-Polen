@@ -9,7 +9,6 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenBeh
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 
@@ -20,8 +19,6 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import java.util.EnumSet;
 
 public class PolenIdleHobbyGoal extends Goal {
-    private static final int MIN_DURATION = 80;
-    private static final int MAX_DURATION = 160;
     private static final long QUIET_ACTIVITY_COOLDOWN_TICKS = 60L;
     private static final long SAME_SPOT_HOBBY_COOLDOWN_TICKS = 160L;
     private static final double SAME_SPOT_DISTANCE_SQR = 4.0D;

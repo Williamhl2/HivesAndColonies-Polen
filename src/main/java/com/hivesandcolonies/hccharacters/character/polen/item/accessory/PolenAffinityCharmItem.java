@@ -2,8 +2,6 @@ package com.hivesandcolonies.hccharacters.character.polen.item.accessory;
 
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.identity.PolenAffinity;
 import com.hivesandcolonies.hccharacters.character.polen.item.meta.PolenProgressionStage;
-import com.hivesandcolonies.hccharacters.common.item.base.TranslatableTooltipItem.TooltipLine;
-import net.minecraft.world.item.Item.Properties;
 
 import java.util.List;
 

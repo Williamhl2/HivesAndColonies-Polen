@@ -22,6 +22,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.afforda
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceTarget;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -430,10 +431,6 @@ public final class PolenSafetyNavigator {
         return targetDistanceSqr >= currentDistanceSqr + 4.0D;
     }
 
-    private static BlockPos findBestReachableLocalEscapeSpot(PolenEntity polen, int radius) {
-        return findBestReachableLocalEscapeSpot(polen, radius, null);
-    }
-
     private static BlockPos findBestReachableLocalEscapeSpot(PolenEntity polen, int radius, BlockPos avoidPos) {
         BlockPos origin = polen.blockPosition();
         return PolenSearchPlanner.findBestReachable(
@@ -608,10 +605,6 @@ public final class PolenSafetyNavigator {
         );
     }
 
-    private static double scoreCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
-        return scoreCandidate(polen, origin, candidate, null);
-    }
-
     private static double scoreCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate, BlockPos avoidPos) {
         if (!PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)
                 || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)
@@ -650,10 +643,6 @@ public final class PolenSafetyNavigator {
         return score;
     }
 
-    private static double scoreExplorationCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
-        return scoreExplorationCandidate(polen, origin, candidate, null);
-    }
-
     private static double scoreExplorationCandidate(
             PolenEntity polen,
             BlockPos origin,
@@ -675,7 +664,7 @@ public final class PolenSafetyNavigator {
         score += hostilePenalty;
         score += PolenThreatAssessmentHelper.scoreRangedExposure(polen, origin, candidate);
         score -= Math.max(0, candidate.getY() - origin.getY()) * 10.0D;
-        score -= polen.level().getMaxLocalRawBrightness(candidate) * 0.75D;
+        score -= LevelBrightnessHelper.maxLocalRawBrightness(polen.level(), candidate) * 0.75D;
 
         if (polen.level().canSeeSky(candidate)) {
             score -= 20.0D;
@@ -684,10 +673,6 @@ public final class PolenSafetyNavigator {
         }
 
         return score;
-    }
-
-    private static double scoreShelterCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
-        return scoreShelterCandidate(polen, origin, candidate, null);
     }
 
     private static double scoreShelterCandidate(
@@ -740,11 +725,6 @@ public final class PolenSafetyNavigator {
         }
 
         return score;
-    }
-
-
-    private static boolean hasNearbyHostile(PolenEntity polen, double radius) {
-        return findNearestHostilePos(polen, radius) != null;
     }
 
     private static BlockPos findNearestHostilePos(PolenEntity polen, double radius) {

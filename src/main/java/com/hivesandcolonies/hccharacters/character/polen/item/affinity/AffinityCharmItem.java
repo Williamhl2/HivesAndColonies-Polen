@@ -6,9 +6,7 @@ import com.hivesandcolonies.hccharacters.character.polen.item.accessory.PolenAcc
 import com.hivesandcolonies.hccharacters.character.polen.item.accessory.PolenAccessorySlot;
 import com.hivesandcolonies.hccharacters.character.polen.item.accessory.PolenAccessoryTarget;
 import com.hivesandcolonies.hccharacters.character.polen.item.meta.PolenProgressionStage;
-import com.hivesandcolonies.hccharacters.common.item.base.TranslatableTooltipItem.TooltipLine;
 import net.minecraft.ChatFormatting;
-import net.minecraft.world.item.Item.Properties;
 
 import java.util.List;
 

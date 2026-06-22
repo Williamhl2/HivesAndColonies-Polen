@@ -66,15 +66,13 @@ public final class PolenWorldStateManager {
             return false;
         }
 
-        // Polen's introduction is now intentionally simple: the Hiveheart Charm
-        // finds a nearby cherry grove and spawns Polen there. The world state must
-        // remember that first meeting point, but it must never infer, rebuild, or
-        // relocate an artificial prologue shelter later.
+        // The first Hiveheart use now creates a one-shot prologue clearing with
+        // Polen's improvised starter shelter. World state remembers that origin,
+        // but it must still never infer, relocate, or regenerate the site later.
         //
-        // This prevents duplicated starter houses when Polen is unloaded/reloaded,
-        // moved away from the original biome with Carry On, or loaded again after a
-        // player returns from far away. Shelter and bed discovery belong to her
-        // normal AI/residence systems, not to prologue world generation.
+        // This keeps the prologue aligned with the narrative docs while still
+        // preventing duplicated shelters when Polen is unloaded/reloaded, moved
+        // away from the original grove, or revisited after chunk reloads.
         if (data.getPrologueClearingCenter() == null) {
             data.setPrologueClearingCenter(polen.blockPosition());
             return true;

@@ -3,10 +3,8 @@ package com.hivesandcolonies.hccharacters.character.polen.item.colony;
 import com.hivesandcolonies.hccharacters.character.polen.item.base.PolenColonyItem;
 import com.hivesandcolonies.hccharacters.character.polen.item.interaction.PolenItemInteractionController;
 import com.hivesandcolonies.hccharacters.character.polen.item.meta.PolenProgressionStage;
-import com.hivesandcolonies.hccharacters.common.item.base.TranslatableTooltipItem.TooltipLine;
 import net.minecraft.ChatFormatting;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.item.context.UseOnContext;
 
 public class ResidenceCharmItem extends PolenColonyItem {

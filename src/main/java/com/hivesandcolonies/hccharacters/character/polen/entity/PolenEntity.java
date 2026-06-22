@@ -36,6 +36,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.Monster;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenThreatAssessmentHelper;
 import net.minecraft.world.entity.player.Player;
@@ -110,7 +111,13 @@ public class PolenEntity extends PathfinderMob {
         this.setCustomName(Component.translatable(UNKNOWN_GIRL_KEY));
         this.setCustomNameVisible(true);
         this.setPersistenceRequired();
-        PolenMovementHelper.configureNavigation(this);
+    }
+
+    @Override
+    protected PathNavigation createNavigation(Level level) {
+        PathNavigation navigation = super.createNavigation(level);
+        PolenMovementHelper.configureNavigation(navigation);
+        return navigation;
     }
 
     public static AttributeSupplier.Builder createAttributes() {

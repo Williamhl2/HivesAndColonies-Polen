@@ -4,6 +4,7 @@ import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModEntities;
 import com.hivesandcolonies.hccharacters.character.soa.entity.SoaMarjorieEntity;
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -213,7 +214,7 @@ public final class SoaMarjorieEncounterManager {
             if (!canStandAt(level, pos)) {
                 continue;
             }
-            if (level.canSeeSky(pos) || level.getMaxLocalRawBrightness(pos) > 10) {
+            if (level.canSeeSky(pos) || LevelBrightnessHelper.maxLocalRawBrightness(level, pos) > 10) {
                 continue;
             }
             return pos.immutable();
