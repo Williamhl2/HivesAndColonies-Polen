@@ -12,7 +12,7 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.world.Polen
 import com.hivesandcolonies.hccharacters.character.polen.item.interaction.PolenItemInteractionController;
 import com.hivesandcolonies.hccharacters.character.polen.progression.player.PolenPlayerRelationshipManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenShelterValidator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.interests.PolenInterest;
@@ -31,6 +31,7 @@ import java.util.Locale;
 
 public final class PolenInteractionController {
     private static final int TRUST_WALK_DURATION_TICKS = 20 * 60 * 4;
+    private static final int RETURN_HOME_REQUEST_TICKS = 20 * 45;
 
     private PolenInteractionController() {
     }
@@ -143,10 +144,10 @@ public final class PolenInteractionController {
             return InteractionResult.SUCCESS;
         }
 
-        polen.stopTrustWalk();
-        boolean moving = polen.getNavigation().moveTo(homePos.getX() + 0.5D, homePos.getY(), homePos.getZ() + 0.5D, 0.9D);
+        polen.requestReturnHome(RETURN_HOME_REQUEST_TICKS);
+        polen.getNavigation().moveTo(homePos.getX() + 0.5D, homePos.getY(), homePos.getZ() + 0.5D, 0.9D);
         player.displayClientMessage(
-                Component.translatable(moving ? "message.polen.ui.action.return_home" : "message.polen.ui.action.return_home_failed"),
+                Component.translatable("message.polen.ui.action.return_home"),
                 true
         );
         return InteractionResult.SUCCESS;
@@ -205,9 +206,10 @@ public final class PolenInteractionController {
         if (polen.isSleeping()) {
             return "message.polen.trust_walk.sleeping";
         }
+        boolean unsafeArea = PolenEnvironmentResolver.inspect(polen).isInUnsafeArea();
         if (polen.getCurrentTask().isUrgent()
                 || PolenSleepController.hasImmediateThreat(polen)
-                || PolenSafetyNavigator.isInUnsafeArea(polen)) {
+                || unsafeArea) {
             return "message.polen.trust_walk.unsafe";
         }
         return null;

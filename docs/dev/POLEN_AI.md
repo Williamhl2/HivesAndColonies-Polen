@@ -88,6 +88,7 @@ La fantasia jugable actual de Polen incluye:
 - acercarse mas a jugadores de confianza
 - buscar refugio cuando el entorno empeora
 - usar `blink` cuando moverse falla o queda atrapada
+- romper linea de vision y zigzaguear cuando huye de amenazas a distancia
 - colocar luz propia por la noche
 - cantar, dibujar, reflexionar y sintonizarse con source cuando se siente segura
 - observar flores, abejas y spots tranquilos como parte de su identidad
@@ -130,11 +131,29 @@ Hoy la IA y la interaccion ya pueden usar:
 
 - dialogo base por capitulo
 - dialogo ambiental por situacion
+- beats contextuales dentro del mismo dialogo ambiental
 - eventos narrativos fijos
 - fragmentos de memoria al descubrir entorno
 
 Eso igual no significa que todo el contenido narrativo futuro ya exista.
 Al agregar lineas nuevas, hay que revisar tanto el texto como el resolver que decide cuando usarlas.
+
+## Percepcion y refugio
+
+La IA no debe confundir "es de noche" con "ya tengo refugio".
+
+Hoy la lectura correcta del entorno debe distinguir entre:
+
+- estar realmente bajo techo
+- tener solo cover parcial
+- estar expuesta a lluvia
+- estar expuesta a linea de vision de amenazas a distancia
+- estar en oscuridad abierta sin refugio valido
+
+Regla practica:
+
+- si Polen habla como si tuviera casa, techo o cama, el snapshot de entorno tiene que poder justificarlo
+- si no hay refugio confirmado, el dialogo debe caer en inseguridad / busqueda de seguridad, no en "me quedare aqui"
 
 ## Ajuste reciente
 

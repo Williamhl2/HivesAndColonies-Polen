@@ -8,14 +8,19 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.interes
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.interest.PolenInterestType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.PolenMovementHelper;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchDomain;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchPlanner;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchProfile;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter.PolenShelterContextResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter.PolenShelterKind;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter.PolenShelterSpotHelper;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceTarget;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
@@ -27,6 +32,7 @@ import java.util.List;
 
 public final class PolenSafetyNavigator {
     private static final double MIN_RELOCATION_DISTANCE_SQR = 4.0D;
+    private static final double AVOIDED_TARGET_DISTANCE_SQR = 2.5D * 2.5D;
     private static final double HOSTILE_MEMORY_RANGE = 8.0D;
     private static final double HOSTILE_REJECTION_DISTANCE_SQR = 3.5D * 3.5D;
     private static final double HOSTILE_AWARENESS_DISTANCE_SQR = 9.0D * 9.0D;
@@ -84,56 +90,52 @@ public final class PolenSafetyNavigator {
     }
 
     public static boolean isInUnsafeArea(PolenEntity polen) {
-        BlockPos currentPos = polen.blockPosition();
-        BlockPos nearestHostilePos = findNearestHostilePos(polen, HOSTILE_MEMORY_RANGE);
-        boolean hostileNearby = nearestHostilePos != null;
-        boolean unsafe = !PolenSafetyEvaluator.isSafeStandingSpot(polen, currentPos)
-                || hostileNearby;
-
-        if (PolenSafetyEvaluator.isTrulyDangerousStandingSpot(polen, currentPos)
-                || hostileNearby) {
-            PolenDangerMemoryTracker.rememberDangerousSpot(polen, hostileNearby ? nearestHostilePos : currentPos);
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
+        if (environment.dangerousStandingSpot() || environment.hostileNearby()) {
+            PolenDangerMemoryTracker.rememberDangerousSpot(
+                    polen,
+                    environment.hostileMemoryPos() != null ? environment.hostileMemoryPos() : polen.blockPosition()
+            );
         }
 
-        return unsafe;
+        return environment.isInUnsafeArea();
     }
 
     public static boolean shouldSeekSafety(PolenEntity polen) {
-        BlockPos currentPos = polen.blockPosition();
-        BlockPos nearestHostilePos = findNearestHostilePos(polen, 6.0D);
-        boolean dangerous = PolenSafetyEvaluator.isTrulyDangerousStandingSpot(polen, currentPos)
-                || nearestHostilePos != null;
-        if (dangerous) {
-            PolenDangerMemoryTracker.rememberDangerousSpot(polen, nearestHostilePos != null ? nearestHostilePos : currentPos);
-            return true;
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
+        if (environment.dangerousStandingSpot() || environment.safetyThreatPos() != null) {
+            PolenDangerMemoryTracker.rememberDangerousSpot(
+                    polen,
+                    environment.safetyThreatPos() != null ? environment.safetyThreatPos() : polen.blockPosition()
+            );
         }
 
-        if (PolenSleepController.shouldPrioritizeBedReturn(polen)) {
-            return PolenSafetyEvaluator.isClaustrophobicStandingSpot(polen, currentPos);
-        }
-
-        return PolenSafetyEvaluator.isClaustrophobicStandingSpot(polen, currentPos)
-                || shouldSeekRainShelter(polen)
-                || shouldSeekNightLight(polen);
+        return environment.shouldSeekSafety(PolenSleepController.shouldPrioritizeBedReturn(polen));
     }
 
     public static boolean shouldUseUnsafeDialogue(PolenEntity polen) {
-        return PolenSafetyEvaluator.isClaustrophobicStandingSpot(polen, polen.blockPosition())
-                || shouldSeekRainShelter(polen)
-                || shouldSeekNightLight(polen);
+        return PolenEnvironmentResolver.inspect(polen).shouldUseUnsafeDialogue();
     }
 
     public static BlockPos findNearbySafeSurfaceSpot(PolenEntity polen, int radius) {
-        BlockPos localSpot = findBestReachableLocalEscapeSpot(polen, Math.max(6, radius));
+        return findNearbySafeSurfaceSpot(polen, radius, null);
+    }
+
+    public static BlockPos findNearbySafeSurfaceSpot(PolenEntity polen, int radius, BlockPos avoidPos) {
+        BlockPos localSpot = findBestReachableLocalEscapeSpot(polen, Math.max(6, radius), avoidPos);
         if (localSpot != null) {
             return localSpot;
         }
 
-        return findBestReachableSurfaceSpot(polen, radius);
+        return findBestReachableSurfaceSpot(polen, radius, avoidPos);
     }
 
     public static BlockPos findFallbackExplorationSpot(PolenEntity polen, int radius) {
-        return findBestReachableExplorationSpot(polen, Math.max(8, radius));
+        return findFallbackExplorationSpot(polen, radius, null);
+    }
+
+    public static BlockPos findFallbackExplorationSpot(PolenEntity polen, int radius, BlockPos avoidPos) {
+        return findBestReachableExplorationSpot(polen, Math.max(8, radius), avoidPos);
     }
 
     public static Vec3 getNearestSafeSpotCenter(PolenEntity polen, int radius) {
@@ -142,19 +144,77 @@ public final class PolenSafetyNavigator {
     }
 
     public static boolean shouldSeekRainShelter(PolenEntity polen) {
-        return PolenSafetyEvaluator.isExposedToRain(polen.level(), polen.blockPosition());
+        return PolenEnvironmentResolver.inspect(polen).shouldSeekRainShelter();
     }
 
     public static boolean shouldSeekNightLight(PolenEntity polen) {
-        return polen.level().isNight()
-                && polen.getAiState().getActiveLightPos() == null
-                && PolenRoutinePlanner.isDarkEnoughForLightMagic(polen)
-                && !PolenRoutinePlanner.isReadyToIlluminateHere(polen);
+        return needsNightLight(polen);
+    }
+
+    public static boolean needsNightLight(PolenEntity polen) {
+        return PolenEnvironmentResolver.inspect(polen).needsNightLight();
+    }
+
+    public static PolenNightSafetyPlan planNightLightSafety(PolenEntity polen, int radius) {
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
+        if (!environment.needsNightLight()) {
+            return null;
+        }
+
+        if (environment.readyToIlluminateHere()) {
+            return new PolenNightSafetyPlan(
+                    polen.blockPosition(),
+                    PolenSearchType.NIGHT_LIGHT,
+                    "managed_light_place_here",
+                    true
+            );
+        }
+
+        int effectiveRadius = environment.raining() ? Math.max(6, radius - 2) : radius;
+        PolenAffordanceTarget preferredLight = PolenAffordanceResolver.findBestNightLight(polen, effectiveRadius);
+        if (preferredLight != null) {
+            String note = preferredLight.type() == PolenAffordanceType.EXISTING_LIGHT
+                    ? "existing_light_visible"
+                    : "managed_light_target_visible";
+            return new PolenNightSafetyPlan(
+                    preferredLight.usePos(),
+                    PolenSearchType.NIGHT_LIGHT,
+                    note,
+                    false
+            );
+        }
+
+        BlockPos lightTarget = PolenRoutinePlanner.findLightMagicTarget(polen);
+        if (lightTarget != null
+                && lightTarget.distSqr(polen.blockPosition()) <= (double) (effectiveRadius * effectiveRadius)) {
+            return new PolenNightSafetyPlan(
+                    lightTarget,
+                    PolenSearchType.NIGHT_LIGHT,
+                    "managed_light_target_visible",
+                    false
+            );
+        }
+
+        BlockPos fallbackSafeSpot = findNearbySafeSurfaceSpot(polen, effectiveRadius);
+        if (fallbackSafeSpot == null) {
+            return null;
+        }
+
+        return new PolenNightSafetyPlan(
+                fallbackSafeSpot,
+                PolenSearchType.NIGHT_LIGHT,
+                "move_to_darker_safe_spot",
+                false
+        );
     }
 
     public static BlockPos findNearbyShelteredSpot(PolenEntity polen, int radius) {
+        return findNearbyShelteredSpot(polen, radius, null);
+    }
+
+    public static BlockPos findNearbyShelteredSpot(PolenEntity polen, int radius, BlockPos avoidPos) {
         PolenAffordanceTarget preferredShelter = PolenAffordanceResolver.findBestRainShelter(polen, Math.max(8, radius));
-        if (preferredShelter != null) {
+        if (preferredShelter != null && !isAvoidedCandidate(preferredShelter.usePos(), avoidPos)) {
             return preferredShelter.usePos();
         }
 
@@ -163,6 +223,7 @@ public final class PolenSafetyNavigator {
             restingPos = polen.getAiState().getRestingPos();
         }
         if (restingPos != null
+                && !isAvoidedCandidate(restingPos, avoidPos)
                 && restingPos.distSqr(polen.blockPosition()) >= MIN_RELOCATION_DISTANCE_SQR
                 && PolenSafetyEvaluator.isSafeStandingSpot(polen, restingPos)
                 && PolenSafetyEvaluator.isRainShelteredStandingSpot(polen.level(), restingPos)
@@ -171,12 +232,13 @@ public final class PolenSafetyNavigator {
         }
 
         BlockPos directShelter = PolenShelterSpotHelper.findNearbyShelterSpot(polen, Math.max(6, radius));
-        if (directShelter != null) {
+        if (directShelter != null && !isAvoidedCandidate(directShelter, avoidPos)) {
             return directShelter;
         }
 
         PolenInterestTarget nearbyLight = PolenInterestLocator.findPreferredInterestOfType(polen, PolenInterestType.LIGHT);
         if (nearbyLight != null
+                && !isAvoidedCandidate(nearbyLight.observePos(), avoidPos)
                 && nearbyLight.observePos().distSqr(polen.blockPosition()) <= (double) (radius * radius)
                 && PolenSafetyEvaluator.isRainShelteredStandingSpot(polen.level(), nearbyLight.observePos())
                 && !PolenDangerMemoryTracker.isDangerousMemorySpot(polen, nearbyLight.observePos())) {
@@ -188,37 +250,18 @@ public final class PolenSafetyNavigator {
                 polen,
                 origin,
                 withRadii(LOCAL_SHELTER_PROFILE, Math.max(6, radius), Math.max(8, radius)),
-                candidate -> scoreShelterCandidate(polen, origin, candidate)
+                candidate -> scoreShelterCandidate(polen, origin, candidate, avoidPos)
         );
         if (localShelter != null) {
             return localShelter;
         }
 
-        return findSurfaceShelteredSpot(polen, Math.max(12, radius * 2));
+        return findSurfaceShelteredSpot(polen, Math.max(12, radius * 2), avoidPos);
     }
 
     public static BlockPos findNearbyNightLightSpot(PolenEntity polen, int radius) {
-        int effectiveRadius = polen.level().isRaining() ? Math.max(6, radius - 2) : radius;
-        PolenAffordanceTarget preferredLight = PolenAffordanceResolver.findBestNightLight(polen, effectiveRadius);
-        if (preferredLight != null) {
-            return preferredLight.usePos();
-        }
-
-        PolenInterestTarget nearbyLight = PolenInterestLocator.findPreferredInterestOfType(polen, PolenInterestType.LIGHT);
-        if (nearbyLight != null
-                && nearbyLight.observePos().distSqr(polen.blockPosition()) <= (double) (effectiveRadius * effectiveRadius)
-                && PolenSafetyEvaluator.isSafeStandingSpot(polen, nearbyLight.observePos())
-                && !PolenDangerMemoryTracker.isDangerousMemorySpot(polen, nearbyLight.observePos())) {
-            return nearbyLight.observePos();
-        }
-
-        BlockPos lightTarget = PolenRoutinePlanner.findLightMagicTarget(polen);
-        if (lightTarget != null
-                && lightTarget.distSqr(polen.blockPosition()) <= (double) (effectiveRadius * effectiveRadius)) {
-            return lightTarget;
-        }
-
-        return findNearbySafeSurfaceSpot(polen, effectiveRadius);
+        PolenNightSafetyPlan plan = planNightLightSafety(polen, radius);
+        return plan == null ? null : plan.targetPos();
     }
 
     public static boolean tryBlinkTowardSafeSpot(PolenEntity polen, BlockPos target, int maxDistance) {
@@ -254,14 +297,22 @@ public final class PolenSafetyNavigator {
     }
 
     public static boolean hasImmediateHostileThreat(PolenEntity polen) {
-        return findNearestHostilePos(polen, IMMEDIATE_HOSTILE_THREAT_RANGE) != null;
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
+        return environment.immediateHostileThreatPos() != null || environment.exposedToRangedThreat();
     }
 
     public static BlockPos getNearestHostileThreatPos(PolenEntity polen, double radius) {
+        if (radius == IMMEDIATE_HOSTILE_THREAT_RANGE) {
+            return PolenEnvironmentResolver.inspect(polen).immediateHostileThreatPos();
+        }
         return findNearestHostilePos(polen, radius);
     }
 
     public static BlockPos findImmediateHostileEscapeSpot(PolenEntity polen, int radius) {
+        return findImmediateHostileEscapeSpot(polen, radius, null);
+    }
+
+    public static BlockPos findImmediateHostileEscapeSpot(PolenEntity polen, int radius, BlockPos avoidPos) {
         Level level = polen.level();
         BlockPos origin = polen.blockPosition();
         Vec3 originCenter = Vec3.atCenterOf(origin);
@@ -296,6 +347,7 @@ public final class PolenSafetyNavigator {
                 for (int dy = -2; dy <= 4; dy++) {
                     BlockPos candidate = origin.offset(dx, dy, dz);
                     if (candidate.equals(origin)
+                            || isAvoidedCandidate(candidate, avoidPos)
                             || candidate.distSqr(origin) > (double) (radius * radius)
                             || !PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)
                             || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)) {
@@ -343,7 +395,7 @@ public final class PolenSafetyNavigator {
             }
         }
 
-        return bestPos;
+        return bestPos == null ? null : PolenMovementHelper.resolveReachableTarget(polen, bestPos, true);
     }
 
     public static boolean tryImmediateHostileBlink(PolenEntity polen, int searchRadius, int blinkDistance) {
@@ -362,6 +414,12 @@ public final class PolenSafetyNavigator {
             return false;
         }
 
+        boolean currentRangedExposure = PolenThreatAssessmentHelper.isExposedToRangedThreat(polen, polen.blockPosition(), 14.0D);
+        boolean targetRangedExposure = PolenThreatAssessmentHelper.isExposedToRangedThreat(polen, target, 14.0D);
+        if (currentRangedExposure != targetRangedExposure) {
+            return !targetRangedExposure;
+        }
+
         Monster nearestHostile = findNearestHostile(polen, Vec3.atCenterOf(polen.blockPosition()), HOSTILE_MEMORY_RANGE);
         if (nearestHostile == null) {
             return true;
@@ -373,26 +431,30 @@ public final class PolenSafetyNavigator {
     }
 
     private static BlockPos findBestReachableLocalEscapeSpot(PolenEntity polen, int radius) {
+        return findBestReachableLocalEscapeSpot(polen, radius, null);
+    }
+
+    private static BlockPos findBestReachableLocalEscapeSpot(PolenEntity polen, int radius, BlockPos avoidPos) {
         BlockPos origin = polen.blockPosition();
         return PolenSearchPlanner.findBestReachable(
                 polen,
                 origin,
                 withRadii(LOCAL_SAFE_PROFILE, Math.max(6, radius), radius),
-                candidate -> scoreCandidate(polen, origin, candidate)
+                candidate -> scoreCandidate(polen, origin, candidate, avoidPos)
         );
     }
 
-    private static BlockPos findBestReachableSurfaceSpot(PolenEntity polen, int radius) {
+    private static BlockPos findBestReachableSurfaceSpot(PolenEntity polen, int radius, BlockPos avoidPos) {
         BlockPos origin = polen.blockPosition();
         return PolenSearchPlanner.findBestReachable(
                 polen,
                 origin,
                 withRadii(SURFACE_SAFE_PROFILE, radius, radius * 2, radius * 3),
-                candidate -> scoreCandidate(polen, origin, candidate)
+                candidate -> scoreCandidate(polen, origin, candidate, avoidPos)
         );
     }
 
-    private static BlockPos findBestReachableExplorationSpot(PolenEntity polen, int radius) {
+    private static BlockPos findBestReachableExplorationSpot(PolenEntity polen, int radius, BlockPos avoidPos) {
         BlockPos origin = polen.blockPosition();
         return PolenSearchPlanner.findBestReachable(
                 polen,
@@ -403,7 +465,7 @@ public final class PolenSafetyNavigator {
                         Math.max(8, radius),
                         Math.max(8, radius * 2)
                 ),
-                candidate -> scoreExplorationCandidate(polen, origin, candidate)
+                candidate -> scoreExplorationCandidate(polen, origin, candidate, avoidPos)
         );
     }
 
@@ -536,19 +598,24 @@ public final class PolenSafetyNavigator {
         return bestPos;
     }
 
-    private static BlockPos findSurfaceShelteredSpot(PolenEntity polen, int radius) {
+    private static BlockPos findSurfaceShelteredSpot(PolenEntity polen, int radius, BlockPos avoidPos) {
         BlockPos origin = polen.blockPosition();
         return PolenSearchPlanner.findBestReachable(
                 polen,
                 origin,
                 withRadii(SURFACE_SHELTER_PROFILE, radius, radius * 2),
-                candidate -> scoreShelterCandidate(polen, origin, candidate)
+                candidate -> scoreShelterCandidate(polen, origin, candidate, avoidPos)
         );
     }
 
     private static double scoreCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
+        return scoreCandidate(polen, origin, candidate, null);
+    }
+
+    private static double scoreCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate, BlockPos avoidPos) {
         if (!PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)
                 || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)
+                || isAvoidedCandidate(candidate, avoidPos)
                 || candidate.distSqr(origin) < MIN_RELOCATION_DISTANCE_SQR) {
             return Double.MAX_VALUE;
         }
@@ -560,13 +627,21 @@ public final class PolenSafetyNavigator {
             return Double.MAX_VALUE;
         }
         score += hostilePenalty;
+        score += PolenThreatAssessmentHelper.scoreRangedExposure(polen, origin, candidate);
 
         int climb = candidate.getY() - origin.getY();
         if (climb > 0) {
             score -= climb * 6.0D;
         }
 
-        if (polen.level().canSeeSky(candidate)) {
+        boolean rangedOriginExposure = PolenThreatAssessmentHelper.isExposedToRangedThreat(polen, origin, 14.0D);
+        if (rangedOriginExposure) {
+            if (polen.level().canSeeSky(candidate)) {
+                score += 28.0D;
+            } else if (PolenSafetyEvaluator.hasOverheadCover(polen.level(), candidate)) {
+                score -= 18.0D;
+            }
+        } else if (polen.level().canSeeSky(candidate)) {
             score -= 12.0D;
         } else if (PolenSafetyEvaluator.isNearOutdoorSurface(polen.level(), candidate)) {
             score -= 6.0D;
@@ -576,8 +651,18 @@ public final class PolenSafetyNavigator {
     }
 
     private static double scoreExplorationCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
+        return scoreExplorationCandidate(polen, origin, candidate, null);
+    }
+
+    private static double scoreExplorationCandidate(
+            PolenEntity polen,
+            BlockPos origin,
+            BlockPos candidate,
+            BlockPos avoidPos
+    ) {
         if (!PolenSafetyEvaluator.isStandableSpot(polen, candidate)
                 || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)
+                || isAvoidedCandidate(candidate, avoidPos)
                 || candidate.distSqr(origin) < MIN_RELOCATION_DISTANCE_SQR) {
             return Double.MAX_VALUE;
         }
@@ -588,6 +673,7 @@ public final class PolenSafetyNavigator {
             return Double.MAX_VALUE;
         }
         score += hostilePenalty;
+        score += PolenThreatAssessmentHelper.scoreRangedExposure(polen, origin, candidate);
         score -= Math.max(0, candidate.getY() - origin.getY()) * 10.0D;
         score -= polen.level().getMaxLocalRawBrightness(candidate) * 0.75D;
 
@@ -601,10 +687,20 @@ public final class PolenSafetyNavigator {
     }
 
     private static double scoreShelterCandidate(PolenEntity polen, BlockPos origin, BlockPos candidate) {
+        return scoreShelterCandidate(polen, origin, candidate, null);
+    }
+
+    private static double scoreShelterCandidate(
+            PolenEntity polen,
+            BlockPos origin,
+            BlockPos candidate,
+            BlockPos avoidPos
+    ) {
         Level level = polen.level();
         if (!PolenSafetyEvaluator.isSafeStandingSpot(polen, candidate)
                 || !PolenSafetyEvaluator.isRainShelteredStandingSpot(level, candidate)
                 || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, candidate)
+                || isAvoidedCandidate(candidate, avoidPos)
                 || candidate.distSqr(origin) < MIN_RELOCATION_DISTANCE_SQR
                 || PolenShelterContextResolver.isCaveLikeShelter(level, candidate)) {
             return Double.MAX_VALUE;
@@ -621,6 +717,7 @@ public final class PolenSafetyNavigator {
             return Double.MAX_VALUE;
         }
         score += hostilePenalty;
+        score += PolenThreatAssessmentHelper.scoreRangedExposure(polen, origin, candidate);
 
         if (kind == PolenShelterKind.TREE) {
             score -= 60.0D;
@@ -683,6 +780,10 @@ public final class PolenSafetyNavigator {
 
             double proximityPenalty = Math.max(0.0D, HOSTILE_AWARENESS_DISTANCE_SQR - candidateDistanceSqr);
             penalty += proximityPenalty * (hostile.hasLineOfSight(polen) ? 1.8D : 0.9D);
+            if (PolenThreatAssessmentHelper.isRangedHostile(hostile)
+                    && PolenThreatAssessmentHelper.hasLineOfFire(polen.level(), hostile, candidate)) {
+                penalty += 24.0D;
+            }
 
             if (candidateDistanceSqr < currentDistanceSqr) {
                 penalty += (currentDistanceSqr - candidateDistanceSqr) * 1.4D;
@@ -717,5 +818,11 @@ public final class PolenSafetyNavigator {
                 baseProfile.blinkDistance(),
                 baseProfile.requireSafeBlink()
         );
+    }
+
+    private static boolean isAvoidedCandidate(BlockPos candidate, BlockPos avoidPos) {
+        return candidate != null
+                && avoidPos != null
+                && candidate.distSqr(avoidPos) <= AVOIDED_TARGET_DISTANCE_SQR;
     }
 }

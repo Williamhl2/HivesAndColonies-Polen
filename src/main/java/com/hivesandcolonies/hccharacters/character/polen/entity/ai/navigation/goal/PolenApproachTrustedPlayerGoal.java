@@ -8,7 +8,9 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.expression.ge
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.mood.PolenMood;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenBehaviorReadiness;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -38,11 +40,8 @@ public class PolenApproachTrustedPlayerGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (this.polen.isSleeping()
-                || this.polen.level().isNight()
-                || this.polen.level().isRaining()
-                || this.polen.isDoingQuietActivity()
-                || PolenSafetyNavigator.isInUnsafeArea(this.polen)
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(this.polen);
+        if (!PolenBehaviorReadiness.canStartTrustedApproach(this.polen, environment)
                 || this.polen.getCurrentTask() != PolenTaskType.APPROACH_TRUSTED_PLAYER) {
             return false;
         }
@@ -74,14 +73,12 @@ public class PolenApproachTrustedPlayerGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        return !this.polen.isSleeping()
-                && !this.polen.level().isNight()
-                && !this.polen.level().isRaining()
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(this.polen);
+        return PolenBehaviorReadiness.canContinueTrustedApproach(this.polen, environment)
                 && this.targetPlayer != null
                 && this.targetPlayer.isAlive()
                 && this.polen.isComfortableWith(this.targetPlayer)
                 && PolenHomeManager.isPositionWithinHomeRadius(this.polen, this.targetPlayer.blockPosition(), HOME_SOCIAL_RADIUS)
-                && !PolenSafetyNavigator.isInUnsafeArea(this.polen)
                 && this.polen.getCurrentTask() == PolenTaskType.APPROACH_TRUSTED_PLAYER
                 && this.polen.distanceToSqr(this.targetPlayer) <= MAX_DISTANCE_SQR
                 && this.observeTicks > 0;

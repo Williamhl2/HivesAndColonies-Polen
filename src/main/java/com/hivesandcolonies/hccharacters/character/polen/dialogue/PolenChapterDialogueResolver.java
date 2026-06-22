@@ -34,9 +34,14 @@ public final class PolenChapterDialogueResolver {
     private PolenChapterDialogueResolver() {
     }
 
-    public static String resolveKey(int chapter, RandomSource random) {
+    public static String resolveKey(int chapter, String lastDialogueKey, RandomSource random) {
         List<String> dialogues = DIALOGUES_BY_CHAPTER.getOrDefault(chapter, CHAPTER_0_DIALOGUES);
-        return resolveKeyForRoll(chapter, random.nextInt(dialogues.size()));
+        int roll = random.nextInt(dialogues.size());
+        String key = resolveKeyForRoll(chapter, roll);
+        if (dialogues.size() > 1 && key.equals(lastDialogueKey)) {
+            key = resolveKeyForRoll(chapter, roll + 1);
+        }
+        return key;
     }
 
     public static String resolveKeyForRoll(int chapter, int roll) {

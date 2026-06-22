@@ -2,6 +2,8 @@ package com.hivesandcolonies.hccharacters.character.polen.dialogue;
 
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.story.PolenMemoryType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.RandomSource;
@@ -29,14 +31,19 @@ public final class PolenDialogueManager {
 
     public static Component getDialogue(
             Player player,
+            PolenEntity polen,
             int chapter,
             RandomSource random
     ) {
-        String key = PolenChapterDialogueResolver.resolveKey(chapter, random);
-
-        return Component.translatable(PolenSpeakerResolver.resolveSpeakerKey(player))
-                .append(Component.literal(": "))
-                .append(Component.translatable(key));
+        String key = PolenChapterDialogueResolver.resolveKey(
+                chapter,
+                polen == null ? "" : polen.getAiState().getLastDialogueKey(),
+                random
+        );
+        if (polen != null) {
+            polen.getAiState().rememberDialogueSelection("chapter:" + chapter, key, 0);
+        }
+        return formatDialogue(player, key);
     }
 
     public static Component getInteractionDialogue(
@@ -45,30 +52,52 @@ public final class PolenDialogueManager {
             int chapter,
             RandomSource random
     ) {
-        String situation = PolenDialogueSituationResolver.resolveSituation(polen);
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
+        String situation = PolenDialogueSituationResolver.resolveSituation(polen, environment);
         if (situation != null && shouldPreferContextualDialogue(polen, random)) {
-            return getAmbientDialogue(player, situation, random);
+            return getAmbientDialogue(player, polen, situation, environment, random);
         }
 
-        return getDialogue(player, chapter, random);
+        return getDialogue(player, polen, chapter, random);
     }
 
     public static Component getAmbientDialogue(
             Player player,
+            PolenEntity polen,
             String situation,
             RandomSource random
     ) {
-        String key = PolenAmbientDialogueResolver.resolveKey(player, situation, random);
+        return getAmbientDialogue(player, polen, situation, PolenEnvironmentResolver.inspect(polen), random);
+    }
 
-        return Component.translatable(PolenSpeakerResolver.resolveSpeakerKey(player))
-                .append(Component.literal(": "))
-                .append(Component.translatable(key));
+    public static Component getAmbientDialogue(
+            Player player,
+            PolenEntity polen,
+            String situation,
+            PolenEnvironmentSnapshot environment,
+            RandomSource random
+    ) {
+        return formatDialogueForPlayer(player, resolveAmbientDialogueKey(player, polen, situation, environment, random));
     }
 
     public static Component getMemoryDialogue(Player player, PolenMemoryType memory) {
+        return formatDialogueForPlayer(player, memory.getDialogueKey());
+    }
+
+    public static String resolveAmbientDialogueKey(
+            Player player,
+            PolenEntity polen,
+            String situation,
+            PolenEnvironmentSnapshot environment,
+            RandomSource random
+    ) {
+        return PolenAmbientDialogueResolver.resolveKey(player, polen, situation, environment, random);
+    }
+
+    public static Component formatDialogueForPlayer(Player player, String key) {
         return Component.translatable(PolenSpeakerResolver.resolveSpeakerKey(player))
                 .append(Component.literal(": "))
-                .append(Component.translatable(memory.getDialogueKey()));
+                .append(Component.translatable(key));
     }
 
     private static boolean shouldPreferContextualDialogue(PolenEntity polen, RandomSource random) {
@@ -93,5 +122,9 @@ public final class PolenDialogueManager {
         }
 
         return random.nextInt(3) == 0;
+    }
+
+    private static Component formatDialogue(Player player, String key) {
+        return formatDialogueForPlayer(player, key);
     }
 }

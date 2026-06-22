@@ -4,6 +4,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.mood.Po
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.intent.PolenIntent;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchStatus;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchType;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter.PolenShelterKind;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.need.PolenNeed;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskStatus;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
@@ -37,9 +38,26 @@ public record PolenAiDebugSnapshot(
         int curiosityNeed,
         int restNeed,
         int magicNeed,
+        boolean safeStandingSpot,
         boolean unsafeArea,
+        boolean dangerousStandingSpot,
+        boolean claustrophobicStandingSpot,
+        boolean immediateThreat,
+        boolean rangedThreatVisible,
+        boolean exposedToRangedThreat,
         boolean shouldSeekSafety,
         boolean shouldUseUnsafeDialogue,
+        boolean rainExposed,
+        boolean rainSheltered,
+        boolean nearbyLight,
+        boolean nearbyBed,
+        boolean overheadCover,
+        boolean nearOutdoorSurface,
+        boolean nearbyManagedLight,
+        boolean activeManagedLight,
+        boolean needsNightLight,
+        PolenShelterKind shelterKind,
+        BlockPos rangedThreatPos,
         PolenSearchType searchType,
         PolenSearchStatus searchStatus,
         String searchNote,

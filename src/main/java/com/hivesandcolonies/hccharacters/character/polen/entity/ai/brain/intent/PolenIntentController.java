@@ -5,10 +5,11 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.interes
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.need.PolenNeedController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.need.PolenNeedSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.action.PolenAutonomousActionPlanner;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.mood.PolenMood;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.routine.PolenRoutinePlanner;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenBehaviorReadiness;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 import net.minecraft.server.level.ServerLevel;
@@ -35,13 +36,14 @@ public final class PolenIntentController {
         long gameTime = serverLevel.getGameTime();
         PolenNeedSnapshot needs = PolenNeedController.inspect(polen);
         PolenIntentState state = polen.getAiState().getIntentState();
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
 
         if (polen.isSleeping()) {
             state.set(PolenIntent.SEEK_REST, "sleeping_in_bed", gameTime + 120L);
             return;
         }
 
-        if (PolenSafetyNavigator.shouldSeekSafety(polen)) {
+        if (environment.shouldSeekSafety(PolenSleepController.shouldPrioritizeBedReturn(polen))) {
             state.set(PolenIntent.SEEK_SAFETY, "unsafe_area_detected", gameTime + 40L);
             return;
         }
@@ -51,11 +53,11 @@ public final class PolenIntentController {
             return;
         }
 
-        if (shouldKeepCurrentIntent(polen, needs, state, gameTime)) {
+        if (shouldKeepCurrentIntent(polen, needs, state, gameTime, environment)) {
             return;
         }
 
-        PolenIntentSnapshot next = selectIntent(polen, needs, gameTime);
+        PolenIntentSnapshot next = selectIntent(polen, needs, gameTime, environment);
         state.set(next.intent(), next.reason(), next.lockedUntilGameTime());
     }
 
@@ -72,48 +74,58 @@ public final class PolenIntentController {
             PolenEntity polen,
             PolenNeedSnapshot needs,
             PolenIntentState state,
-            long gameTime
+            long gameTime,
+            PolenEnvironmentSnapshot environment
     ) {
         if (gameTime >= state.lockedUntilGameTime()) {
             return false;
         }
 
         return switch (state.currentIntent()) {
-            case SEEK_SAFETY -> PolenSafetyNavigator.shouldSeekSafety(polen);
+            case SEEK_SAFETY -> environment.shouldSeekSafety(PolenSleepController.shouldPrioritizeBedReturn(polen));
             case KEEP_DISTANCE -> hasUntrustedPlayerTooClose(polen);
             case APPROACH_TRUSTED_PLAYER -> hasApproachableTrustedPlayer(polen);
             case INVESTIGATE_INTEREST -> PolenAffordanceResolver.findBestInterest(polen, true) != null;
             case SEEK_REST -> polen.isSleeping()
-                    || (needs.rest() >= 35 || polen.level().isNight() || polen.level().isRaining()
+                    || (needs.rest() >= 35 || environment.night() || environment.raining()
                     || shouldReturnHomeDuringDay(polen))
-                    && canSeekRest(polen);
-            case QUIET_CREATION -> shouldStaySettledForNight(polen)
-                    || needs.magic() >= 20 && canDoIllumination(polen)
-                    || needs.magic() >= 35 && canDoQuietCreation(polen);
-            case WANDER_SAFE -> canWanderSafely(polen)
+                    && canSeekRest(polen, environment);
+            case QUIET_CREATION -> shouldStaySettledForNight(polen, environment)
+                    || needs.magic() >= 20 && canDoIllumination(polen, environment)
+                    || needs.magic() >= 35 && canDoQuietCreation(polen, environment);
+            case WANDER_SAFE -> canWanderSafely(polen, environment)
                     && !PolenHomeManager.isFarFromHome(polen, HOME_KEEP_WANDER_RADIUS);
         };
     }
 
-    private static PolenIntentSnapshot selectIntent(PolenEntity polen, PolenNeedSnapshot needs, long gameTime) {
+    private static PolenIntentSnapshot selectIntent(
+            PolenEntity polen,
+            PolenNeedSnapshot needs,
+            long gameTime,
+            PolenEnvironmentSnapshot environment
+    ) {
         if (polen.isSleeping()) {
             return locked(PolenIntent.SEEK_REST, "sleeping_in_bed", gameTime, 140L);
         }
 
-        if (shouldReturnHomeForWeatherOrNight(polen) && canSeekRest(polen)) {
+        if (shouldHonorReturnHomeRequest(polen) && canSeekRest(polen, environment)) {
+            return locked(PolenIntent.SEEK_REST, "player_requested_return_home", gameTime, 120L);
+        }
+
+        if (shouldReturnHomeForWeatherOrNight(polen, environment) && canSeekRest(polen, environment)) {
             return locked(
                     PolenIntent.SEEK_REST,
-                    polen.level().isRaining() ? "rain_returning_home" : "night_returning_home",
+                    environment.raining() ? "rain_returning_home" : "night_returning_home",
                     gameTime,
                     110L
             );
         }
 
-        if (shouldReturnHomeDuringDay(polen) && canSeekRest(polen)) {
+        if (shouldReturnHomeDuringDay(polen) && canSeekRest(polen, environment)) {
             return locked(PolenIntent.SEEK_REST, "day_returning_to_home_center", gameTime, 100L);
         }
 
-        if (shouldStaySettledForNight(polen) && canDoQuietCreation(polen)) {
+        if (shouldStaySettledForNight(polen, environment) && canDoQuietCreation(polen, environment)) {
             return locked(PolenIntent.QUIET_CREATION, "night_settled_in_refuge", gameTime, 120L);
         }
 
@@ -121,16 +133,16 @@ public final class PolenIntentController {
             return locked(PolenIntent.APPROACH_TRUSTED_PLAYER, "social_need_high", gameTime, 100L);
         }
 
-        if (needs.rest() >= 32 && canDoQuietCreation(polen)
+        if (needs.rest() >= 32 && canDoQuietCreation(polen, environment)
                 && PolenAutonomousActionPlanner.shouldReflect(polen, polen.getMood())) {
             return locked(PolenIntent.QUIET_CREATION, "reflective_pause_available", gameTime, 90L);
         }
 
-        if (needs.magic() >= 16 && canDoIllumination(polen) && hasLightMagicTarget(polen)) {
+        if (needs.magic() >= 16 && canDoIllumination(polen, environment) && hasLightMagicTarget(polen)) {
             return locked(PolenIntent.QUIET_CREATION, "darkness_needs_light", gameTime, 100L);
         }
 
-        if (needs.magic() >= 52 && canDoQuietCreation(polen) && hasSourceForQuietCreation(polen)) {
+        if (needs.magic() >= 52 && canDoQuietCreation(polen, environment) && hasSourceForQuietCreation(polen)) {
             return locked(PolenIntent.QUIET_CREATION, "source_attunement_needed", gameTime, 120L);
         }
 
@@ -139,11 +151,11 @@ public final class PolenIntentController {
             return locked(PolenIntent.INVESTIGATE_INTEREST, "interesting_target_available", gameTime, 120L);
         }
 
-        if (needs.rest() >= 55 && canSeekRest(polen)) {
+        if (needs.rest() >= 55 && canSeekRest(polen, environment)) {
             return locked(PolenIntent.SEEK_REST, "rest_need_high", gameTime, 120L);
         }
 
-        if (needs.magic() >= 48 && canDoQuietCreation(polen)) {
+        if (needs.magic() >= 48 && canDoQuietCreation(polen, environment)) {
             return locked(PolenIntent.QUIET_CREATION, "magic_need_high", gameTime, 100L);
         }
 
@@ -155,72 +167,54 @@ public final class PolenIntentController {
             return locked(PolenIntent.INVESTIGATE_INTEREST, "curiosity_need_rising", gameTime, 100L);
         }
 
-        if (needs.magic() >= 12 && canDoIllumination(polen) && hasLightMagicTarget(polen)) {
+        if (needs.magic() >= 12 && canDoIllumination(polen, environment) && hasLightMagicTarget(polen)) {
             return locked(PolenIntent.QUIET_CREATION, "light_magic_available", gameTime, 80L);
         }
 
-        if (needs.magic() >= 38 && canDoQuietCreation(polen) && hasSourceForQuietCreation(polen)) {
+        if (needs.magic() >= 38 && canDoQuietCreation(polen, environment) && hasSourceForQuietCreation(polen)) {
             return locked(PolenIntent.QUIET_CREATION, "source_magic_available", gameTime, 90L);
         }
 
-        if (needs.rest() >= 38 && canSeekRest(polen)) {
+        if (needs.rest() >= 38 && canSeekRest(polen, environment)) {
             return locked(PolenIntent.SEEK_REST, "rest_need_rising", gameTime, 90L);
         }
 
-        if (needs.magic() >= 34 && canDoQuietCreation(polen)) {
+        if (needs.magic() >= 34 && canDoQuietCreation(polen, environment)) {
             return locked(PolenIntent.QUIET_CREATION, "quiet_magic_possible", gameTime, 80L);
         }
 
         return locked(PolenIntent.WANDER_SAFE, "default_safe_wander", gameTime, 60L);
     }
 
-    private static boolean canDoQuietCreation(PolenEntity polen) {
-        if (shouldStaySettledForNight(polen)) {
-            return !polen.isSleeping()
-                    && !polen.isDoingQuietActivity()
-                    && !PolenSafetyNavigator.isInUnsafeArea(polen)
-                    && polen.onGround()
-                    && !polen.isInWaterOrBubble();
-        }
-
-        PolenMood mood = polen.getMood();
-        return !polen.isSleeping()
-                && !polen.isDoingQuietActivity()
-                && !polen.hasNearbyPlayer(3.0D)
-                && !PolenSafetyNavigator.isInUnsafeArea(polen)
-                && polen.onGround()
-                && !polen.isInWaterOrBubble()
-                && mood != PolenMood.TIMID
-                && mood != PolenMood.UNSETTLED;
+    private static boolean canDoQuietCreation(PolenEntity polen, PolenEnvironmentSnapshot environment) {
+        return PolenBehaviorReadiness.canStartQuietActivity(
+                polen,
+                environment,
+                shouldStaySettledForNight(polen, environment)
+        );
     }
 
-    private static boolean canDoIllumination(PolenEntity polen) {
-        return !polen.isSleeping()
-                && !polen.isDoingQuietActivity()
-                && !polen.hasNearbyPlayer(3.0D)
-                && !PolenSafetyNavigator.isInUnsafeArea(polen)
-                && polen.onGround()
-                && !polen.isInWaterOrBubble();
+    private static boolean canDoIllumination(PolenEntity polen, PolenEnvironmentSnapshot environment) {
+        return PolenBehaviorReadiness.canStartQuietActivity(polen, environment, false);
     }
 
-    private static boolean canSeekRest(PolenEntity polen) {
-        boolean adverseRestTime = polen.level().isNight() || polen.level().isRaining();
-        return (PolenHomeManager.hasHomeCenter(polen) || PolenSleepController.hasKnownBed(polen))
-                && !polen.isSleeping()
-                && (adverseRestTime || !isAtRestSpot(polen))
-                && !PolenSafetyNavigator.isInUnsafeArea(polen)
-                && polen.onGround()
-                && !polen.isInWaterOrBubble();
+    private static boolean canSeekRest(PolenEntity polen, PolenEnvironmentSnapshot environment) {
+        return PolenBehaviorReadiness.canSeekRest(
+                polen,
+                environment,
+                PolenHomeManager.hasHomeCenter(polen) || PolenSleepController.hasKnownBed(polen),
+                isAtRestSpot(polen),
+                shouldHonorReturnHomeRequest(polen)
+        );
     }
 
-    private static boolean canWanderSafely(PolenEntity polen) {
-        return !polen.isSleeping()
-                && !PolenSafetyNavigator.isInUnsafeArea(polen)
-                && !shouldStaySettledForNight(polen)
-                && !PolenHomeManager.isFarFromHome(polen, HOME_KEEP_WANDER_RADIUS)
-                && !polen.isDoingQuietActivity()
-                && polen.onGround()
-                && !polen.isInWaterOrBubble();
+    private static boolean canWanderSafely(PolenEntity polen, PolenEnvironmentSnapshot environment) {
+        return PolenBehaviorReadiness.canWanderSafely(
+                polen,
+                environment,
+                shouldStaySettledForNight(polen, environment),
+                PolenHomeManager.isFarFromHome(polen, HOME_KEEP_WANDER_RADIUS)
+        );
     }
 
     private static boolean hasSourceForQuietCreation(PolenEntity polen) {
@@ -231,8 +225,11 @@ public final class PolenIntentController {
         return PolenRoutinePlanner.findLightMagicTarget(polen) != null;
     }
 
-    private static boolean shouldReturnHomeForWeatherOrNight(PolenEntity polen) {
-        boolean weatherOrNight = polen.level().isNight() || polen.level().isRaining();
+    private static boolean shouldReturnHomeForWeatherOrNight(
+            PolenEntity polen,
+            PolenEnvironmentSnapshot environment
+    ) {
+        boolean weatherOrNight = environment.night() || environment.raining();
         if (!weatherOrNight) {
             return false;
         }
@@ -246,10 +243,14 @@ public final class PolenIntentController {
                 && PolenHomeManager.isFarFromHome(polen, DAY_HOME_RETURN_RADIUS);
     }
 
-    private static boolean shouldStaySettledForNight(PolenEntity polen) {
-        return (polen.level().isNight() || polen.level().isRaining())
+    private static boolean shouldStaySettledForNight(PolenEntity polen, PolenEnvironmentSnapshot environment) {
+        return (environment.night() || environment.raining())
                 && isAtRestSpot(polen)
                 && PolenHomeManager.hasHomeCenter(polen);
+    }
+
+    private static boolean shouldHonorReturnHomeRequest(PolenEntity polen) {
+        return polen.hasPendingReturnHomeRequest() && PolenHomeManager.hasHomeCenter(polen);
     }
 
     private static boolean isAtRestSpot(PolenEntity polen) {

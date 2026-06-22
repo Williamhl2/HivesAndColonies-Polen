@@ -11,6 +11,8 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.need.Po
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.interests.PolenAffinityBehaviorHooks;
 
 public final class PolenAiDebugInspector {
@@ -23,6 +25,7 @@ public final class PolenAiDebugInspector {
         PolenNeedSnapshot needSnapshot = PolenNeedController.inspect(polen);
         PolenIntentSnapshot intentSnapshot = PolenIntentController.inspect(polen);
         PolenTaskSnapshot taskSnapshot = PolenTaskController.inspect(polen);
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
 
         return new PolenAiDebugSnapshot(
                 moodAnalysis.mood(),
@@ -50,9 +53,26 @@ public final class PolenAiDebugInspector {
                 needSnapshot.curiosity(),
                 needSnapshot.rest(),
                 needSnapshot.magic(),
-                PolenSafetyNavigator.isInUnsafeArea(polen),
-                PolenSafetyNavigator.shouldSeekSafety(polen),
-                PolenSafetyNavigator.shouldUseUnsafeDialogue(polen),
+                environment.safeStandingSpot(),
+                environment.isInUnsafeArea(),
+                environment.dangerousStandingSpot(),
+                environment.claustrophobicStandingSpot(),
+                environment.immediateThreat(),
+                environment.rangedThreatVisible(),
+                environment.exposedToRangedThreat(),
+                environment.shouldSeekSafety(false),
+                environment.shouldUseUnsafeDialogue(),
+                environment.rainExposed(),
+                environment.rainSheltered(),
+                environment.nearbyLight(),
+                environment.nearbyBed(),
+                environment.overheadCover(),
+                environment.nearOutdoorSurface(),
+                environment.nearbyManagedLight(),
+                environment.activeManagedLight(),
+                environment.needsNightLight(),
+                environment.shelterKind(),
+                environment.rangedThreatPos(),
                 polen.getAiState().getSearchType(),
                 polen.getAiState().getSearchStatus(),
                 polen.getAiState().getSearchNote(),

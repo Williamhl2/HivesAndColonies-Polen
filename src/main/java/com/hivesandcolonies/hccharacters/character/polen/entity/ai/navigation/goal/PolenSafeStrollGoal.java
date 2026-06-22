@@ -5,9 +5,11 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.PolenDangerMemor
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenBehaviorReadiness;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenRainRestController;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 
 import net.minecraft.core.BlockPos;
@@ -68,14 +70,12 @@ public class PolenSafeStrollGoal extends RandomStrollGoal {
     }
 
     private boolean canStrollNow() {
-        return !this.polen.isSleeping()
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(this.polen);
+        return PolenBehaviorReadiness.isSafeOnFoot(this.polen, environment)
                 && this.polen.getCurrentTask() == PolenTaskType.WANDER_SAFE
-                && !this.polen.level().isNight()
-                && !this.polen.level().isRaining()
-                && !PolenSafetyNavigator.isInUnsafeArea(this.polen)
+                && PolenBehaviorReadiness.isCalmDaytime(environment)
                 && !PolenHomeManager.isFarFromHome(this.polen, HOME_STROLL_HARD_LIMIT_RADIUS)
-                && this.polen.onGround()
-                && !this.polen.isInWaterOrBubble();
+                && !this.polen.isDoingQuietActivity();
     }
 
     private boolean isSafeHomeBoundedCandidate(BlockPos candidatePos) {

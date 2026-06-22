@@ -29,6 +29,7 @@ public final class PolenAiState {
     private BlockPos observationUsePos;
     private long dangerousSpotUntilGameTime;
     private long activeLightUntilGameTime;
+    private long requestedHomeUntilGameTime;
     private long lastAmbientDialogueGameTime;
     private long lastThoughtDebugGameTime;
     private long nextQuietActivityAllowedGameTime;
@@ -43,9 +44,14 @@ public final class PolenAiState {
     private String residenceContext = "";
     private String observationContext = "";
     private String observationNote = "";
+    private String lastDialogueKey = "";
+    private String lastDialogueFamily = "";
+    private String lastAmbientDialogueSituation = "";
     private String lastThoughtDebugSignature = "";
     private boolean debugThoughtsEnabled;
     private int lastQuietActivityType;
+    private int lastDialogueVariation;
+    private long lastAmbientDialogueSituationGameTime;
     private BlockPos lastQuietActivityPos;
     private BlockPos lastInterestTargetPos;
     private final PolenNeedState needState = new PolenNeedState();
@@ -66,6 +72,7 @@ public final class PolenAiState {
             String dangerousSpotUntilKey,
             String activeLightKey,
             String activeLightUntilKey,
+            String requestedHomeUntilKey,
             String needsKey,
             String intentKey
     ) {
@@ -81,6 +88,7 @@ public final class PolenAiState {
         tag.putLong(dangerousSpotUntilKey, this.dangerousSpotUntilGameTime);
         CharacterNbtHelper.saveBlockPos(tag, activeLightKey, this.activeLightPos);
         tag.putLong(activeLightUntilKey, this.activeLightUntilGameTime);
+        tag.putLong(requestedHomeUntilKey, this.requestedHomeUntilGameTime);
         this.needState.save(tag, needsKey);
         this.intentState.save(tag, intentKey);
     }
@@ -99,6 +107,7 @@ public final class PolenAiState {
             String dangerousSpotUntilKey,
             String activeLightKey,
             String activeLightUntilKey,
+            String requestedHomeUntilKey,
             String needsKey,
             String intentKey
     ) {
@@ -114,6 +123,7 @@ public final class PolenAiState {
         this.dangerousSpotUntilGameTime = Math.max(0L, tag.getLong(dangerousSpotUntilKey));
         this.activeLightPos = CharacterNbtHelper.loadBlockPos(tag, activeLightKey);
         this.activeLightUntilGameTime = Math.max(0L, tag.getLong(activeLightUntilKey));
+        this.requestedHomeUntilGameTime = Math.max(0L, tag.getLong(requestedHomeUntilKey));
         this.needState.load(tag, needsKey);
         this.intentState.load(tag, intentKey);
     }
@@ -204,12 +214,43 @@ public final class PolenAiState {
         this.activeLightUntilGameTime = activeLightUntilGameTime;
     }
 
+    public long getRequestedHomeUntilGameTime() {
+        return this.requestedHomeUntilGameTime;
+    }
+
+    public boolean hasPendingHomeRequest(long gameTime) {
+        return gameTime < this.requestedHomeUntilGameTime;
+    }
+
+    public void requestReturnHomeUntil(long requestedHomeUntilGameTime) {
+        this.requestedHomeUntilGameTime = Math.max(
+                this.requestedHomeUntilGameTime,
+                Math.max(0L, requestedHomeUntilGameTime)
+        );
+    }
+
+    public void clearReturnHomeRequest() {
+        this.requestedHomeUntilGameTime = 0L;
+    }
+
     public long getLastAmbientDialogueGameTime() {
         return this.lastAmbientDialogueGameTime;
     }
 
     public void setLastAmbientDialogueGameTime(long lastAmbientDialogueGameTime) {
         this.lastAmbientDialogueGameTime = lastAmbientDialogueGameTime;
+    }
+
+    public void rememberAmbientDialogueBroadcast(String situation, long gameTime) {
+        this.lastAmbientDialogueSituation = situation == null ? "" : situation;
+        this.lastAmbientDialogueSituationGameTime = Math.max(0L, gameTime);
+        this.lastAmbientDialogueGameTime = Math.max(0L, gameTime);
+    }
+
+    public boolean hasRecentAmbientDialogue(String situation, long gameTime, long cooldownTicks) {
+        return situation != null
+                && situation.equals(this.lastAmbientDialogueSituation)
+                && gameTime - this.lastAmbientDialogueSituationGameTime < Math.max(0L, cooldownTicks);
     }
 
     public long getLastThoughtDebugGameTime() {
@@ -254,6 +295,24 @@ public final class PolenAiState {
 
     public void setLastThoughtDebugSignature(String lastThoughtDebugSignature) {
         this.lastThoughtDebugSignature = lastThoughtDebugSignature == null ? "" : lastThoughtDebugSignature;
+    }
+
+    public String getLastDialogueKey() {
+        return this.lastDialogueKey;
+    }
+
+    public String getLastDialogueFamily() {
+        return this.lastDialogueFamily;
+    }
+
+    public int getLastDialogueVariation() {
+        return this.lastDialogueVariation;
+    }
+
+    public void rememberDialogueSelection(String family, String key, int variation) {
+        this.lastDialogueFamily = family == null ? "" : family;
+        this.lastDialogueKey = key == null ? "" : key;
+        this.lastDialogueVariation = Math.max(0, variation);
     }
 
     public boolean isDebugThoughtsEnabled() {

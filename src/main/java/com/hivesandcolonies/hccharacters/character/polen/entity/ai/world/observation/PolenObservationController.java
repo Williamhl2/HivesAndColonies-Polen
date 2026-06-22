@@ -5,7 +5,10 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.intent.
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.need.PolenNeedController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.need.PolenNeedSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenNightSafetyPlan;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceTarget;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.identity.PolenWorldAffinity;
@@ -23,14 +26,23 @@ public final class PolenObservationController {
         PolenObservationFocus focus = PolenObservationFocus.NONE;
         PolenObservationDisposition disposition = PolenObservationDisposition.IDLE;
         String note = "";
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
 
-        if (PolenSafetyNavigator.shouldSeekRainShelter(polen)) {
+        if (environment.shouldSeekRainShelter()) {
             target = PolenAffordanceResolver.findBestRainShelter(polen, 18);
             focus = PolenObservationFocus.SHELTER;
             disposition = target == null ? PolenObservationDisposition.REJECTED : resolveDispositionForCurrentState(polen, focus);
             note = target == null ? "no_rain_shelter_visible" : "rain_shelter_visible";
-        } else if (PolenSafetyNavigator.shouldSeekNightLight(polen)) {
-            target = PolenAffordanceResolver.findBestNightLight(polen, 14);
+        } else if (environment.needsNightLight()) {
+            PolenNightSafetyPlan plan = PolenSafetyNavigator.planNightLightSafety(polen, 14);
+            target = plan == null || plan.targetPos() == null
+                    ? null
+                    : new PolenAffordanceTarget(
+                    plan.targetPos(),
+                    plan.targetPos(),
+                    com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceType.MAGIC_LIGHT,
+                    plan.note()
+            );
             focus = PolenObservationFocus.LIGHT;
             disposition = target == null ? PolenObservationDisposition.REJECTED : resolveDispositionForCurrentState(polen, focus);
             note = target == null ? "no_light_solution_visible" : target.contextKey();

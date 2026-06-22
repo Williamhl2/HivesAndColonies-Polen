@@ -97,6 +97,35 @@ public final class PolenSafetyEvaluator {
         return canPhysicallyStandAt(entity.level(), pos);
     }
 
+    public static boolean isStandableSpotProxy(Level level, BlockPos pos) {
+        return level != null && pos != null && canPhysicallyStandAt(level, pos);
+    }
+
+    public static boolean isDangerousStandingSpotProxy(Level level, BlockPos pos) {
+        if (level == null || pos == null) {
+            return false;
+        }
+
+        if (!level.getFluidState(pos).isEmpty() || !level.getFluidState(pos.above()).isEmpty()) {
+            return true;
+        }
+
+        if (!level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP)) {
+            return true;
+        }
+
+        return level.getMaxLocalRawBrightness(pos) < MIN_TRUE_DANGER_BRIGHTNESS
+                && isUndergroundEnclosedSpot(level, pos);
+    }
+
+    public static boolean isClaustrophobicStandingSpotProxy(Level level, BlockPos pos) {
+        return level != null
+                && pos != null
+                && canPhysicallyStandAt(level, pos)
+                && level.getMaxLocalRawBrightness(pos) < MIN_SAFE_BRIGHTNESS
+                && isUndergroundEnclosedSpot(level, pos);
+    }
+
     private static boolean canPhysicallyStandAt(Level level, BlockPos pos) {
         if (!level.getFluidState(pos).isEmpty() || !level.getFluidState(pos.above()).isEmpty()) {
             return false;

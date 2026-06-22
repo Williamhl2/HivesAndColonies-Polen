@@ -5,19 +5,16 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.intent.
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.expression.activity.PolenQuietActivityController;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchStatus;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchType;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.player.Player;
 
 public final class PolenRainRestController {
     private static final long RAIN_REST_LOCK_TICKS = 120L;
     private static final int RAIN_REFLECT_TICKS = 100;
-    private static final double HOSTILE_THREAT_RANGE = 6.0D;
-    private static final double UNTRUSTED_PLAYER_RANGE = 2.5D;
     private static final double RAIN_HOME_RETURN_RADIUS = 96.0D;
 
     private PolenRainRestController() {
@@ -54,11 +51,12 @@ public final class PolenRainRestController {
     }
 
     public static boolean shouldRestInRain(PolenEntity polen) {
-        return polen.level().isRaining()
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
+        return environment.raining()
                 && !PolenSleepController.shouldPrioritizeBedReturn(polen)
-                && PolenSafetyEvaluator.isRainShelteredStandingSpot(polen.level(), polen.blockPosition())
+                && environment.rainSheltered()
                 && !shouldReturnToKnownHomeForRest(polen)
-                && !hasImmediateThreat(polen)
+                && !environment.immediateThreat()
                 && polen.onGround()
                 && !polen.isInWaterOrBubble();
     }
@@ -67,19 +65,5 @@ public final class PolenRainRestController {
         return PolenHomeManager.hasHomeCenter(polen)
                 && !PolenHomeManager.isNearHomeCenter(polen, 3.5D)
                 && !PolenHomeManager.isFarFromHome(polen, RAIN_HOME_RETURN_RADIUS);
-    }
-
-    private static boolean hasImmediateThreat(PolenEntity polen) {
-        boolean hostileNearby = !polen.level().getEntitiesOfClass(
-                Monster.class,
-                polen.getBoundingBox().inflate(HOSTILE_THREAT_RANGE),
-                monster -> monster.isAlive() && monster.hasLineOfSight(polen)
-        ).isEmpty();
-        if (hostileNearby) {
-            return true;
-        }
-
-        Player player = polen.level().getNearestPlayer(polen, UNTRUSTED_PLAYER_RANGE);
-        return player != null && player.isAlive() && !polen.isComfortableWith(player);
     }
 }

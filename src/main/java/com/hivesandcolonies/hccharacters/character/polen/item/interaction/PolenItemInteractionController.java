@@ -15,7 +15,7 @@ import net.minecraft.world.level.block.FlowerBlock;
 import com.hivesandcolonies.hccharacters.character.polen.dialogue.PolenDialogueManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenBedLocator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenResidenceStage;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenResidenceTarget;
@@ -136,7 +136,7 @@ public final class PolenItemInteractionController {
         }
 
         BlockPos footPos = PolenBeeBedBlock.getFootPos(state, clickedPos).immutable();
-        BlockPos usePos = PolenSleepController.findBestBedAccessPos(polen, footPos);
+        BlockPos usePos = PolenBedLocator.findBestBedAccessPos(polen, footPos);
         if (usePos == null) {
             sendStatus(player, "message.polen.bee_bed.bind.no_access");
             return InteractionResult.FAIL;

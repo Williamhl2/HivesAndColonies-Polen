@@ -1,20 +1,17 @@
 package com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home;
 
-import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
-import com.hivesandcolonies.hccharacters.character.polen.block.PolenBeeBedBlock;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.routine.PolenRoutinePlanner;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStateManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.state.BlockState;
 
 public final class PolenHomeManager {
     private static final int AUTO_BEE_BED_HORIZONTAL_RADIUS = 8;
     private static final int AUTO_BEE_BED_VERTICAL_RADIUS = 3;
+    private static final int HOME_BED_SCAN_RADIUS = 14;
 
     private PolenHomeManager() {
     }
@@ -120,80 +117,47 @@ public final class PolenHomeManager {
             int horizontalRadius,
             int verticalRadius
     ) {
-        if (polen == null || origin == null) {
-            return null;
-        }
-
-        BlockPos bestAnchorPos = null;
-        BlockPos bestUsePos = null;
-        double bestDistance = Double.MAX_VALUE;
-        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
-
-        for (int dx = -horizontalRadius; dx <= horizontalRadius; dx++) {
-            for (int dz = -horizontalRadius; dz <= horizontalRadius; dz++) {
-                for (int dy = -verticalRadius; dy <= verticalRadius; dy++) {
-                    cursor.set(origin.getX() + dx, origin.getY() + dy, origin.getZ() + dz);
-                    BlockState state = polen.level().getBlockState(cursor);
-                    if (!state.is(ModBlocks.POLEN_BEE_BED.get())) {
-                        continue;
-                    }
-
-                    BlockPos anchorPos = PolenBeeBedBlock.getFootPos(state, cursor).immutable();
-                    BlockPos usePos = PolenSleepController.findBestBedAccessPos(polen, anchorPos);
-                    if (usePos == null) {
-                        continue;
-                    }
-
-                    double distance = anchorPos.distSqr(origin);
-                    if (distance < bestDistance) {
-                        bestDistance = distance;
-                        bestAnchorPos = anchorPos;
-                        bestUsePos = usePos.immutable();
-                    }
-                }
-            }
-        }
-
-        if (bestAnchorPos == null || bestUsePos == null) {
+        PolenBedTarget target = PolenBedLocator.findNearestBedTarget(
+                polen,
+                origin,
+                horizontalRadius,
+                verticalRadius,
+                true
+        );
+        if (target == null || target.bedPos() == null || target.accessPos() == null) {
             return null;
         }
 
         return new PolenResidenceTarget(
-                bestAnchorPos,
-                bestUsePos,
+                target.anchorPos() == null ? target.bedPos() : target.anchorPos(),
+                target.accessPos(),
                 "bee_bed",
                 PolenResidenceStage.OWN_SPACE
         );
     }
 
+    public static PolenHomeSnapshot getHomeSnapshot(PolenEntity polen) {
+        if (polen == null) {
+            return new PolenHomeSnapshot(null, null, null);
+        }
+
+        PolenResidenceTarget residence = getRememberedResidence(polen);
+        PolenBedTarget homeBed = findHomeBedTarget(polen, residence);
+        BlockPos restingPos = polen.getAiState().getRestingPos();
+        return new PolenHomeSnapshot(residence, homeBed, restingPos);
+    }
+
     public static BlockPos getValidResidenceUsePos(PolenEntity polen) {
-        PolenResidenceTarget target = getRememberedResidence(polen);
-        return target == null ? null : target.usePos();
+        return getHomeSnapshot(polen).residenceUsePos();
     }
 
     public static boolean isNearResidence(PolenEntity polen) {
-        BlockPos usePos = getValidResidenceUsePos(polen);
+        BlockPos usePos = getHomeSnapshot(polen).residenceUsePos();
         return usePos != null && usePos.closerToCenterThan(polen.position(), 3.0D);
     }
 
     public static BlockPos getHomeCenterPos(PolenEntity polen) {
-        if (polen == null) {
-            return null;
-        }
-
-        BlockPos homeBedPos = PolenSleepController.findHomeBed(polen);
-        BlockPos homeBedAccessPos = PolenSleepController.findBestBedAccessPos(polen, homeBedPos);
-        if (homeBedAccessPos != null) {
-            return homeBedAccessPos.immutable();
-        }
-
-        BlockPos residenceUsePos = getValidResidenceUsePos(polen);
-        if (residenceUsePos != null) {
-            return residenceUsePos;
-        }
-
-        BlockPos restingPos = polen.getAiState().getRestingPos();
-        return restingPos == null ? null : restingPos.immutable();
+        return getHomeSnapshot(polen).homeCenterPos();
     }
 
     public static boolean hasHomeCenter(PolenEntity polen) {
@@ -216,5 +180,25 @@ public final class PolenHomeManager {
                 net.minecraft.world.phys.Vec3.atCenterOf(pos),
                 radius
         );
+    }
+
+    private static PolenBedTarget findHomeBedTarget(PolenEntity polen, PolenResidenceTarget residence) {
+        if (polen == null) {
+            return null;
+        }
+
+        BlockPos residenceUsePos = residence == null ? null : residence.usePos();
+        PolenBedTarget best = PolenBedLocator.findNearestBedTarget(polen, residenceUsePos, HOME_BED_SCAN_RADIUS, 3, false);
+        if (best != null) {
+            return best;
+        }
+
+        BlockPos residenceAnchorPos = polen.getAiState().getResidenceAnchorPos();
+        best = PolenBedLocator.findNearestBedTarget(polen, residenceAnchorPos, HOME_BED_SCAN_RADIUS, 3, false);
+        if (best != null) {
+            return best;
+        }
+
+        return PolenBedLocator.findNearestBedTarget(polen, polen.getAiState().getRestingPos(), HOME_BED_SCAN_RADIUS, 3, false);
     }
 }

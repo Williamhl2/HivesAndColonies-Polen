@@ -4,7 +4,7 @@ import java.util.EnumSet;
 
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 
 import net.minecraft.network.chat.Component;
@@ -46,9 +46,10 @@ public class PolenTrustWalkGoal extends Goal {
             stopTrustWalk("message.polen.trust_walk.sleeping");
             return;
         }
+        boolean unsafeArea = PolenEnvironmentResolver.inspect(this.polen).isInUnsafeArea();
         if (this.polen.getCurrentTask().isUrgent()
                 || PolenSleepController.hasImmediateThreat(this.polen)
-                || PolenSafetyNavigator.isInUnsafeArea(this.polen)) {
+                || unsafeArea) {
             stopTrustWalk("message.polen.trust_walk.unsafe");
             return;
         }

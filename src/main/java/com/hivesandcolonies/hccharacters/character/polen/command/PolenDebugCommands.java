@@ -104,12 +104,46 @@ public final class PolenDebugCommands {
                                                             + snapshot.restNeed()
                                                             + ", magicNeed="
                                                             + snapshot.magicNeed()
+                                                            + ", safeStandingSpot="
+                                                            + snapshot.safeStandingSpot()
                                                             + ", unsafeArea="
                                                             + snapshot.unsafeArea()
+                                                            + ", dangerousStandingSpot="
+                                                            + snapshot.dangerousStandingSpot()
+                                                            + ", claustrophobicStandingSpot="
+                                                            + snapshot.claustrophobicStandingSpot()
+                                                            + ", immediateThreat="
+                                                            + snapshot.immediateThreat()
+                                                            + ", rangedThreatVisible="
+                                                            + snapshot.rangedThreatVisible()
+                                                            + ", exposedToRangedThreat="
+                                                            + snapshot.exposedToRangedThreat()
                                                             + ", shouldSeekSafety="
                                                             + snapshot.shouldSeekSafety()
                                                             + ", unsafeDialogue="
                                                             + snapshot.shouldUseUnsafeDialogue()
+                                                            + ", rainExposed="
+                                                            + snapshot.rainExposed()
+                                                            + ", rainSheltered="
+                                                            + snapshot.rainSheltered()
+                                                            + ", nearbyLight="
+                                                            + snapshot.nearbyLight()
+                                                            + ", nearbyBed="
+                                                            + snapshot.nearbyBed()
+                                                            + ", overheadCover="
+                                                            + snapshot.overheadCover()
+                                                            + ", nearOutdoorSurface="
+                                                            + snapshot.nearOutdoorSurface()
+                                                            + ", nearbyManagedLight="
+                                                            + snapshot.nearbyManagedLight()
+                                                            + ", activeManagedLight="
+                                                            + snapshot.activeManagedLight()
+                                                            + ", needsNightLight="
+                                                            + snapshot.needsNightLight()
+                                                            + ", shelterKind="
+                                                            + snapshot.shelterKind()
+                                                            + ", rangedThreatPos="
+                                                            + formatPos(snapshot.rangedThreatPos())
                                                             + ", searchType="
                                                             + snapshot.searchType()
                                                             + ", searchStatus="

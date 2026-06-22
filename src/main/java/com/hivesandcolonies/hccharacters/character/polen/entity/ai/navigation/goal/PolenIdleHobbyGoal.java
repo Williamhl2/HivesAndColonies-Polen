@@ -5,10 +5,13 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.PolenAmbientDial
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.expression.activity.PolenQuietActivityController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.action.PolenAutonomousActionPlan;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.ability.magic.PolenMagicController;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenBehaviorReadiness;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -36,14 +39,13 @@ public class PolenIdleHobbyGoal extends Goal {
 
     @Override
     public boolean canUse() {
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(this.polen);
         if (this.polen.isSleeping()
                 || this.polen.isDoingQuietActivity()
-                || PolenSafetyNavigator.isInUnsafeArea(this.polen)
+                || environment.shouldSeekSafety(PolenSleepController.shouldPrioritizeBedReturn(this.polen))
                 || PolenSleepController.shouldPrioritizeBedReturn(this.polen)
                 || this.polen.getCurrentTask() != PolenTaskType.QUIET_CREATION
-                || this.polen.hasNearbyPlayer(3.0D)
-                || !this.polen.onGround()
-                || this.polen.isInWaterOrBubble()
+                || !PolenBehaviorReadiness.canStartQuietActivity(this.polen, environment, false)
                 || this.polen.getNavigation().isInProgress()
                 || this.polen.getDeltaMovement().horizontalDistanceSqr() > 0.002D) {
             return false;
@@ -62,15 +64,12 @@ public class PolenIdleHobbyGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(this.polen);
         return !this.polen.isSleeping()
                 && this.activityTicks > 0
-                && this.polen.isDoingQuietActivity()
                 && this.polen.getCurrentTask() == PolenTaskType.QUIET_CREATION
-                && !PolenSleepController.shouldPrioritizeBedReturn(this.polen)
-                && !PolenSafetyNavigator.isInUnsafeArea(this.polen)
-                && !this.polen.hasNearbyPlayer(2.5D)
-                && this.polen.onGround()
-                && !this.polen.isInWaterOrBubble()
+                && !environment.shouldSeekSafety(PolenSleepController.shouldPrioritizeBedReturn(this.polen))
+                && PolenBehaviorReadiness.canContinueQuietActivity(this.polen, environment)
                 && (this.activityType != PolenQuietActivityController.QUIET_ACTIVITY_ATTUNING
                 || PolenMagicController.hasNearbySourceLikeInterest(this.polen))
                 && (this.activityType != PolenQuietActivityController.QUIET_ACTIVITY_REFLECTING
