@@ -14,7 +14,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 
-@EventBusSubscriber(modid = HcCharacters.MODID)
+@EventBusSubscriber(modid = HcCharacters.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class ModEntityAttributes {
     private ModEntityAttributes() {}
 

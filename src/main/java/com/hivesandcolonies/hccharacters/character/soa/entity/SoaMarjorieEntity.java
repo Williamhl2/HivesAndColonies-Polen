@@ -3,11 +3,11 @@ package com.hivesandcolonies.hccharacters.character.soa.entity;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.UUID;
 
 import com.hivesandcolonies.hccharacters.character.lucy.world.LucyVillageEncounterManager;
 import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
+import com.hivesandcolonies.hccharacters.character.soa.companion.SoaMartaCompanionController;
 import com.hivesandcolonies.hccharacters.character.soa.dialogue.SoaMarjorieDialogue;
 import com.hivesandcolonies.hccharacters.character.soa.progression.SoaMarjorieRelationship;
 import com.hivesandcolonies.hccharacters.common.entity.SimpleCharacterEntity;
@@ -33,7 +33,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -43,7 +42,7 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
-import net.minecraft.world.entity.animal.allay.Allay;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -67,12 +66,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private static final int BOARD_GIFT_RANDOM_DELAY = 20 * 50;
     private static final int HOSTILE_SCAN_INTERVAL_TICKS = 30;
     private static final double HOSTILE_SCAN_RADIUS = 10.0D;
-    private static final String MARTA_TAG = "hc_characters_soa_marta";
-    private static final String MARTA_OWNER_TAG = "SoaMarjorieOwner";
-    private static final String MARTA_COMPANION_UUID_TAG = "SoaMarjorieMartaUuid";
     private static final String VILLAGE_SCENE_ACTIVE_TAG = "SoaMarjorieVillageSceneActive";
-    private static final double MARTA_FOLLOW_DISTANCE_SQR = 7.0D * 7.0D;
-    private static final double MARTA_TELEPORT_DISTANCE_SQR = 36.0D * 36.0D;
 
     public static final String CURIOS_BACKPACK_SLOT = "backpack";
     public static final String CURIOS_TOOL_RIGHT_SLOT = "tool_right";
@@ -97,7 +91,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private int ambientDialogueCooldown;
     private int equipmentSyncCooldown;
     private int hostileScanCooldown;
-    private UUID martaUuid;
+    private final SoaMartaCompanionController martaCompanion = new SoaMartaCompanionController(this);
 
     public SoaMarjorieEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -248,7 +242,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             --this.torchDrawTicks;
         }
         if (!this.level().isClientSide) {
-            this.tickMartaCompanion();
+            this.martaCompanion.tick();
             this.tickEncounterLifetime();
             this.tickSurvivabilityAndThreats();
             this.equipExpertMiningTools();
@@ -257,106 +251,10 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         this.tickAmbientDialogue();
     }
 
-    private void tickMartaCompanion() {
-        if (!(this.level() instanceof ServerLevel serverLevel) || !this.isAlive()) {
-            return;
-        }
-        Allay marta = this.getOrCreateMarta(serverLevel);
-        if (marta == null || !marta.isAlive()) {
-            return;
-        }
-        this.keepMartaUntamperable(marta);
-        double distanceSqr = marta.distanceToSqr(this);
-        if (distanceSqr > MARTA_TELEPORT_DISTANCE_SQR) {
-            marta.teleportTo(this.getX() + 1.0D, this.getY() + 0.5D, this.getZ() + 1.0D);
-            marta.getNavigation().stop();
-            return;
-        }
-        if (distanceSqr > MARTA_FOLLOW_DISTANCE_SQR && marta.getNavigation().isDone()) {
-            marta.getNavigation().moveTo(this, 0.55D);
-        }
-    }
-
-    private Allay getOrCreateMarta(ServerLevel serverLevel) {
-        Allay existing = this.findMarta(serverLevel);
-        if (existing != null) {
-            return existing;
-        }
-        Allay marta = EntityType.ALLAY.create(serverLevel);
-        if (marta == null) {
-            return null;
-        }
-        marta.moveTo(this.getX() + 1.0D, this.getY() + 0.25D, this.getZ() + 1.0D, this.getYRot(), 0.0F);
-        this.keepMartaUntamperable(marta);
-        if (serverLevel.addFreshEntity(marta)) {
-            this.martaUuid = marta.getUUID();
-            return marta;
-        }
-        return null;
-    }
-
-    private Allay findMarta(ServerLevel serverLevel) {
-        if (this.martaUuid != null && serverLevel.getEntity(this.martaUuid) instanceof Allay marta && this.isMarta(marta)) {
-            return marta;
-        }
-        AABB searchArea = this.getBoundingBox().inflate(48.0D);
-        List<Allay> candidates = serverLevel.getEntitiesOfClass(Allay.class, searchArea, this::isMarta);
-        if (candidates.isEmpty()) {
-            this.martaUuid = null;
-            return null;
-        }
-        Allay nearest = candidates.get(0);
-        double nearestDistance = nearest.distanceToSqr(this);
-        for (int i = 1; i < candidates.size(); i++) {
-            Allay candidate = candidates.get(i);
-            double distance = candidate.distanceToSqr(this);
-            if (distance < nearestDistance) {
-                nearest = candidate;
-                nearestDistance = distance;
-            }
-        }
-        this.martaUuid = nearest.getUUID();
-        return nearest;
-    }
-
-    private boolean isMarta(Allay allay) {
-        return allay.getTags().contains(MARTA_TAG)
-                && allay.getPersistentData().getString(MARTA_OWNER_TAG).equals(this.getStringUUID());
-    }
-
-    private void keepMartaUntamperable(Allay marta) {
-        marta.addTag(MARTA_TAG);
-        marta.getPersistentData().putString(MARTA_OWNER_TAG, this.getStringUUID());
-        marta.setCustomName(Component.translatable("entity.hc_characters.marta"));
-        marta.setCustomNameVisible(true);
-        marta.setPersistenceRequired();
-        marta.setCanPickUpLoot(false);
-        marta.setInvulnerable(true);
-        // marta.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.DIAMOND));
-        if (marta instanceof Mob mob) {
-            mob.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
-        }
-    }
-
-    private void discardMartaCompanion() {
-        if (!(this.level() instanceof ServerLevel serverLevel)) {
-            return;
-        }
-        Allay marta = this.findMarta(serverLevel);
-        if (marta != null) {
-            marta.discard();
-        }
-        this.martaUuid = null;
-    }
-
-    public static boolean isProtectedMarta(Entity entity) {
-        return entity instanceof Allay && entity.getTags().contains(MARTA_TAG);
-    }
-
     @Override
     public void remove(RemovalReason reason) {
         if (!this.level().isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK) {
-            this.discardMartaCompanion();
+            this.martaCompanion.discardCompanion();
         }
         super.remove(reason);
     }
@@ -465,6 +363,9 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
 
     private void tickAmbientDialogue() {
         if (this.level().isClientSide) {
+            return;
+        }
+        if (!this.isBoardVisit() && !this.isCaveMiningEncounter()) {
             return;
         }
         if (this.ambientDialogueCooldown > 0) {
@@ -647,7 +548,10 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             return;
         }
 
-        player.hurt(this.damageSources().mobAttack(this), PLAYER_WARNING_STRIKE_DAMAGE);
+        float safeWarningDamage = Math.max(0.0F, Math.min(PLAYER_WARNING_STRIKE_DAMAGE, player.getHealth() - 1.0F));
+        if (safeWarningDamage > 0.0F) {
+            player.hurt(this.damageSources().mobAttack(this), safeWarningDamage);
+        }
         if (player.isAlive() && player.getHealth() > 1.0F) {
             player.setHealth(1.0F);
         }
@@ -718,9 +622,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         if (this.encounterAnchor != null) {
             compound.putLong("SoaMarjorieEncounterAnchor", this.encounterAnchor.asLong());
         }
-        if (this.martaUuid != null) {
-            compound.putUUID(MARTA_COMPANION_UUID_TAG, this.martaUuid);
-        }
+        this.martaCompanion.addAdditionalSaveData(compound);
     }
 
     @Override
@@ -739,11 +641,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         } else {
             this.encounterAnchor = null;
         }
-        if (compound.hasUUID(MARTA_COMPANION_UUID_TAG)) {
-            this.martaUuid = compound.getUUID(MARTA_COMPANION_UUID_TAG);
-        } else {
-            this.martaUuid = null;
-        }
+        this.martaCompanion.readAdditionalSaveData(compound);
     }
 
     private enum EncounterMode {
@@ -1059,29 +957,39 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             List<ItemStack> drops = Block.getDrops(state, serverLevel, this.orePos, serverLevel.getBlockEntity(this.orePos), this.soa, tool);
             serverLevel.levelEvent(2001, this.orePos, Block.getId(state));
             serverLevel.setBlock(this.orePos, Blocks.AIR.defaultBlockState(), 3);
-            this.shareCompanionReward(drops);
+            List<ItemStack> remainingDrops = this.shareCompanionReward(drops);
+            this.dropRemainingOreRewards(serverLevel, remainingDrops);
             if (this.soa.getRandom().nextInt(5) == 0) {
                 this.soa.sayNearby("dialogue.soa.marjorie.share_reward");
             }
             return true;
         }
 
-        private void shareCompanionReward(List<ItemStack> drops) {
+        private List<ItemStack> shareCompanionReward(List<ItemStack> drops) {
             Player companion = this.soa.findNearestPlayer(PLAYER_SHARE_RADIUS);
-            if (companion == null) {
-                return;
-            }
             List<ItemStack> rewards = new ArrayList<>();
+            List<ItemStack> remainingDrops = new ArrayList<>();
             for (ItemStack drop : drops) {
                 if (drop.isEmpty()) {
                     continue;
                 }
-                int share = drop.getCount() / 4;
-                int remainder = drop.getCount() % 4;
-                for (int i = 0; i < remainder; i++) {
-                    if (this.soa.getRandom().nextInt(4) == 0) {
-                        ++share;
+
+                int share = 0;
+                if (companion != null) {
+                    share = drop.getCount() / 4;
+                    int remainder = drop.getCount() % 4;
+                    for (int i = 0; i < remainder; i++) {
+                        if (this.soa.getRandom().nextInt(4) == 0) {
+                            ++share;
+                        }
                     }
+                }
+
+                int remaining = Math.max(0, drop.getCount() - share);
+                if (remaining > 0) {
+                    ItemStack remainingDrop = drop.copy();
+                    remainingDrop.setCount(remaining);
+                    remainingDrops.add(remainingDrop);
                 }
                 if (share <= 0) {
                     continue;
@@ -1090,16 +998,37 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
                 reward.setCount(share);
                 rewards.add(reward);
             }
+
             int totalShared = 0;
-            for (ItemStack reward : rewards) {
-                totalShared += reward.getCount();
-                ItemStack delivered = reward.copy();
-                if (!companion.addItem(delivered)) {
-                    companion.drop(delivered, false);
+            if (companion != null) {
+                for (ItemStack reward : rewards) {
+                    totalShared += reward.getCount();
+                    ItemStack delivered = reward.copy();
+                    if (!companion.addItem(delivered)) {
+                        companion.drop(delivered, false);
+                    }
+                }
+                if (totalShared > 0 && companion instanceof ServerPlayer serverPlayer) {
+                    SoaMarjorieRelationship.recordOreShared(serverPlayer, totalShared);
                 }
             }
-            if (totalShared > 0 && companion instanceof ServerPlayer serverPlayer) {
-                SoaMarjorieRelationship.recordOreShared(serverPlayer, totalShared);
+            return remainingDrops;
+        }
+
+        private void dropRemainingOreRewards(ServerLevel serverLevel, List<ItemStack> remainingDrops) {
+            if (this.orePos == null) {
+                return;
+            }
+            double x = this.orePos.getX() + 0.5D;
+            double y = this.orePos.getY() + 0.5D;
+            double z = this.orePos.getZ() + 0.5D;
+            for (ItemStack remainingDrop : remainingDrops) {
+                if (remainingDrop.isEmpty()) {
+                    continue;
+                }
+                ItemEntity itemEntity = new ItemEntity(serverLevel, x, y, z, remainingDrop.copy());
+                itemEntity.setDefaultPickUpDelay();
+                serverLevel.addFreshEntity(itemEntity);
             }
         }
 

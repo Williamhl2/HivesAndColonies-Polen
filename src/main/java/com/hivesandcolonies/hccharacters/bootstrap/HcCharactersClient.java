@@ -11,11 +11,17 @@ import com.hivesandcolonies.hccharacters.character.lucy.entity.LucyEntity;
 import com.hivesandcolonies.hccharacters.common.client.renderer.SimpleCharacterRenderer;
 import com.hivesandcolonies.hccharacters.character.soa.client.SoaMarjorieRenderer;
 import com.hivesandcolonies.hccharacters.character.soa.client.layer.SoaMarjorieMiningGearLayer;
+import com.hivesandcolonies.hccharacters.character.soa.client.layer.SoaMartaGoldenVariantLayer;
 import com.hivesandcolonies.hccharacters.common.client.hud.NpcAffinityOverlayClient;
 
+import net.minecraft.client.model.AllayModel;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.item.CompassItemPropertyFunction;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.allay.Allay;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -32,6 +38,7 @@ public class HcCharactersClient {
         bus.addListener(HcCharactersClient::onRegisterGuiLayers);
         bus.addListener(HcCharactersClient::onRegisterLayerDefinitions);
         bus.addListener(HcCharactersClient::onEntityRenderersSetup);
+        bus.addListener(HcCharactersClient::onAddEntityLayers);
     }
 
     private static void onClientSetup(FMLClientSetupEvent event) {
@@ -60,4 +67,16 @@ public class HcCharactersClient {
         event.registerEntityRenderer(ModEntities.SOA_MARJORIE.get(), SoaMarjorieRenderer::new);
         event.registerEntityRenderer(ModEntities.LUCY.get(), context -> new SimpleCharacterRenderer<LucyEntity>(context, "lucy"));
     }
+
+    private static void onAddEntityLayers(EntityRenderersEvent.AddLayers event) {
+        EntityRenderer<?> renderer = event.getRenderer(EntityType.ALLAY);
+        if (!(renderer instanceof LivingEntityRenderer<?, ?> livingRenderer)) {
+            return;
+        }
+
+        @SuppressWarnings("unchecked")
+        LivingEntityRenderer<Allay, AllayModel> allayRenderer = (LivingEntityRenderer<Allay, AllayModel>) livingRenderer;
+        allayRenderer.addLayer(new SoaMartaGoldenVariantLayer(allayRenderer));
+    }
+
 }

@@ -42,6 +42,12 @@ public class ModCreativeTabs {
                         output.accept(ModItems.HARVEST_CHARM.get());
                         output.accept(ModItems.ARTISAN_CHARM.get());
                         output.accept(ModItems.WAYFARER_CHARM.get());
+
+                        // Craftable player accessories.
+                        output.accept(ModItems.HONEY_SIGNET_RING.get());
+                        output.accept(ModItems.SOURCE_PETAL_NECKLACE.get());
+                        output.accept(ModItems.WAYFINDER_BELT.get());
+
                         output.accept(ModItems.POLEN_LANTERN.get());
                         output.accept(ModItems.POLEN_BEE_BED.get());
 
