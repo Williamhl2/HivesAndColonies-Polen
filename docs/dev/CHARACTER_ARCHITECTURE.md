@@ -356,14 +356,14 @@ Deberia agregarse otra capa de datos encima del mismo runtime de persistence.
 
 ## Recursos y data packs
 
-El namespace del mod sigue siendo `characters`.
+El namespace del mod sigue siendo `hc_characters`.
 
 La separacion por personaje debe darse en el path.
 
 ### Objetivo para assets
 
 ```text
-src/main/resources/assets/characters/
+src/main/resources/assets/hc_characters/
   textures/
     character/polen/
     character/luna/
@@ -378,19 +378,23 @@ src/main/resources/assets/characters/
     item/vanilla/
     block/polen/
 
-  lang_parts/<locale>/
-    common_ui.json
-    common_debug.json
-    polen_ambient.json
-    polen_story.json
-    luna_ambient.json
-    vanilla_story.json
+  lang_parts/<locale>/characters/
+    polen/
+      ambient.json
+      chapters.json
+      events.json
+      memories.json
+    lucy/
+      scene.json
+    soa/
+      interaction.json
+      encounters.json
 ```
 
 ### Objetivo para data
 
 ```text
-src/main/resources/data/characters/
+src/main/resources/data/hc_characters/
   advancement/
     polen/story/
     luna/story/

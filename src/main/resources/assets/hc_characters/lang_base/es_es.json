@@ -47,11 +47,13 @@
   "entity.hc_characters.vanilla": "Vanilla",
   "entity.hc_characters.noia": "Noia",
   "entity.hc_characters.noris": "Noris",
+  "entity.hc_characters.lucy": "Lucy",
   "item.hc_characters.befsh_spawn_egg": "Huevo generador de Befsh",
   "item.hc_characters.luna_spawn_egg": "Huevo generador de Luna",
   "item.hc_characters.vanilla_spawn_egg": "Huevo generador de Vanilla",
   "item.hc_characters.noia_spawn_egg": "Huevo generador de Noia",
   "item.hc_characters.noris_spawn_egg": "Huevo generador de Noris",
+  "item.hc_characters.lucy_spawn_egg": "Huevo generador de Lucy",
   "message.polen.item.no_nearby_polen": "Polen no esta lo bastante cerca.",
   "message.polen.item.bloom_focus.marked_flower": "El foco ayudo a Polen a recordar estas flores.",
   "message.polen.item.bloom_focus.marked_hive": "El foco resuena con una colmena que Polen podra recordar.",
@@ -183,7 +185,7 @@
   "screen.polen.profile.tooltip.charm.harvest": "Amuleto de cosecha: se siente atraída por comida, cultivos, calidez y comidas compartidas.",
   "screen.polen.profile.tooltip.charm.artisan": "Amuleto artesano: se siente atraída por decoración, espacios trabajados y detalles bonitos.",
   "screen.polen.profile.tooltip.charm.wayfarer": "Amuleto errante: se siente atraída por caminos, puntos de referencia, viaje y descubrimiento.",
-  "screen.polen.profile.tooltip.charm.none": "Aún no se ve ningún amuleto de afinidad."
+  "screen.polen.profile.tooltip.charm.none": "Aún no se ve ningún amuleto de afinidad.",
+  "entity.hc_characters.soa_marjorie": "Soa",
+  "item.hc_characters.soa_marjorie_spawn_egg": "Huevo generador de Soa"
 }
-    "entity.hc_characters.soa_marjorie": "SoaMarjorie",
-    "item.hc_characters.soa_marjorie_spawn_egg": "Huevo generador de SoaMarjorie",

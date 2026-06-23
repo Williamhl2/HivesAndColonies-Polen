@@ -2,11 +2,7 @@ package com.hivesandcolonies.hccharacters.character.polen.item.focus;
 
 import com.hivesandcolonies.hccharacters.character.polen.item.base.PolenLoreItem;
 import com.hivesandcolonies.hccharacters.character.polen.item.meta.PolenProgressionStage;
-import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
-import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
-import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStateManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.prologue.PolenPrologueManager;
-import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStoryData;
 import com.hivesandcolonies.hccharacters.common.util.CharacterNbtHelper;
 
 import net.minecraft.ChatFormatting;
@@ -70,7 +66,8 @@ public class HiveheartCharmItem extends PolenLoreItem {
         }
 
         ServerLevel overworld = serverLevel.getServer().overworld();
-        if (PolenStoryFlagsManager.hasFlag(overworld, PolenStoryFlag.NAME_REVEALED) || isPolenAlreadyKnown(overworld)) {
+        if (PolenPrologueManager.isLocatorDormant(overworld)) {
+            clearTarget(stack);
             player.displayClientMessage(
                     Component.translatable("message.polen.item.hiveheart_charm.dormant"),
                     true
@@ -142,6 +139,17 @@ public class HiveheartCharmItem extends PolenLoreItem {
         });
     }
 
+    public static void clearTarget(ItemStack stack) {
+        if (stack == null) {
+            return;
+        }
+
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            tag.remove(TARGET_POS_TAG);
+            tag.remove(TARGET_DIMENSION_TAG);
+        });
+    }
+
     @Nullable
     public static GlobalPos getCompassTarget(ItemStack stack) {
         if (stack == null) {
@@ -165,15 +173,6 @@ public class HiveheartCharmItem extends PolenLoreItem {
 
         ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, location);
         return GlobalPos.of(dimension, target);
-    }
-
-
-    private static boolean isPolenAlreadyKnown(ServerLevel level) {
-        if (level == null) {
-            return false;
-        }
-        PolenWorldStoryData data = PolenWorldStateManager.get(level);
-        return data.isPolenSpawned() || data.getPolenEntityUuid() != null;
     }
 
     private static float pitchForDistance(int distance) {

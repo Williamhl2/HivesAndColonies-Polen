@@ -16,7 +16,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 
 public final class PolenPrologueManager {
@@ -28,12 +27,6 @@ public final class PolenPrologueManager {
     public static void onServerStarted(ServerStartedEvent event) {
         // Prologue content is not generated during server boot. The first
         // Hiveheart use is the explicit one-shot trigger for the encounter site.
-    }
-
-    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.getEntity() instanceof ServerPlayer player) {
-            grantOpeningClueMapIfNeeded(player, player.serverLevel().getServer().overworld());
-        }
     }
 
     public static void ensurePrologueContent(ServerLevel level) {
@@ -109,6 +102,25 @@ public final class PolenPrologueManager {
         return createOpeningClueMap();
     }
 
+    public static boolean isLocatorDormant(ServerLevel level) {
+        return level == null || PolenPrologueRuntime.isLocatorDormant(level, PolenWorldStateManager.get(level));
+    }
+
+    public static boolean hasReceivedOpeningClueMap(ServerPlayer player) {
+        return player != null && PolenPlayerRelationshipManager.hasPlayerFlag(player, HIVEHEART_CHARM_GRANTED_FLAG);
+    }
+
+    public static boolean shouldOfferOpeningClueMap(ServerPlayer player) {
+        if (player == null) {
+            return false;
+        }
+
+        ServerLevel overworld = player.serverLevel().getServer().overworld();
+        return overworld != null
+                && !PolenPrologueRuntime.isLocatorDormant(overworld, PolenWorldStateManager.get(overworld))
+                && !player.getInventory().contains(new ItemStack(ModItems.HIVEHEART_CHARM.get()));
+    }
+
     public static BlockPos resolveLocatorTarget(ServerLevel level) {
         if (level == null) {
             return null;
@@ -121,9 +133,7 @@ public final class PolenPrologueManager {
             return false;
         }
 
-        if (PolenStoryFlagsManager.hasFlag(overworld, PolenStoryFlag.NAME_REVEALED)
-                || PolenPlayerRelationshipManager.hasPlayerFlag(player, HIVEHEART_CHARM_GRANTED_FLAG)
-                || player.getInventory().contains(new ItemStack(ModItems.HIVEHEART_CHARM.get()))) {
+        if (!shouldOfferOpeningClueMap(player)) {
             return false;
         }
 
@@ -137,7 +147,9 @@ public final class PolenPrologueManager {
             }
         }
 
-        PolenPlayerRelationshipManager.addPlayerFlag(player, HIVEHEART_CHARM_GRANTED_FLAG);
+        if (!PolenPlayerRelationshipManager.hasPlayerFlag(player, HIVEHEART_CHARM_GRANTED_FLAG)) {
+            PolenPlayerRelationshipManager.addPlayerFlag(player, HIVEHEART_CHARM_GRANTED_FLAG);
+        }
         return true;
     }
 

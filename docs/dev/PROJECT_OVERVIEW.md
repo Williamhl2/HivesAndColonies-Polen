@@ -160,8 +160,8 @@ Important status note:
 - `registry/ModCreativeTabs.java`
 - `registry/ModEntityAttributes.java`
 - `item/*`
-- `src/main/resources/assets/characters/*`
-- `src/main/resources/data/characters/*`
+- `src/main/resources/assets/hc_characters/*`
+- `src/main/resources/data/hc_characters/*`
 
 Responsibilities:
 

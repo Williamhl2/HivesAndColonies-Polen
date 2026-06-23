@@ -15,7 +15,7 @@ Main registry files:
 1. Decide its family first.
 2. Create a concrete class only if it has behavior.
 3. Register it in `ModItems`.
-4. Add model data in `assets/characters/models/item`.
+4. Add model data in `assets/hc_characters/models/item`.
 5. Add lang keys in both English and Spanish.
 6. If it belongs in creative mode, add it to `ModCreativeTabs`.
 7. If it needs tags, add the correct `data/characters/tags/item/*` entry.
@@ -87,11 +87,12 @@ Example:
 
 ## Localization
 
-Current public lang files:
+Current lang authoring sources:
 
-- `src/main/resources/assets/characters/lang/en_us.json`
-- `src/main/resources/assets/characters/lang/es_es.json`
-- `src/main/resources/assets/characters/lang/es_cl.json`
+- `src/main/resources/assets/hc_characters/lang_base/en_us.json`
+- `src/main/resources/assets/hc_characters/lang_base/es_es.json`
+- `src/main/resources/assets/hc_characters/lang_base/es_cl.json`
+- `src/main/resources/assets/hc_characters/lang_parts/<locale>/characters/<id>/*.json`
 
 Rule:
 

@@ -47,11 +47,13 @@
   "entity.hc_characters.vanilla": "Vanilla",
   "entity.hc_characters.noia": "Noia",
   "entity.hc_characters.noris": "Noris",
+  "entity.hc_characters.lucy": "Lucy",
   "item.hc_characters.befsh_spawn_egg": "Befsh Spawn Egg",
   "item.hc_characters.luna_spawn_egg": "Luna Spawn Egg",
   "item.hc_characters.vanilla_spawn_egg": "Vanilla Spawn Egg",
   "item.hc_characters.noia_spawn_egg": "Noia Spawn Egg",
   "item.hc_characters.noris_spawn_egg": "Noris Spawn Egg",
+  "item.hc_characters.lucy_spawn_egg": "Lucy Spawn Egg",
   "message.polen.item.no_nearby_polen": "Polen is not close enough.",
   "message.polen.item.bloom_focus.marked_flower": "The focus helped Polen remember these flowers.",
   "message.polen.item.bloom_focus.marked_hive": "The focus resonated with a hive Polen can remember.",
@@ -183,7 +185,7 @@
   "screen.polen.profile.tooltip.charm.harvest": "Harvest charm: she feels drawn to food, crops, warmth, and shared meals.",
   "screen.polen.profile.tooltip.charm.artisan": "Artisan charm: she feels drawn to decoration, crafted spaces, and beautiful details.",
   "screen.polen.profile.tooltip.charm.wayfarer": "Wayfarer charm: she feels drawn to paths, landmarks, travel, and discovery.",
-  "screen.polen.profile.tooltip.charm.none": "No affinity charm is visible yet."
+  "screen.polen.profile.tooltip.charm.none": "No affinity charm is visible yet.",
+  "entity.hc_characters.soa_marjorie": "Soa",
+  "item.hc_characters.soa_marjorie_spawn_egg": "Soa Spawn Egg"
 }
-    "entity.hc_characters.soa_marjorie": "SoaMarjorie",
-    "item.hc_characters.soa_marjorie_spawn_egg": "SoaMarjorie Spawn Egg",

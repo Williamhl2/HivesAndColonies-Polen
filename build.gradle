@@ -27,8 +27,6 @@ sourceSets.main.resources {
     // Exclude common development only resources from finalized outputs
     exclude("**/*.bbmodel") // BlockBench project files
     exclude("src/generated/**/.cache") // datagen cache files
-    exclude("assets/characters/lang_base/**")
-    exclude("assets/characters/lang_parts/**")
     exclude("assets/hc_characters/lang_base/**")
     exclude("assets/hc_characters/lang_parts/**")
 }
@@ -188,7 +186,14 @@ def writeSortedJson = { File target, Map<String, Object> content ->
     target.parentFile.mkdirs()
     def sorted = new TreeMap<String, Object>()
     sorted.putAll(content)
-    target.setText(JsonOutput.prettyPrint(JsonOutput.toJson(sorted)) + System.lineSeparator(), 'UTF-8')
+    java.nio.file.Files.writeString(
+            target.toPath(),
+            JsonOutput.prettyPrint(JsonOutput.toJson(sorted)) + System.lineSeparator(),
+            java.nio.charset.StandardCharsets.UTF_8,
+            java.nio.file.StandardOpenOption.CREATE,
+            java.nio.file.StandardOpenOption.TRUNCATE_EXISTING,
+            java.nio.file.StandardOpenOption.WRITE
+    )
 }
 
 def fallbackLocalesFor = { String locale, Set<String> availableLocales ->
@@ -202,11 +207,37 @@ def fallbackLocalesFor = { String locale, Set<String> availableLocales ->
     return fallbacks.unique().findAll { it != locale }
 }
 
+def sortedJsonFilesUnder = { File root ->
+    if (root == null || !root.exists()) {
+        return []
+    }
+
+    def files = []
+    def stream = java.nio.file.Files.walk(root.toPath())
+    try {
+        stream.forEach { path ->
+            if (java.nio.file.Files.isRegularFile(path) && path.fileName.toString().endsWith('.json')) {
+                files << path.toFile()
+            }
+        }
+    } finally {
+        stream.close()
+    }
+
+    return files.sort { File left, File right ->
+        root.toPath().relativize(left.toPath()).toString() <=> root.toPath().relativize(right.toPath()).toString()
+    }
+}
+
+def localePartFilesFor = { File langPartsDir, String locale ->
+    return sortedJsonFilesUnder(new File(langPartsDir, locale))
+}
+
 def registerLangMergeTask = { String taskName, String assetNamespace ->
     def langRoot = file("src/main/resources/assets/${assetNamespace}")
-    def langDir = file("${langRoot}/lang")
     def langBaseDir = file("${langRoot}/lang_base")
     def langPartsDir = file("${langRoot}/lang_parts")
+    def generatedLangDir = file("${langRoot}/lang")
 
     tasks.register(taskName) {
         description = "Merge ${assetNamespace} lang_base and lang_parts into runtime lang JSON files."
@@ -214,7 +245,7 @@ def registerLangMergeTask = { String taskName, String assetNamespace ->
 
         inputs.files(fileTree(langBaseDir) { include('*.json') })
         inputs.files(fileTree(langPartsDir) { include('**/*.json') })
-        outputs.dir(langDir)
+        outputs.dir(generatedLangDir)
 
         doLast {
             def locales = new TreeSet<String>()
@@ -247,12 +278,7 @@ def registerLangMergeTask = { String taskName, String assetNamespace ->
                     seenSources << baseFile
                 }
 
-                File partsDir = new File(langPartsDir, locale)
-                if (partsDir.exists()) {
-                    seenSources.addAll(
-                            partsDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.json') }?.sort { it.name } ?: []
-                    )
-                }
+                seenSources.addAll(localePartFilesFor(langPartsDir, locale))
 
                 if (seenSources.isEmpty()) {
                     throw new GradleException("${taskName}: locale '${locale}' has no source files.")
@@ -295,15 +321,21 @@ def registerLangMergeTask = { String taskName, String assetNamespace ->
             }
 
             finalByLocale.each { locale, entries ->
-                writeSortedJson(new File(langDir, "${locale}.json"), entries)
+                writeSortedJson(new File(generatedLangDir, "${locale}.json"), entries)
             }
 
-            logger.lifecycle("${taskName}: wrote ${finalByLocale.size()} locale files to ${langDir}")
+            def generatedFiles = finalByLocale.keySet().collect { "${it}.json" } as Set<String>
+            generatedLangDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.json') }?.each { staleFile ->
+                if (!generatedFiles.contains(staleFile.name)) {
+                    staleFile.delete()
+                }
+            }
+
+            logger.lifecycle("${taskName}: wrote ${finalByLocale.size()} locale files to ${generatedLangDir}")
         }
     }
 }
 
-registerLangMergeTask('mergeCharactersLang', 'characters')
 registerLangMergeTask('mergeHcCharactersLang', 'hc_characters')
 // Include the output of "generateModMetadata" as an input directory for the build
 // this works with both building through Gradle and the IDE.
@@ -312,7 +344,6 @@ sourceSets.main.resources.srcDir generateModMetadata
 neoForge.ideSyncTask generateModMetadata
 
 tasks.named('processResources', ProcessResources).configure {
-    dependsOn(tasks.named('mergeCharactersLang'))
     dependsOn(tasks.named('mergeHcCharactersLang'))
 }
 

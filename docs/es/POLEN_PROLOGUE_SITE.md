@@ -177,6 +177,14 @@ Razon:
 
 Debe llegar al jugador como recompensa de la primera mision o encargo del prologo, junto con la pista inicial sobre alguien perdida cerca de ese claro.
 
+La forma correcta actual de esa entrega es esta:
+
+- el jugador encuentra a `SoaMarjorie` y `Lucy` conversando dentro de una aldea
+- idealmente en un interior con lectura de taberna, posada o punto de reunion tranquilo
+- Lucy es quien menciona a la joven misteriosa vista en el claro
+- Lucy entrega el `hiveheart_charm` como croquis marcado a mano
+- Soa refuerza el tono de cautela, pero no reemplaza a Lucy como disparador de la pista
+
 No debe depender de crafting para el primer encuentro.
 
 Regla fuerte:

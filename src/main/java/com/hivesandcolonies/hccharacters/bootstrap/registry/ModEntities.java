@@ -4,6 +4,7 @@ import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.hccharacters.character.soa.entity.SoaMarjorieEntity;
 import com.hivesandcolonies.hccharacters.character.befsh.entity.BefshEntity;
+import com.hivesandcolonies.hccharacters.character.lucy.entity.LucyEntity;
 import com.hivesandcolonies.hccharacters.character.luna.entity.LunaEntity;
 import com.hivesandcolonies.hccharacters.character.noia.entity.NoiaEntity;
 import com.hivesandcolonies.hccharacters.character.noris.entity.NorisEntity;
@@ -76,5 +77,13 @@ public class ModEntities {
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(8)
                             .build(HcCharacters.MODID + ":soa_marjorie")
+            );
+    public static final DeferredHolder<EntityType<?>, EntityType<LucyEntity>> LUCY =
+            ENTITY_TYPES.register(
+                    "lucy",
+                    () -> EntityType.Builder.of(LucyEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(8)
+                            .build(HcCharacters.MODID + ":lucy")
             );
 }

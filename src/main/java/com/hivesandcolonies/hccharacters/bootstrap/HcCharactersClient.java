@@ -7,6 +7,7 @@ import com.hivesandcolonies.hccharacters.bootstrap.registry.ModItems;
 import com.hivesandcolonies.hccharacters.character.befsh.client.BefshRenderer;
 import com.hivesandcolonies.hccharacters.character.polen.client.PolenRenderer;
 import com.hivesandcolonies.hccharacters.character.polen.item.focus.HiveheartCharmItem;
+import com.hivesandcolonies.hccharacters.character.lucy.entity.LucyEntity;
 import com.hivesandcolonies.hccharacters.common.client.renderer.SimpleCharacterRenderer;
 import com.hivesandcolonies.hccharacters.character.soa.client.SoaMarjorieRenderer;
 import com.hivesandcolonies.hccharacters.character.soa.client.layer.SoaMarjorieMiningGearLayer;
@@ -57,5 +58,6 @@ public class HcCharactersClient {
         event.registerEntityRenderer(ModEntities.NOIA.get(), context -> new SimpleCharacterRenderer<>(context, "noia"));
         event.registerEntityRenderer(ModEntities.NORIS.get(), context -> new SimpleCharacterRenderer<>(context, "noris"));
         event.registerEntityRenderer(ModEntities.SOA_MARJORIE.get(), SoaMarjorieRenderer::new);
+        event.registerEntityRenderer(ModEntities.LUCY.get(), context -> new SimpleCharacterRenderer<LucyEntity>(context, "lucy"));
     }
 }

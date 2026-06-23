@@ -183,7 +183,9 @@ final class PolenPrologueSiteBuilder {
                     }
                 }
 
-                setBlock(level, groundPos, dz >= 0 ? Blocks.DIRT_PATH.defaultBlockState() : Blocks.CHERRY_PLANKS.defaultBlockState());
+                setBlock(level, groundPos, dz >= 0
+                        ? Blocks.DIRT_PATH.defaultBlockState()
+                        : PolenProloguePalette.FOUNDATION.defaultBlockState());
                 for (int y = floorY + 1; y <= floorY + 4; y++) {
                     setBlock(level, new BlockPos(groundPos.getX(), y, groundPos.getZ()), Blocks.AIR.defaultBlockState());
                 }
@@ -197,12 +199,12 @@ final class PolenPrologueSiteBuilder {
         placeLogColumn(level, shelterPos.offset(-2, 0, 0), 2);
         placeLogColumn(level, shelterPos.offset(2, 0, 0), 2);
 
-        setBlock(level, shelterPos.offset(-1, 0, -2), Blocks.CHERRY_PLANKS.defaultBlockState());
-        setBlock(level, shelterPos.offset(0, 0, -2), Blocks.WHITE_WOOL.defaultBlockState());
-        setBlock(level, shelterPos.offset(1, 0, -2), Blocks.CHERRY_PLANKS.defaultBlockState());
+        setBlock(level, shelterPos.offset(-1, 0, -2), PolenProloguePalette.FLOOR.defaultBlockState());
+        setBlock(level, shelterPos.offset(0, 0, -2), PolenProloguePalette.ACCENT.defaultBlockState());
+        setBlock(level, shelterPos.offset(1, 0, -2), PolenProloguePalette.FLOOR.defaultBlockState());
 
-        setBlock(level, shelterPos.offset(-2, 0, -1), Blocks.CHERRY_PLANKS.defaultBlockState());
-        setBlock(level, shelterPos.offset(2, 0, -1), Blocks.CHERRY_PLANKS.defaultBlockState());
+        setBlock(level, shelterPos.offset(-2, 0, -1), PolenProloguePalette.FLOOR.defaultBlockState());
+        setBlock(level, shelterPos.offset(2, 0, -1), PolenProloguePalette.FLOOR.defaultBlockState());
 
         BlockState rearRoof = Blocks.CHERRY_STAIRS.defaultBlockState()
                 .setValue(StairBlock.FACING, Direction.SOUTH)
@@ -217,13 +219,14 @@ final class PolenPrologueSiteBuilder {
 
         placePrologueBed(level, shelterPos);
 
-        BlockState barrel = Blocks.BARREL.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP);
+        BlockState barrel = PolenProloguePalette.STORAGE.defaultBlockState().setValue(BarrelBlock.FACING, Direction.UP);
         setBlock(level, shelterPos.offset(-1, 0, -1), Blocks.WHITE_CARPET.defaultBlockState());
         setBlock(level, shelterPos.offset(2, 0, -1), barrel);
         setBlock(level, shelterPos.offset(-2, 0, 1), Blocks.PINK_PETALS.defaultBlockState());
         setBlock(level, shelterPos.offset(-1, 0, 1), Blocks.WHITE_CARPET.defaultBlockState());
 
         BlockState campfire = Blocks.CAMPFIRE.defaultBlockState().setValue(CampfireBlock.LIT, true);
+        setBlock(level, shelterPos.offset(0, 0, 2), PolenProloguePalette.FOUNDATION.defaultBlockState());
         setBlock(level, shelterPos.offset(1, 0, 2), campfire);
     }
 

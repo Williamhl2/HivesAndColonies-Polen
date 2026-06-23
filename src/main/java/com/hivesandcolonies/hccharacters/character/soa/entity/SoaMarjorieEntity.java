@@ -5,6 +5,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
+import com.hivesandcolonies.hccharacters.character.lucy.world.LucyVillageEncounterManager;
 import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
 import com.hivesandcolonies.hccharacters.character.soa.dialogue.SoaMarjorieDialogue;
@@ -69,6 +70,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private static final String MARTA_TAG = "hc_characters_soa_marta";
     private static final String MARTA_OWNER_TAG = "SoaMarjorieOwner";
     private static final String MARTA_COMPANION_UUID_TAG = "SoaMarjorieMartaUuid";
+    private static final String VILLAGE_SCENE_ACTIVE_TAG = "SoaMarjorieVillageSceneActive";
     private static final double MARTA_FOLLOW_DISTANCE_SQR = 7.0D * 7.0D;
     private static final double MARTA_TELEPORT_DISTANCE_SQR = 36.0D * 36.0D;
 
@@ -146,6 +148,14 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         return this.encounterMode != EncounterMode.NONE && this.encounterTicksLeft > 0;
     }
 
+    public void startVillageScene() {
+        this.getPersistentData().putBoolean(VILLAGE_SCENE_ACTIVE_TAG, true);
+    }
+
+    public boolean isVillageSceneActive() {
+        return this.getPersistentData().getBoolean(VILLAGE_SCENE_ACTIVE_TAG);
+    }
+
     public boolean isBoardVisit() {
         return this.encounterMode == EncounterMode.BOARD_VISIT && this.encounterTicksLeft > 0;
     }
@@ -161,6 +171,9 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!this.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
+            if (this.isVillageSceneActive()) {
+                return LucyVillageEncounterManager.handleSoaInteraction(this, player);
+            }
             NpcRelationshipInteraction.interact(
                     this,
                     player,

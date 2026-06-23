@@ -1,4 +1,7 @@
 {
+  "dialogue.polen.event.first_meeting.line1": "...",
+  "dialogue.polen.event.first_meeting.line2": "No parece hostil... pero mejor no romper este silencio.",
+  "dialogue.polen.event.first_meeting.discovered": "Has encontrado a una chica desconocida en el claro.",
   "dialogue.polen.event.shelter.line1": "Este lugar...",
   "dialogue.polen.event.shelter.line2": "No parece un palacio, ni una colmena real...",
   "dialogue.polen.event.shelter.line3": "Pero se siente tranquilo.",

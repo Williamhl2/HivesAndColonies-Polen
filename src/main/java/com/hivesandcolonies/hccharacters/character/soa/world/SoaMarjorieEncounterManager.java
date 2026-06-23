@@ -3,6 +3,10 @@ package com.hivesandcolonies.hccharacters.character.soa.world;
 import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModEntities;
+import com.hivesandcolonies.hccharacters.character.lucy.world.LucyVillageEncounterManager;
+import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
+import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
+import com.hivesandcolonies.hccharacters.character.polen.progression.world.prologue.PolenPrologueManager;
 import com.hivesandcolonies.hccharacters.character.soa.entity.SoaMarjorieEntity;
 import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 
@@ -59,6 +63,9 @@ public final class SoaMarjorieEncounterManager {
             if (!level.dimension().equals(Level.OVERWORLD)) {
                 continue;
             }
+            if (!areWorldEncountersUnlocked(level)) {
+                continue;
+            }
             SoaMarjorieEncounterSavedData savedData = SoaMarjorieEncounterSavedData.get(level);
             savedData.cleanup(level.getGameTime());
             for (ServerPlayer player : level.players()) {
@@ -74,6 +81,9 @@ public final class SoaMarjorieEncounterManager {
 
     private static void tryBoardVisit(ServerLevel level, ServerPlayer player) {
         if (!HcCharactersGameplayConfig.soaMarjorieBoardVisitsEnabled()) {
+            return;
+        }
+        if (LucyVillageEncounterManager.hasActiveVillageScene(level)) {
             return;
         }
         SoaMarjorieEncounterSavedData savedData = SoaMarjorieEncounterSavedData.get(level);
@@ -103,8 +113,18 @@ public final class SoaMarjorieEncounterManager {
         savedData.setBoardPositionCooldown(boardPos.asLong(), now + HcCharactersGameplayConfig.soaMarjorieBoardPositionCooldownTicks());
     }
 
+    private static boolean areWorldEncountersUnlocked(ServerLevel level) {
+        return level != null && (
+                PolenStoryFlagsManager.hasFlag(level, PolenStoryFlag.LUCY_SOA_VILLAGE_EVENT_UNLOCKED)
+                        || PolenPrologueManager.isLocatorDormant(level)
+        );
+    }
+
     private static void tryCaveEncounter(ServerLevel level, ServerPlayer player) {
         if (!HcCharactersGameplayConfig.soaMarjorieCaveMiningEncountersEnabled()) {
+            return;
+        }
+        if (LucyVillageEncounterManager.hasActiveVillageScene(level)) {
             return;
         }
         SoaMarjorieEncounterSavedData savedData = SoaMarjorieEncounterSavedData.get(level);
@@ -140,7 +160,11 @@ public final class SoaMarjorieEncounterManager {
 
     private static boolean hasNearbySoa(ServerLevel level, BlockPos pos) {
         AABB area = new AABB(pos).inflate(EXISTING_SOA_RADIUS);
-        return !level.getEntitiesOfClass(SoaMarjorieEntity.class, area, SoaMarjorieEntity::isEncounterActive).isEmpty();
+        return !level.getEntitiesOfClass(
+                SoaMarjorieEntity.class,
+                area,
+                soa -> soa.isEncounterActive() || LucyVillageEncounterManager.isVillageSceneSoa(soa)
+        ).isEmpty();
     }
 
     private static BlockPos findNearestBountifulBoard(ServerLevel level, BlockPos origin) {

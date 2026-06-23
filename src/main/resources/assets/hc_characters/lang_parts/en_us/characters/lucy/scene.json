@@ -1,0 +1,18 @@
+{
+  "dialogue.lucy.scene.ambient.soa.1": "Slow down, Lucy. Did you actually see her, or did another one of your hunches start sprinting.",
+  "dialogue.lucy.scene.ambient.lucy.1": "I saw her, I saw her, I saw her. First the flowers moved wrong, then a braid, then nothing, then her again. Completely ordinary.",
+  "dialogue.lucy.scene.ambient.soa.2": "That was not ordinary. It was enough. If someone goes, they go carefully and without crowding her.",
+  "dialogue.lucy.scene.ambient.lucy.2": "Exactly. That's why I sketched it fast before I lost it, fixed it, or started three more versions on top.",
+  "dialogue.lucy.scene.clue.line1": "You. Listen. Quickly, no, slowly, but listen. I saw a very strange young woman in a nearby clearing.",
+  "dialogue.lucy.scene.clue.line2": "She was not asking for help. She was like... hidden in plain sight. Still for a second, gone the next. It worried me. A lot.",
+  "dialogue.lucy.scene.clue.line3": "Do not treat this like a rescue. Approach calmly, give her space, and look before you speak.",
+  "dialogue.lucy.scene.clue.line4": "Take the sketch. I marked it while my hands were shaking, so follow the needle, but use your eyes too.",
+  "dialogue.lucy.scene.clue.received": "Lucy jams a crumpled sketch into your hands before moving again.",
+  "dialogue.lucy.scene.replacement.line1": "You lost the sketch. Knew that could happen. I made another one. I think this one vibrates less.",
+  "dialogue.lucy.scene.replacement.line2": "If you stomp into the clearing making noise, I'm telling everyone Soa sent you alone.",
+  "dialogue.lucy.scene.repeat.line1": "You already have the sketch. Stop shaking it. It will not run faster than you.",
+  "dialogue.lucy.scene.after_discovery.line1": "Well, no more sketch duty then. The girl in the clearing is not just a rumor anymore, right?",
+  "dialogue.lucy.scene.soa_intro.line1": "If Lucy stopped you dead to talk, then this matters.",
+  "dialogue.lucy.scene.soa_intro.line2": "Go to the clearing if you must, but do not walk in like you're rescuing someone. Observe first.",
+  "dialogue.lucy.scene.soa_repeat.line1": "You already know the important part. Steady head, light steps, and do not crowd her."
+}

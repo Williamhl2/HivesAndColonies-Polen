@@ -24,6 +24,11 @@ public final class PolenStoryEventManager {
             "dialogue.polen.event.shelter.line4"
     );
 
+    private static final List<String> FIRST_MEETING_LINES = List.of(
+            "dialogue.polen.event.first_meeting.line1",
+            "dialogue.polen.event.first_meeting.line2"
+    );
+
     private static final List<String> NAME_REVEAL_LINES = List.of(
             "dialogue.polen.event.name_reveal.line1",
             "dialogue.polen.event.name_reveal.line2",
@@ -32,6 +37,15 @@ public final class PolenStoryEventManager {
     );
 
     private PolenStoryEventManager() {}
+
+    public static void playFirstMeeting(Player player) {
+        sendDialogueSequence(player, UNKNOWN_GIRL_KEY, ChatFormatting.GRAY, FIRST_MEETING_LINES);
+        player.displayClientMessage(
+                Component.translatable("dialogue.polen.event.first_meeting.discovered")
+                        .withStyle(ChatFormatting.GOLD),
+                false
+        );
+    }
 
     public static void playShelterRecognition(Player player) {
         if (player.level() instanceof ServerLevel serverLevel
