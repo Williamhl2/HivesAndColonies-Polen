@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
 import com.hivesandcolonies.hccharacters.character.polen.command.PolenDebugCommands;
 import com.hivesandcolonies.hccharacters.character.lucy.world.LucyVillageEncounterManager;
+import com.hivesandcolonies.hccharacters.character.lucy.world.LucyVillageTavernPoolInjector;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.prologue.PolenPrologueDiscoveryManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.prologue.PolenPrologueManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.singularity.PolenSingularityManager;
@@ -48,6 +49,7 @@ public class HcCharacters {
         NeoForge.EVENT_BUS.addListener(PolenHostileDetectionManager::onEntityJoinLevel);
         NeoForge.EVENT_BUS.addListener(PolenSingularityManager::onEntityJoinLevel);
         NeoForge.EVENT_BUS.addListener(PolenPrologueManager::onServerStarted);
+        NeoForge.EVENT_BUS.addListener(LucyVillageTavernPoolInjector::onServerAboutToStart);
         NeoForge.EVENT_BUS.addListener(PolenPrologueDiscoveryManager::onServerTick);
         NeoForge.EVENT_BUS.addListener(LucyVillageEncounterManager::onServerTick);
         NeoForge.EVENT_BUS.addListener(SoaMarjorieEncounterManager::onServerTick);

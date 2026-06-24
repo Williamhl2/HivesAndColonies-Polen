@@ -22,6 +22,11 @@ public final class LucyVillageSceneLocator {
     private static final int MIN_STAND_POSITIONS = 8;
     private static final int MIN_ROOM_WIDTH = 5;
     private static final int MIN_ROOM_DEPTH = 5;
+    private static final int TAVERN_INTERIOR_SCAN_RADIUS = 12;
+    private static final int TAVERN_INTERIOR_SCAN_VERTICAL_RADIUS = 5;
+    private static final int MIN_TAVERN_DECOR_SCORE = 3;
+    private static final int MIN_TAVERN_MATERIAL_SCORE = 10;
+    private static final int MIN_TAVERN_STAND_POSITIONS = 4;
 
     private LucyVillageSceneLocator() {
     }
@@ -52,6 +57,34 @@ public final class LucyVillageSceneLocator {
         }
 
         return new SceneLocation(bellPos.immutable(), anchor.immutable(), lucyPos.immutable(), soaPos.immutable());
+    }
+
+    public static SceneLocation findTavernScene(ServerLevel level, BlockPos markerPos, BlockPos bellPos) {
+        if (level == null || markerPos == null) {
+            return null;
+        }
+
+        BlockPos resolvedBell = bellPos != null ? bellPos : findNearestBell(level, markerPos);
+        if (resolvedBell == null) {
+            return null;
+        }
+
+        BlockPos anchor = findBestTavernInterior(level, markerPos, resolvedBell);
+        if (anchor == null) {
+            return null;
+        }
+
+        BlockPos lucyPos = findStandNear(level, anchor, 3, null, true);
+        if (lucyPos == null) {
+            return null;
+        }
+
+        BlockPos soaPos = findStandNear(level, anchor, 4, lucyPos, true);
+        if (soaPos == null) {
+            return null;
+        }
+
+        return new SceneLocation(resolvedBell.immutable(), anchor.immutable(), lucyPos.immutable(), soaPos.immutable());
     }
 
     public static BlockPos findNearestBell(ServerLevel level, BlockPos origin) {
@@ -139,7 +172,12 @@ public final class LucyVillageSceneLocator {
 
                     ResourceLocation key = BuiltInRegistries.BLOCK.getKey(state.getBlock());
                     String path = key.getPath();
-                    if (path.contains("table") || path.contains("chair") || path.contains("stool") || path.contains("bench")) {
+                    if (path.contains("table")
+                            || path.contains("chair")
+                            || path.contains("stool")
+                            || path.contains("bench")
+                            || path.contains("barrel")
+                            || path.contains("board")) {
                         score += 2;
                         continue;
                     }
@@ -206,7 +244,125 @@ public final class LucyVillageSceneLocator {
                 || path.endsWith("_chair");
     }
 
+    private static BlockPos findBestTavernInterior(ServerLevel level, BlockPos markerPos, BlockPos bellPos) {
+        BlockPos best = null;
+        double bestScore = Double.NEGATIVE_INFINITY;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+
+        for (int y = -TAVERN_INTERIOR_SCAN_VERTICAL_RADIUS; y <= TAVERN_INTERIOR_SCAN_VERTICAL_RADIUS; y++) {
+            for (int x = -TAVERN_INTERIOR_SCAN_RADIUS; x <= TAVERN_INTERIOR_SCAN_RADIUS; x++) {
+                for (int z = -TAVERN_INTERIOR_SCAN_RADIUS; z <= TAVERN_INTERIOR_SCAN_RADIUS; z++) {
+                    cursor.set(markerPos.getX() + x, markerPos.getY() + y, markerPos.getZ() + z);
+                    if (!canStandAt(level, cursor) || !isTavernInteriorCandidate(level, cursor)) {
+                        continue;
+                    }
+
+                    int materialScore = countTavernMaterialsNearby(level, cursor);
+                    if (materialScore < MIN_TAVERN_MATERIAL_SCORE) {
+                        continue;
+                    }
+
+                    int decorScore = scoreGatheringDecor(level, cursor);
+                    if (decorScore < MIN_TAVERN_DECOR_SCORE) {
+                        continue;
+                    }
+
+                    int standableTiles = countStandableTavernTiles(level, cursor);
+                    if (standableTiles < MIN_TAVERN_STAND_POSITIONS) {
+                        continue;
+                    }
+
+                    double score = materialScore * 1.5D;
+                    score += decorScore * 18.0D;
+                    score += standableTiles * 3.0D;
+                    if (PolenShelterContextResolver.hasNearbyLight(level, cursor)) {
+                        score += 12.0D;
+                    }
+                    score -= distanceSqr(cursor, markerPos) * 0.15D;
+                    score -= distanceSqr(cursor, bellPos) * 0.02D;
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        best = cursor.immutable();
+                    }
+                }
+            }
+        }
+
+        return best;
+    }
+
+    private static boolean isTavernInteriorCandidate(ServerLevel level, BlockPos pos) {
+        return level.getBlockState(pos).isAir()
+                && level.getBlockState(pos.above()).isAir()
+                && !level.canSeeSky(pos.above())
+                && countProtectiveSides(level, pos) >= 2
+                && (PolenShelterContextResolver.hasNearbyLight(level, pos)
+                || countTavernMaterialsNearby(level, pos) >= MIN_TAVERN_MATERIAL_SCORE);
+    }
+
+    private static int countStandableTavernTiles(ServerLevel level, BlockPos origin) {
+        int count = 0;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int x = -ROOM_SCAN_RADIUS; x <= ROOM_SCAN_RADIUS; x++) {
+            for (int z = -ROOM_SCAN_RADIUS; z <= ROOM_SCAN_RADIUS; z++) {
+                cursor.set(origin.getX() + x, origin.getY(), origin.getZ() + z);
+                if (canStandAt(level, cursor) && isTavernInteriorCandidate(level, cursor)) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+
+    private static int countTavernMaterialsNearby(ServerLevel level, BlockPos origin) {
+        int score = 0;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+        for (int y = -2; y <= 5; y++) {
+            for (int x = -5; x <= 5; x++) {
+                for (int z = -5; z <= 5; z++) {
+                    cursor.set(origin.getX() + x, origin.getY() + y, origin.getZ() + z);
+                    BlockState state = level.getBlockState(cursor);
+                    ResourceLocation key = BuiltInRegistries.BLOCK.getKey(state.getBlock());
+                    String namespace = key.getNamespace();
+                    String path = key.getPath();
+                    if (namespace.equals("domum_ornamentum")) {
+                        score++;
+                    } else if (namespace.equals("hc_characters") && path.contains("lantern")) {
+                        score += 4;
+                    } else if (state.is(Blocks.LANTERN) || state.is(Blocks.SOUL_LANTERN)) {
+                        score += 2;
+                    } else if (path.contains("barrel") || path.contains("board") || path.contains("bookshelf")) {
+                        score++;
+                    }
+                }
+            }
+        }
+        return score;
+    }
+
+    private static int countProtectiveSides(ServerLevel level, BlockPos pos) {
+        int sides = 0;
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            BlockPos footPos = pos.relative(direction);
+            BlockPos headPos = pos.above().relative(direction);
+            if (isProtectiveBlock(level, footPos) || isProtectiveBlock(level, headPos)) {
+                sides++;
+            }
+        }
+        return sides;
+    }
+
+    private static boolean isProtectiveBlock(ServerLevel level, BlockPos pos) {
+        BlockState state = level.getBlockState(pos);
+        return !state.isAir() && (state.canOcclude() || !state.getCollisionShape(level, pos).isEmpty());
+    }
+
     private static BlockPos findStandNear(ServerLevel level, BlockPos anchor, int radius, BlockPos forbidden) {
+        return findStandNear(level, anchor, radius, forbidden, false);
+    }
+
+    private static BlockPos findStandNear(ServerLevel level, BlockPos anchor, int radius, BlockPos forbidden, boolean allowTavernInterior) {
         BlockPos best = null;
         double bestDistance = Double.MAX_VALUE;
         for (int x = -radius; x <= radius; x++) {
@@ -219,8 +375,10 @@ public final class LucyVillageSceneLocator {
                     if (!canStandAt(level, candidate)) {
                         continue;
                     }
-                    if (!PolenShelterContextResolver.isHouseInterior(level, candidate)
-                            && !PolenShelterContextResolver.isStrongHouseInterior(level, candidate)) {
+                    boolean houseInterior = PolenShelterContextResolver.isHouseInterior(level, candidate)
+                            || PolenShelterContextResolver.isStrongHouseInterior(level, candidate);
+                    boolean tavernInterior = allowTavernInterior && isTavernInteriorCandidate(level, candidate);
+                    if (!houseInterior && !tavernInterior) {
                         continue;
                     }
                     double distance = distanceSqr(anchor, candidate);
@@ -238,7 +396,9 @@ public final class LucyVillageSceneLocator {
 
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             BlockPos candidate = anchor.relative(direction);
-            if ((forbidden == null || !forbidden.equals(candidate)) && canStandAt(level, candidate)) {
+            if ((forbidden == null || !forbidden.equals(candidate))
+                    && canStandAt(level, candidate)
+                    && (!allowTavernInterior || isTavernInteriorCandidate(level, candidate))) {
                 return candidate.immutable();
             }
         }

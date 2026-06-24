@@ -48,19 +48,35 @@ final class LucyVillageBoardHelper {
     }
 
     static boolean hasMarkerLanternNearby(ServerLevel level, BlockPos center, int radius) {
+        return findMarkerLanternNearby(level, center, radius) != null;
+    }
+
+    static BlockPos findMarkerLanternNearby(ServerLevel level, BlockPos center, int radius) {
         if (level == null || center == null) {
-            return false;
+            return null;
         }
+
+        BlockPos best = null;
+        double bestDistance = Double.MAX_VALUE;
         for (int x = -radius; x <= radius; x++) {
             for (int y = -8; y <= 8; y++) {
                 for (int z = -radius; z <= radius; z++) {
-                    if (level.getBlockState(center.offset(x, y, z)).is(ModBlocks.POLEN_LANTERN.get())) {
-                        return true;
+                    BlockPos candidate = center.offset(x, y, z);
+                    if (!level.getBlockState(candidate).is(ModBlocks.POLEN_LANTERN.get())) {
+                        continue;
+                    }
+                    double dx = candidate.getX() - center.getX();
+                    double dy = candidate.getY() - center.getY();
+                    double dz = candidate.getZ() - center.getZ();
+                    double distance = dx * dx + dy * dy + dz * dz;
+                    if (distance < bestDistance) {
+                        bestDistance = distance;
+                        best = candidate.immutable();
                     }
                 }
             }
         }
-        return false;
+        return best;
     }
 
     private static boolean hasBoardNearby(ServerLevel level, BlockPos center, int radius) {

@@ -49,6 +49,8 @@ public final class LucyVillageEncounterManager {
         LucyVillageEncounterSavedData savedData = LucyVillageEncounterSavedData.get(level);
         savedData.cleanup(now);
 
+        warmVisitedVillageTaverns(level);
+
         if (PolenPrologueManager.isLocatorDormant(level)) {
             clearScene(level, savedData);
             return;
@@ -131,6 +133,15 @@ public final class LucyVillageEncounterManager {
 
     public static boolean isVillageSceneSoa(SoaMarjorieEntity soa) {
         return soa != null && soa.isVillageSceneActive();
+    }
+
+    private static void warmVisitedVillageTaverns(ServerLevel level) {
+        for (ServerPlayer player : level.players()) {
+            if (player == null || player.isSpectator() || !player.level().dimension().equals(Level.OVERWORLD)) {
+                continue;
+            }
+            LucyVillageTavernManager.ensureTavernGenerated(level, player.blockPosition());
+        }
     }
 
     private static boolean trySpawnScene(

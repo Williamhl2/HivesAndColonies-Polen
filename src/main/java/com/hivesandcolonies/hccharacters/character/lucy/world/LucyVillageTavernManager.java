@@ -5,7 +5,16 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 
 public final class LucyVillageTavernManager {
+    private static final int TAVERN_MARKER_SCAN_RADIUS = 64;
+
     private LucyVillageTavernManager() {
+    }
+
+    public static void ensureTavernGenerated(ServerLevel level, BlockPos origin) {
+        if (level == null || origin == null) {
+            return;
+        }
+        ensureSceneLocation(level, origin);
     }
 
     public static LucyVillageSceneLocator.SceneLocation ensureSceneLocation(ServerLevel level, BlockPos origin) {
@@ -41,14 +50,34 @@ public final class LucyVillageTavernManager {
         if (savedSite != null) {
             savedData.removeTavern(bellPos);
         }
+
+        LucyVillageSceneLocator.SceneLocation generatedScene = LucyVillageTavernStructurePlacer.tryPlaceNearVillage(level, bellPos);
+        if (generatedScene != null) {
+            savedData.putTavern(new LucyVillageTavernSavedData.TavernSite(
+                    bellPos.immutable(),
+                    generatedScene.anchorPos(),
+                    generatedScene.lucyPos(),
+                    generatedScene.soaPos()
+            ));
+            LucyVillageBoardHelper.ensureBoardNearAnchor(level, generatedScene.anchorPos());
+            return generatedScene;
+        }
+
         return null;
     }
 
     private static LucyVillageSceneLocator.SceneLocation findExistingTavernScene(ServerLevel level, BlockPos bellPos) {
-        if (!LucyVillageBoardHelper.hasMarkerLanternNearby(level, bellPos, 40)) {
+        BlockPos markerPos = LucyVillageBoardHelper.findMarkerLanternNearby(level, bellPos, TAVERN_MARKER_SCAN_RADIUS);
+        if (markerPos == null) {
             return null;
         }
-        return LucyVillageSceneLocator.findScene(level, bellPos);
+
+        LucyVillageSceneLocator.SceneLocation tavernScene = LucyVillageSceneLocator.findTavernScene(level, markerPos, bellPos);
+        if (tavernScene != null) {
+            return tavernScene;
+        }
+
+        return LucyVillageSceneLocator.findScene(level, markerPos);
     }
 
     private static boolean isUsable(ServerLevel level, LucyVillageTavernSavedData.TavernSite site) {
