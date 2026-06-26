@@ -34,6 +34,8 @@ final class LucyVillageTavernStructurePlacer {
     private static final int[] LATERAL_OFFSETS = {0, 4, -4, 8, -8, 12, -12, 16, -16, 20, -20, 24, -24, 32, -32};
     private static final int MAX_SURFACE_DELTA = 12;
     private static final int MAX_BLOCKING_BLOCKS = 360;
+    private static final int FORCED_MAX_SURFACE_DELTA = 18;
+    private static final int FORCED_MAX_LIQUIDS = 20;
     private static final int PLACE_FLAGS = 3;
 
     private static final BlockPos ENTRANCE_LOCAL_POS = new BlockPos(0, 0, 5);
@@ -76,6 +78,7 @@ final class LucyVillageTavernStructurePlacer {
         }
 
         RandomSource random = RandomSource.create(level.getSeed() ^ bellPos.asLong() ^ candidate.origin().asLong());
+        preparePlacementArea(level, candidate, size);
         StructurePlaceSettings settings = new StructurePlaceSettings()
                 .setMirror(Mirror.NONE)
                 .setRotation(candidate.rotation())
@@ -141,9 +144,11 @@ final class LucyVillageTavernStructurePlacer {
         PlacementCandidate best = null;
         PlacementCandidate relaxedBest = null;
         PlacementCandidate emergencyBest = null;
+        PlacementCandidate forcedBest = null;
         int bestScore = Integer.MAX_VALUE;
         int relaxedBestScore = Integer.MAX_VALUE;
         int emergencyBestScore = Integer.MAX_VALUE;
+        int forcedBestScore = Integer.MAX_VALUE;
 
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             Rotation rotation = rotationForDirection(direction);
@@ -176,11 +181,17 @@ final class LucyVillageTavernStructurePlacer {
                         emergencyBestScore = emergencyScore.score();
                         emergencyBest = new PlacementCandidate(origin, rotation);
                     }
+
+                    CandidateScore forcedScore = scoreForcedCandidate(level, origin, size, rotation, bellPos);
+                    if (forcedScore.usable() && forcedScore.score() < forcedBestScore) {
+                        forcedBestScore = forcedScore.score();
+                        forcedBest = new PlacementCandidate(origin, rotation);
+                    }
                 }
             }
         }
 
-        return best != null ? best : relaxedBest != null ? relaxedBest : emergencyBest;
+        return best != null ? best : relaxedBest != null ? relaxedBest : emergencyBest != null ? emergencyBest : forcedBest;
     }
 
     private static CandidateScore scoreCandidate(
@@ -339,6 +350,73 @@ final class LucyVillageTavernStructurePlacer {
         int distancePenalty = Math.min(1600, distanceSqr(bellPos, origin));
         int score = surfaceDelta * 40 + Math.abs(origin.getY() - bellPos.getY()) * 20 + distancePenalty;
         return new CandidateScore(true, score);
+    }
+
+    private static CandidateScore scoreForcedCandidate(
+            ServerLevel level,
+            BlockPos origin,
+            Vec3i size,
+            Rotation rotation,
+            BlockPos bellPos
+    ) {
+        Bounds bounds = Bounds.from(origin, size, rotation);
+        BlockPos min = new BlockPos(bounds.minX(), origin.getY(), bounds.minZ());
+        BlockPos max = new BlockPos(bounds.maxX(), origin.getY() + size.getY() + 2, bounds.maxZ());
+        if (!level.hasChunksAt(min, max)) {
+            return CandidateScore.unusable();
+        }
+
+        int minSurface = Integer.MAX_VALUE;
+        int maxSurface = Integer.MIN_VALUE;
+        int criticalBlocks = 0;
+        int liquids = 0;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+
+        for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
+            for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+                int surfaceY = getSurfaceY(level, x, z);
+                minSurface = Math.min(minSurface, surfaceY);
+                maxSurface = Math.max(maxSurface, surfaceY);
+
+                for (int y = origin.getY(); y <= origin.getY() + size.getY(); y++) {
+                    cursor.set(x, y, z);
+                    BlockState state = level.getBlockState(cursor);
+                    if (!state.getFluidState().isEmpty()) {
+                        liquids++;
+                    }
+                    if (isCriticalVillageBlock(state)) {
+                        criticalBlocks++;
+                    }
+                }
+            }
+        }
+
+        int surfaceDelta = maxSurface - minSurface;
+        if (criticalBlocks > 0 || liquids > FORCED_MAX_LIQUIDS || surfaceDelta > FORCED_MAX_SURFACE_DELTA) {
+            return CandidateScore.unusable();
+        }
+
+        int distancePenalty = Math.min(2500, distanceSqr(bellPos, origin));
+        int score = surfaceDelta * 50 + Math.abs(origin.getY() - bellPos.getY()) * 20 + distancePenalty;
+        return new CandidateScore(true, score);
+    }
+
+    private static void preparePlacementArea(ServerLevel level, PlacementCandidate candidate, Vec3i size) {
+        Bounds bounds = Bounds.from(candidate.origin(), size, candidate.rotation());
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+
+        for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
+            for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+                for (int y = candidate.origin().getY() + 1; y <= candidate.origin().getY() + size.getY() + 1; y++) {
+                    cursor.set(x, y, z);
+                    BlockState state = level.getBlockState(cursor);
+                    if (state.isAir() || isCriticalVillageBlock(state)) {
+                        continue;
+                    }
+                    level.removeBlock(cursor, false);
+                }
+            }
+        }
     }
 
     private static boolean isCriticalVillageBlock(BlockState state) {
