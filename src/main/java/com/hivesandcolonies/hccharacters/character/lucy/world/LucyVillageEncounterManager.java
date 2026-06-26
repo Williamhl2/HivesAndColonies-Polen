@@ -162,16 +162,16 @@ public final class LucyVillageEncounterManager {
         }
 
         lucy.moveTo(scene.lucyPos().getX() + 0.5D, scene.lucyPos().getY(), scene.lucyPos().getZ() + 0.5D, 180.0F, 0.0F);
+        lucy.setCustomName(Component.translatable("dialogue.lucy.scene.speaker.lucy"));
         lucy.startVillageScene(scene.anchorPos());
         lucy.setInvulnerable(true);
         lucy.setPersistenceRequired();
 
         soa.moveTo(scene.soaPos().getX() + 0.5D, scene.soaPos().getY(), scene.soaPos().getZ() + 0.5D, 0.0F, 0.0F);
-        soa.setCustomName(Component.translatable("entity.hc_characters.soa_marjorie"));
+        soa.setCustomName(Component.translatable("dialogue.lucy.scene.speaker.soa"));
         soa.setCustomNameVisible(true);
-        soa.startVillageScene();
+        soa.startVillageScene(scene.soaPos(), scene.lucyPos());
         soa.setInvulnerable(true);
-        soa.setNoAi(true);
         soa.setPersistenceRequired();
 
         if (!level.addFreshEntity(lucy) || !level.addFreshEntity(soa)) {
@@ -205,7 +205,10 @@ public final class LucyVillageEncounterManager {
         lucy.startVillageScene(anchor);
         lucy.setInvulnerable(true);
         soa.setInvulnerable(true);
-        soa.setNoAi(true);
+        soa.startVillageScene(
+                soa.getVillageSceneAnchor() == null ? soa.blockPosition() : soa.getVillageSceneAnchor(),
+                lucy.blockPosition()
+        );
 
         if (now < savedData.getNextAmbientTick()) {
             return;

@@ -57,6 +57,10 @@ import net.minecraft.world.phys.Vec3;
 
 public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private static final String SOA_KEY = "entity.hc_characters.soa_marjorie";
+    private static final String TAG_SCENE_ANCHOR = "SoaMarjorieSceneAnchor";
+    private static final String TAG_SCENE_LOOK_TARGET = "SoaMarjorieSceneLookTarget";
+    private static final String TAG_SCENE_MOVE_COOLDOWN = "SoaMarjorieSceneMoveCooldown";
+    private static final String TAG_SCENE_TURN_COOLDOWN = "SoaMarjorieSceneTurnCooldown";
     private static final int DEFENSE_DRAW_TICKS = 120;
     private static final int BOARD_RETURN_DISTANCE_SQR = 14 * 14;
     private static final int BOARD_HARD_LIMIT_DISTANCE_SQR = 28 * 28;
@@ -67,6 +71,8 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private static final int HOSTILE_SCAN_INTERVAL_TICKS = 30;
     private static final double HOSTILE_SCAN_RADIUS = 10.0D;
     private static final String VILLAGE_SCENE_ACTIVE_TAG = "SoaMarjorieVillageSceneActive";
+    private static final int SCENE_RETURN_DISTANCE_SQR = 5 * 5;
+    private static final int SCENE_WANDER_RADIUS = 2;
 
     public static final String CURIOS_BACKPACK_SLOT = "backpack";
     public static final String CURIOS_TOOL_RIGHT_SLOT = "tool_right";
@@ -91,6 +97,10 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private int ambientDialogueCooldown;
     private int equipmentSyncCooldown;
     private int hostileScanCooldown;
+    private BlockPos villageSceneAnchor;
+    private BlockPos villageSceneLookTarget;
+    private int villageSceneMoveCooldown;
+    private int villageSceneTurnCooldown;
     private final SoaMartaCompanionController martaCompanion = new SoaMartaCompanionController(this);
 
     public SoaMarjorieEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
@@ -142,8 +152,16 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         return this.encounterMode != EncounterMode.NONE && this.encounterTicksLeft > 0;
     }
 
-    public void startVillageScene() {
+    public void startVillageScene(BlockPos sceneAnchor, BlockPos lookTarget) {
         this.getPersistentData().putBoolean(VILLAGE_SCENE_ACTIVE_TAG, true);
+        this.villageSceneAnchor = sceneAnchor == null ? null : sceneAnchor.immutable();
+        this.villageSceneLookTarget = lookTarget == null ? null : lookTarget.immutable();
+        if (this.villageSceneMoveCooldown <= 0) {
+            this.villageSceneMoveCooldown = 18 + this.getRandom().nextInt(28);
+        }
+        if (this.villageSceneTurnCooldown <= 0) {
+            this.villageSceneTurnCooldown = 10 + this.getRandom().nextInt(20);
+        }
     }
 
     public boolean isVillageSceneActive() {
@@ -160,6 +178,10 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
 
     public BlockPos getEncounterAnchor() {
         return this.encounterAnchor;
+    }
+
+    public BlockPos getVillageSceneAnchor() {
+        return this.villageSceneAnchor;
     }
 
     @Override
@@ -247,8 +269,21 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             this.tickSurvivabilityAndThreats();
             this.equipExpertMiningTools();
             this.syncMiningEquipmentToCurios();
+            this.tickVillageSceneCooldowns();
         }
         this.tickAmbientDialogue();
+    }
+
+    private void tickVillageSceneCooldowns() {
+        if (!this.isVillageSceneActive()) {
+            return;
+        }
+        if (this.villageSceneMoveCooldown > 0) {
+            --this.villageSceneMoveCooldown;
+        }
+        if (this.villageSceneTurnCooldown > 0) {
+            --this.villageSceneTurnCooldown;
+        }
     }
 
     @Override
@@ -604,9 +639,10 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new DefensiveAxeAttackGoal(this));
-        this.goalSelector.addGoal(2, new StayNearBoardGoal(this));
-        this.goalSelector.addGoal(3, new TorchDarknessGoal(this));
-        this.goalSelector.addGoal(4, new MiningWorkGoal(this));
+        this.goalSelector.addGoal(2, new VillageScenePresenceGoal(this));
+        this.goalSelector.addGoal(3, new StayNearBoardGoal(this));
+        this.goalSelector.addGoal(4, new TorchDarknessGoal(this));
+        this.goalSelector.addGoal(5, new MiningWorkGoal(this));
         this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.75D));
         this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
@@ -622,6 +658,14 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         if (this.encounterAnchor != null) {
             compound.putLong("SoaMarjorieEncounterAnchor", this.encounterAnchor.asLong());
         }
+        if (this.villageSceneAnchor != null) {
+            compound.putLong(TAG_SCENE_ANCHOR, this.villageSceneAnchor.asLong());
+        }
+        if (this.villageSceneLookTarget != null) {
+            compound.putLong(TAG_SCENE_LOOK_TARGET, this.villageSceneLookTarget.asLong());
+        }
+        compound.putInt(TAG_SCENE_MOVE_COOLDOWN, this.villageSceneMoveCooldown);
+        compound.putInt(TAG_SCENE_TURN_COOLDOWN, this.villageSceneTurnCooldown);
         this.martaCompanion.addAdditionalSaveData(compound);
     }
 
@@ -641,6 +685,14 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         } else {
             this.encounterAnchor = null;
         }
+        this.villageSceneAnchor = compound.contains(TAG_SCENE_ANCHOR)
+                ? BlockPos.of(compound.getLong(TAG_SCENE_ANCHOR))
+                : null;
+        this.villageSceneLookTarget = compound.contains(TAG_SCENE_LOOK_TARGET)
+                ? BlockPos.of(compound.getLong(TAG_SCENE_LOOK_TARGET))
+                : null;
+        this.villageSceneMoveCooldown = compound.getInt(TAG_SCENE_MOVE_COOLDOWN);
+        this.villageSceneTurnCooldown = compound.getInt(TAG_SCENE_TURN_COOLDOWN);
         this.martaCompanion.readAdditionalSaveData(compound);
     }
 
@@ -723,6 +775,81 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             if (anchor != null && this.soa.getNavigation().isDone()) {
                 this.soa.getNavigation().moveTo(anchor.getX() + 0.5D, anchor.getY(), anchor.getZ() + 0.5D, 0.95D);
             }
+        }
+    }
+
+    private static final class VillageScenePresenceGoal extends Goal {
+        private final SoaMarjorieEntity soa;
+
+        private VillageScenePresenceGoal(SoaMarjorieEntity soa) {
+            this.soa = soa;
+            this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            return this.soa.isVillageSceneActive() && this.soa.getVillageSceneAnchor() != null;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return this.canUse();
+        }
+
+        @Override
+        public void tick() {
+            BlockPos anchor = this.soa.getVillageSceneAnchor();
+            if (anchor == null) {
+                return;
+            }
+
+            if (this.soa.distanceToSqr(Vec3.atCenterOf(anchor)) > SCENE_RETURN_DISTANCE_SQR
+                    && this.soa.getNavigation().isDone()) {
+                this.soa.getNavigation().moveTo(anchor.getX() + 0.5D, anchor.getY(), anchor.getZ() + 0.5D, 0.8D);
+                this.soa.villageSceneMoveCooldown = 20 + this.soa.getRandom().nextInt(25);
+                return;
+            }
+
+            BlockPos lookTarget = this.soa.villageSceneLookTarget;
+            if (lookTarget != null && this.soa.villageSceneTurnCooldown <= 0) {
+                this.soa.getLookControl().setLookAt(
+                        lookTarget.getX() + 0.5D,
+                        lookTarget.getY() + 1.2D,
+                        lookTarget.getZ() + 0.5D,
+                        25.0F,
+                        25.0F
+                );
+                this.soa.villageSceneTurnCooldown = 10 + this.soa.getRandom().nextInt(18);
+            }
+
+            if (this.soa.villageSceneMoveCooldown <= 0 && this.soa.getNavigation().isDone()) {
+                BlockPos step = this.findSceneStep(anchor);
+                if (step != null) {
+                    this.soa.getNavigation().moveTo(step.getX() + 0.5D, step.getY(), step.getZ() + 0.5D, 0.72D);
+                }
+                this.soa.villageSceneMoveCooldown = 26 + this.soa.getRandom().nextInt(35);
+            }
+        }
+
+        private BlockPos findSceneStep(BlockPos anchor) {
+            for (int attempt = 0; attempt < 8; attempt++) {
+                int x = this.soa.getRandom().nextInt(SCENE_WANDER_RADIUS * 2 + 1) - SCENE_WANDER_RADIUS;
+                int z = this.soa.getRandom().nextInt(SCENE_WANDER_RADIUS * 2 + 1) - SCENE_WANDER_RADIUS;
+                BlockPos candidate = anchor.offset(x, 0, z);
+                if (candidate.closerToCenterThan(Vec3.atCenterOf(anchor), 0.9D)) {
+                    continue;
+                }
+                if (canStandAt(this.soa.level(), candidate)) {
+                    return candidate.immutable();
+                }
+            }
+            return null;
+        }
+
+        private static boolean canStandAt(Level level, BlockPos pos) {
+            return level.getBlockState(pos).isAir()
+                    && level.getBlockState(pos.above()).isAir()
+                    && level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP);
         }
     }
 

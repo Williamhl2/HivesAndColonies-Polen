@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class LucyVillageSceneLocator {
-    private static final int BELL_SCAN_HORIZONTAL_RADIUS = 64;
-    private static final int BELL_SCAN_VERTICAL_RADIUS = 10;
+    private static final int BELL_SCAN_HORIZONTAL_RADIUS = 128;
+    private static final int BELL_SCAN_VERTICAL_RADIUS = 16;
     private static final int INTERIOR_SCAN_RADIUS = 18;
     private static final int INTERIOR_SCAN_VERTICAL_RADIUS = 6;
     private static final int ROOM_SCAN_RADIUS = 4;

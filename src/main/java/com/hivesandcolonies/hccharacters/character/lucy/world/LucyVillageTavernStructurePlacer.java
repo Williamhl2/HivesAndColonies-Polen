@@ -30,10 +30,10 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
  */
 final class LucyVillageTavernStructurePlacer {
     private static final String TEMPLATE_FOLDER = "village/taverns/";
-    private static final int[] FORWARD_DISTANCES = {14, 18, 22, 26, 30};
-    private static final int[] LATERAL_OFFSETS = {0, 4, -4, 8, -8, 12, -12};
-    private static final int MAX_SURFACE_DELTA = 6;
-    private static final int MAX_BLOCKING_BLOCKS = 160;
+    private static final int[] FORWARD_DISTANCES = {10, 12, 16, 20, 24, 28, 32, 36, 42, 48, 56, 64, 72};
+    private static final int[] LATERAL_OFFSETS = {0, 4, -4, 8, -8, 12, -12, 16, -16, 20, -20, 24, -24, 32, -32};
+    private static final int MAX_SURFACE_DELTA = 12;
+    private static final int MAX_BLOCKING_BLOCKS = 360;
     private static final int PLACE_FLAGS = 3;
 
     private static final BlockPos ENTRANCE_LOCAL_POS = new BlockPos(0, 0, 5);
@@ -71,7 +71,7 @@ final class LucyVillageTavernStructurePlacer {
 
         PlacementCandidate candidate = findPlacementCandidate(level, bellPos, size);
         if (candidate == null) {
-            HcCharacters.LOGGER.debug("Lucy/Soa tavern fallback found no usable placement near village bell {}", bellPos);
+            HcCharacters.LOGGER.warn("Lucy/Soa tavern fallback found no usable placement near village bell {}. No tavern was placed.", bellPos);
             return null;
         }
 
@@ -94,9 +94,9 @@ final class LucyVillageTavernStructurePlacer {
 
         BlockPos markerPos = candidate.localToWorld(MARKER_LOCAL_POS);
         LucyVillageBoardHelper.ensureBoardNearAnchor(level, markerPos);
-        LucyVillageSceneLocator.SceneLocation scene = LucyVillageSceneLocator.findTavernScene(level, markerPos, bellPos);
+        LucyVillageSceneLocator.SceneLocation scene = directSceneLocation(level, bellPos, candidate);
         if (scene == null) {
-            scene = directSceneLocation(level, bellPos, candidate);
+            scene = LucyVillageSceneLocator.findTavernScene(level, markerPos, bellPos);
         }
 
         if (scene == null) {
@@ -139,7 +139,11 @@ final class LucyVillageTavernStructurePlacer {
 
     private static PlacementCandidate findPlacementCandidate(ServerLevel level, BlockPos bellPos, Vec3i size) {
         PlacementCandidate best = null;
+        PlacementCandidate relaxedBest = null;
+        PlacementCandidate emergencyBest = null;
         int bestScore = Integer.MAX_VALUE;
+        int relaxedBestScore = Integer.MAX_VALUE;
+        int emergencyBestScore = Integer.MAX_VALUE;
 
         for (Direction direction : Direction.Plane.HORIZONTAL) {
             Rotation rotation = rotationForDirection(direction);
@@ -156,17 +160,27 @@ final class LucyVillageTavernStructurePlacer {
                     BlockPos entrance = new BlockPos(entranceBase.getX(), surfaceY, entranceBase.getZ());
                     BlockPos origin = subtract(entrance, transformLocal(ENTRANCE_LOCAL_POS, rotation));
                     CandidateScore score = scoreCandidate(level, origin, size, rotation, bellPos);
-                    if (!score.usable() || score.score() >= bestScore) {
-                        continue;
+                    if (score.usable() && score.score() < bestScore) {
+                        bestScore = score.score();
+                        best = new PlacementCandidate(origin, rotation);
                     }
 
-                    bestScore = score.score();
-                    best = new PlacementCandidate(origin, rotation);
+                    CandidateScore relaxedScore = scoreRelaxedCandidate(level, origin, size, rotation, bellPos);
+                    if (relaxedScore.usable() && relaxedScore.score() < relaxedBestScore) {
+                        relaxedBestScore = relaxedScore.score();
+                        relaxedBest = new PlacementCandidate(origin, rotation);
+                    }
+
+                    CandidateScore emergencyScore = scoreEmergencyCandidate(level, origin, size, rotation, bellPos);
+                    if (emergencyScore.usable() && emergencyScore.score() < emergencyBestScore) {
+                        emergencyBestScore = emergencyScore.score();
+                        emergencyBest = new PlacementCandidate(origin, rotation);
+                    }
                 }
             }
         }
 
-        return best;
+        return best != null ? best : relaxedBest != null ? relaxedBest : emergencyBest;
     }
 
     private static CandidateScore scoreCandidate(
@@ -219,6 +233,111 @@ final class LucyVillageTavernStructurePlacer {
 
         int distancePenalty = Math.min(400, distanceSqr(bellPos, origin));
         int score = blockingBlocks * 6 + surfaceDelta * 35 + Math.abs(origin.getY() - bellPos.getY()) * 12 + distancePenalty;
+        return new CandidateScore(true, score);
+    }
+
+    private static CandidateScore scoreRelaxedCandidate(
+            ServerLevel level,
+            BlockPos origin,
+            Vec3i size,
+            Rotation rotation,
+            BlockPos bellPos
+    ) {
+        Bounds bounds = Bounds.from(origin, size, rotation);
+        BlockPos min = new BlockPos(bounds.minX(), origin.getY(), bounds.minZ());
+        BlockPos max = new BlockPos(bounds.maxX(), origin.getY() + size.getY() + 2, bounds.maxZ());
+        if (!level.hasChunksAt(min, max)) {
+            return CandidateScore.unusable();
+        }
+
+        int minSurface = Integer.MAX_VALUE;
+        int maxSurface = Integer.MIN_VALUE;
+        int blockingBlocks = 0;
+        int criticalBlocks = 0;
+        int liquids = 0;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+
+        for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
+            for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+                int surfaceY = getSurfaceY(level, x, z);
+                minSurface = Math.min(minSurface, surfaceY);
+                maxSurface = Math.max(maxSurface, surfaceY);
+
+                for (int y = origin.getY() + 1; y <= origin.getY() + size.getY(); y++) {
+                    cursor.set(x, y, z);
+                    BlockState state = level.getBlockState(cursor);
+                    if (!state.getFluidState().isEmpty()) {
+                        liquids++;
+                    }
+                    if (isCriticalVillageBlock(state)) {
+                        criticalBlocks++;
+                    }
+                    if (!state.isAir() && !state.getCollisionShape(level, cursor).isEmpty()) {
+                        blockingBlocks++;
+                    }
+                }
+            }
+        }
+
+        int surfaceDelta = maxSurface - minSurface;
+        if (liquids > 0 || criticalBlocks > 0 || surfaceDelta > MAX_SURFACE_DELTA + 6) {
+            return CandidateScore.unusable();
+        }
+
+        int distancePenalty = Math.min(900, distanceSqr(bellPos, origin));
+        int score = blockingBlocks * 2 + surfaceDelta * 25 + Math.abs(origin.getY() - bellPos.getY()) * 10 + distancePenalty;
+        return new CandidateScore(true, score);
+    }
+
+    private static CandidateScore scoreEmergencyCandidate(
+            ServerLevel level,
+            BlockPos origin,
+            Vec3i size,
+            Rotation rotation,
+            BlockPos bellPos
+    ) {
+        Bounds bounds = Bounds.from(origin, size, rotation);
+        BlockPos min = new BlockPos(bounds.minX(), origin.getY(), bounds.minZ());
+        BlockPos max = new BlockPos(bounds.maxX(), origin.getY() + size.getY() + 2, bounds.maxZ());
+        if (!level.hasChunksAt(min, max)) {
+            return CandidateScore.unusable();
+        }
+
+        int minSurface = Integer.MAX_VALUE;
+        int maxSurface = Integer.MIN_VALUE;
+        int criticalBlocks = 0;
+        int liquids = 0;
+        BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
+
+        for (int x = bounds.minX(); x <= bounds.maxX(); x++) {
+            for (int z = bounds.minZ(); z <= bounds.maxZ(); z++) {
+                int surfaceY = getSurfaceY(level, x, z);
+                minSurface = Math.min(minSurface, surfaceY);
+                maxSurface = Math.max(maxSurface, surfaceY);
+
+                cursor.set(x, surfaceY, z);
+                BlockState surfaceState = level.getBlockState(cursor);
+                if (!surfaceState.getFluidState().isEmpty()) {
+                    liquids++;
+                }
+
+                for (int y = origin.getY() + 1; y <= origin.getY() + Math.min(size.getY(), 5); y++) {
+                    cursor.set(x, y, z);
+                    BlockState state = level.getBlockState(cursor);
+                    if (isCriticalVillageBlock(state)) {
+                        criticalBlocks++;
+                    }
+                }
+            }
+        }
+
+        int surfaceDelta = maxSurface - minSurface;
+        if (liquids > 12 || criticalBlocks > 0 || surfaceDelta > MAX_SURFACE_DELTA + 12) {
+            return CandidateScore.unusable();
+        }
+
+        int distancePenalty = Math.min(1600, distanceSqr(bellPos, origin));
+        int score = surfaceDelta * 40 + Math.abs(origin.getY() - bellPos.getY()) * 20 + distancePenalty;
         return new CandidateScore(true, score);
     }
 

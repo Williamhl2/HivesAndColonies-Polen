@@ -8,8 +8,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 public final class LucyVillageSceneDialogue {
-    private static final Component LUCY_NAME = Component.translatable("entity.hc_characters.lucy").withStyle(ChatFormatting.AQUA);
-    private static final Component SOA_NAME = Component.translatable("entity.hc_characters.soa_marjorie").withStyle(ChatFormatting.GOLD);
+    private static final Component LUCY_NAME = Component.translatable("dialogue.lucy.scene.speaker.lucy").withStyle(ChatFormatting.AQUA);
+    private static final Component SOA_NAME = Component.translatable("dialogue.lucy.scene.speaker.soa").withStyle(ChatFormatting.GOLD);
 
     private static final List<DialogueLine> AMBIENT_LINES = List.of(
             new DialogueLine(SOA_NAME, "dialogue.lucy.scene.ambient.soa.1"),

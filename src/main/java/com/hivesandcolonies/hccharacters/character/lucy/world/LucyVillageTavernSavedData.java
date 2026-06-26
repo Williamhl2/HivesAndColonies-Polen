@@ -51,6 +51,30 @@ public final class LucyVillageTavernSavedData extends SavedData {
         return bellPos == null ? null : this.taverns.get(bellPos.asLong());
     }
 
+    public TavernSite findNearbyTavern(BlockPos center, int radius) {
+        if (center == null || radius < 0) {
+            return null;
+        }
+
+        long maxDistance = (long) radius * (long) radius;
+        TavernSite best = null;
+        long bestDistance = Long.MAX_VALUE;
+        for (TavernSite site : this.taverns.values()) {
+            if (site == null) {
+                continue;
+            }
+
+            long bellDistance = distanceSqr(center, site.bellPos());
+            long anchorDistance = distanceSqr(center, site.anchorPos());
+            long distance = Math.min(bellDistance, anchorDistance);
+            if (distance <= maxDistance && distance < bestDistance) {
+                bestDistance = distance;
+                best = site;
+            }
+        }
+        return best;
+    }
+
     public void putTavern(TavernSite site) {
         if (site == null || site.bellPos() == null) {
             return;
@@ -101,6 +125,16 @@ public final class LucyVillageTavernSavedData extends SavedData {
         }
         tag.put(TAG_TAVERNS, list);
         return tag;
+    }
+
+    private static long distanceSqr(BlockPos first, BlockPos second) {
+        if (first == null || second == null) {
+            return Long.MAX_VALUE;
+        }
+        long dx = first.getX() - second.getX();
+        long dy = first.getY() - second.getY();
+        long dz = first.getZ() - second.getZ();
+        return dx * dx + dy * dy + dz * dz;
     }
 
     public record TavernSite(BlockPos bellPos, BlockPos anchorPos, BlockPos lucyPos, BlockPos soaPos) {

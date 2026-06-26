@@ -35,17 +35,9 @@ public final class LucyVillageTavernPoolInjector {
     }
 
     public static void onServerAboutToStart(ServerAboutToStartEvent event) {
-        Registry<StructureTemplatePool> templatePools = event.getServer()
-                .registryAccess()
-                .registryOrThrow(Registries.TEMPLATE_POOL);
-        Registry<StructureProcessorList> processorLists = event.getServer()
-                .registryAccess()
-                .registryOrThrow(Registries.PROCESSOR_LIST);
-        Holder<StructureProcessorList> emptyProcessors = processorLists.getHolderOrThrow(EMPTY_PROCESSORS);
-
-        for (String villageType : VILLAGE_TYPES) {
-            injectTavern(templatePools, emptyProcessors, villageType);
-        }
+        HcCharacters.LOGGER.info(
+                "Lucy/Soa tavern template-pool injection is disabled; using the single-tavern runtime placer instead."
+        );
     }
 
     private static void injectTavern(

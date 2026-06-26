@@ -1,5 +1,6 @@
 package com.hivesandcolonies.hccharacters.character.soa.client.layer;
 
+import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.character.soa.companion.SoaMartaCompanionController;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -18,14 +19,15 @@ import net.minecraft.world.entity.animal.allay.Allay;
  *
  * Vanilla Allays keep their normal renderer.  Marta gets a tag and a gold-styled name from
  * {@link SoaMartaCompanionController}; this layer draws a translucent honey-gold pass over the regular Allay model so
- * she reads like a rare variocolor companion.
+ * she reads like a rare variocolor companion.  The layer uses a dedicated gold texture instead of tinting the
+ * vanilla blue Allay texture; tinting cyan pixels with gold makes Marta look green.
  */
 public class SoaMartaGoldenVariantLayer extends RenderLayer<Allay, AllayModel> {
-    private static final ResourceLocation ALLAY_TEXTURE = ResourceLocation.fromNamespaceAndPath(
-            "minecraft",
-            "textures/entity/allay/allay.png"
+    private static final ResourceLocation MARTA_GOLDEN_TEXTURE = ResourceLocation.fromNamespaceAndPath(
+            HcCharacters.MODID,
+            "textures/entity/marta/golden_allay.png"
     );
-    private static final int HONEY_GOLD_TINT = 0xD8FFD24A;
+    private static final int FULL_WHITE_TINT = 0xFFFFFFFF;
 
     public SoaMartaGoldenVariantLayer(RenderLayerParent<Allay, AllayModel> renderer) {
         super(renderer);
@@ -48,13 +50,16 @@ public class SoaMartaGoldenVariantLayer extends RenderLayer<Allay, AllayModel> {
             return;
         }
 
-        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(ALLAY_TEXTURE));
+        VertexConsumer vertexConsumer = buffer.getBuffer(RenderType.entityTranslucent(MARTA_GOLDEN_TEXTURE));
+        poseStack.pushPose();
+        poseStack.scale(1.0125F, 1.0125F, 1.0125F);
         this.getParentModel().renderToBuffer(
                 poseStack,
                 vertexConsumer,
                 packedLight,
                 OverlayTexture.NO_OVERLAY,
-                HONEY_GOLD_TINT
+                FULL_WHITE_TINT
         );
+        poseStack.popPose();
     }
 }
