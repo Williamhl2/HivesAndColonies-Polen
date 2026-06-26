@@ -2,8 +2,8 @@ package com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.s
 
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.ability.magic.PolenMagicController;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.PolenMovementHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.pathfinder.Path;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -68,8 +68,9 @@ public final class PolenSpotSelectionHelper {
 
         BlockPos bestBlinkable = null;
         for (PolenScoredSpot candidate : shortlist) {
-            if (isPathReachable(polen, candidate.pos())) {
-                return candidate.pos();
+            BlockPos reachableTarget = PolenMovementHelper.resolveReachableTarget(polen, candidate.pos(), false);
+            if (reachableTarget != null) {
+                return reachableTarget;
             }
 
             if (bestBlinkable == null
@@ -79,10 +80,5 @@ public final class PolenSpotSelectionHelper {
         }
 
         return bestBlinkable;
-    }
-
-    private static boolean isPathReachable(PolenEntity polen, BlockPos target) {
-        Path path = polen.getNavigation().createPath(target, 0);
-        return path != null && path.canReach();
     }
 }

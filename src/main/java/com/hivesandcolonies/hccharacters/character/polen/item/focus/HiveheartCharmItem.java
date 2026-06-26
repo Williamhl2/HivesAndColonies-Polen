@@ -2,13 +2,8 @@ package com.hivesandcolonies.hccharacters.character.polen.item.focus;
 
 import com.hivesandcolonies.hccharacters.character.polen.item.base.PolenLoreItem;
 import com.hivesandcolonies.hccharacters.character.polen.item.meta.PolenProgressionStage;
-import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
-import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
-import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStateManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.prologue.PolenPrologueManager;
-import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStoryData;
 import com.hivesandcolonies.hccharacters.common.util.CharacterNbtHelper;
-import com.hivesandcolonies.hccharacters.common.item.base.TranslatableTooltipItem.TooltipLine;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -28,7 +23,6 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Item.Properties;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -72,7 +66,8 @@ public class HiveheartCharmItem extends PolenLoreItem {
         }
 
         ServerLevel overworld = serverLevel.getServer().overworld();
-        if (PolenStoryFlagsManager.hasFlag(overworld, PolenStoryFlag.NAME_REVEALED) || isPolenAlreadyKnown(overworld)) {
+        if (PolenPrologueManager.isLocatorDormant(overworld)) {
+            clearTarget(stack);
             player.displayClientMessage(
                     Component.translatable("message.polen.item.hiveheart_charm.dormant"),
                     true
@@ -94,9 +89,14 @@ public class HiveheartCharmItem extends PolenLoreItem {
             return InteractionResultHolder.fail(stack);
         }
 
-        bindTarget(stack, overworld, targetPos);
-        String directionKey = resolveDirectionKey(player, targetPos);
-        int distanceBlocks = horizontalDistance(player.position(), targetPos);
+        BlockPos locatorTarget = PolenPrologueManager.resolveLocatorTarget(overworld);
+        if (locatorTarget == null) {
+            locatorTarget = targetPos;
+        }
+
+        bindTarget(stack, overworld, locatorTarget);
+        String directionKey = resolveDirectionKey(player, locatorTarget);
+        int distanceBlocks = horizontalDistance(player.position(), locatorTarget);
         String distanceKey = resolveDistanceKey(distanceBlocks);
         player.displayClientMessage(
                 Component.translatable(
@@ -139,6 +139,17 @@ public class HiveheartCharmItem extends PolenLoreItem {
         });
     }
 
+    public static void clearTarget(ItemStack stack) {
+        if (stack == null) {
+            return;
+        }
+
+        CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> {
+            tag.remove(TARGET_POS_TAG);
+            tag.remove(TARGET_DIMENSION_TAG);
+        });
+    }
+
     @Nullable
     public static GlobalPos getCompassTarget(ItemStack stack) {
         if (stack == null) {
@@ -162,15 +173,6 @@ public class HiveheartCharmItem extends PolenLoreItem {
 
         ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, location);
         return GlobalPos.of(dimension, target);
-    }
-
-
-    private static boolean isPolenAlreadyKnown(ServerLevel level) {
-        if (level == null) {
-            return false;
-        }
-        PolenWorldStoryData data = PolenWorldStateManager.get(level);
-        return data.isPolenSpawned() || data.getPolenEntityUuid() != null;
     }
 
     private static float pitchForDistance(int distance) {

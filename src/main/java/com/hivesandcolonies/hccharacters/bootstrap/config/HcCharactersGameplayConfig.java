@@ -25,6 +25,7 @@ public final class HcCharactersGameplayConfig {
     private static final ModConfigSpec.IntValue SOA_MARJORIE_BOARD_SPAWN_CHANCE_DIVISOR;
     private static final ModConfigSpec.IntValue SOA_MARJORIE_CAVE_SPAWN_CHANCE_DIVISOR;
     private static final ModConfigSpec.IntValue SOA_MARJORIE_MAX_BLOCKS_PER_CAVE_ENCOUNTER;
+    private static final ModConfigSpec.BooleanValue SOA_MARJORIE_MARTA_GOLDEN_VARIANT;
 
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
@@ -102,6 +103,9 @@ public final class HcCharactersGameplayConfig {
         SOA_MARJORIE_MAX_BLOCKS_PER_CAVE_ENCOUNTER = builder
                 .comment("Maximum exposed ore blocks SoaMarjorie may break during one cave encounter.")
                 .defineInRange("max_blocks_per_cave_encounter", 8, 0, 64);
+        SOA_MARJORIE_MARTA_GOLDEN_VARIANT = builder
+                .comment("Renders Marta, SoaMarjorie's Allay companion, as a golden variocolor variant.")
+                .define("marta_golden_variant", true);
         builder.pop();
 
         SPEC = builder.build();
@@ -176,6 +180,10 @@ public final class HcCharactersGameplayConfig {
 
     public static int soaMarjorieMaxBlocksPerCaveEncounter() {
         return SOA_MARJORIE_MAX_BLOCKS_PER_CAVE_ENCOUNTER.get();
+    }
+
+    public static boolean soaMarjorieMartaGoldenVariant() {
+        return SOA_MARJORIE_MARTA_GOLDEN_VARIANT.get();
     }
 
     public static int soaMarjorieBoardPositionCooldownTicks() {

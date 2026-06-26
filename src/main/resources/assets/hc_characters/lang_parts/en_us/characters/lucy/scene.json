@@ -1,0 +1,20 @@
+{
+  "dialogue.lucy.scene.speaker.lucy": "Lucy",
+  "dialogue.lucy.scene.speaker.soa": "SoaMarjorie",
+  "dialogue.lucy.scene.ambient.soa.1": "Lucy, slow down. Tell it properly. What did you see?",
+  "dialogue.lucy.scene.ambient.lucy.1": "A girl. Out in the clearing past the village. I'd lose sight of her in the flowers, then catch her again.",
+  "dialogue.lucy.scene.ambient.soa.2": "Then do not chase her. If someone goes, they go gently and give her room.",
+  "dialogue.lucy.scene.ambient.lucy.2": "I know. I made a sketch before I started doubting what I saw.",
+  "dialogue.lucy.scene.clue.line1": "Listen. I saw a girl alone in a clearing nearby.",
+  "dialogue.lucy.scene.clue.line2": "She did not look hurt, and she did not look lost. Just... watchful. Like she was measuring everything.",
+  "dialogue.lucy.scene.clue.line3": "Do not walk in trying to save her. Go slowly, look first, and let her decide the distance.",
+  "dialogue.lucy.scene.clue.line4": "Here. Take the sketch. It should get you there.",
+  "dialogue.lucy.scene.clue.received": "Lucy presses the sketch into your hand while SoaMarjorie makes the warning plain with a steady look.",
+  "dialogue.lucy.scene.replacement.line1": "You lost the sketch? Fine. I made another.",
+  "dialogue.lucy.scene.replacement.line2": "And this time, listen to SoaMarjorie: no noise when you get there.",
+  "dialogue.lucy.scene.repeat.line1": "You already have it. Go carefully and do not startle her.",
+  "dialogue.lucy.scene.after_discovery.line1": "Well. That settles that. No more handing sketches around the village.",
+  "dialogue.lucy.scene.soa_intro.line1": "If Lucy is this unsettled, she saw something real.",
+  "dialogue.lucy.scene.soa_intro.line2": "Go if you want, but be careful. Do not crowd her.",
+  "dialogue.lucy.scene.soa_repeat.line1": "What matters is simple: stay calm, be respectful, and keep your eyes open."
+}

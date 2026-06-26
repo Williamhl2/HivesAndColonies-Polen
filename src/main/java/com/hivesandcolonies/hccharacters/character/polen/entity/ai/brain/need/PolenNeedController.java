@@ -5,8 +5,9 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.interes
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.interest.PolenInterestType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.interest.PolenInterestLocator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.memory.PolenMemoryHandler;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
 import net.minecraft.server.level.ServerLevel;
@@ -22,9 +23,10 @@ public final class PolenNeedController {
 
     public static void tick(PolenEntity polen) {
         PolenNeedState state = polen.getAiState().getNeedState();
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
 
-        boolean shouldSeekSafety = PolenSafetyNavigator.shouldSeekSafety(polen);
-        boolean unsafeArea = PolenSafetyNavigator.isInUnsafeArea(polen);
+        boolean shouldSeekSafety = environment.shouldSeekSafety(false);
+        boolean unsafeArea = environment.isInUnsafeArea();
         boolean trustedNearby = hasTrustedPlayerNearby(polen);
         boolean untrustedNearby = hasUntrustedPlayerNearby(polen);
         boolean nearInterest = PolenMemoryHandler.isNearRememberedInterest(polen);
@@ -42,8 +44,7 @@ public final class PolenNeedController {
                 || PolenHomeManager.isNearResidence(polen)
                 || polen.getAiState().getRestingPos() != null
                 && polen.getAiState().getRestingPos().closerToCenterThan(polen.position(), 2.0D);
-        boolean badWeather = polen.level().isThundering()
-                || polen.level().isRaining() && polen.level().canSeeSky(polen.blockPosition());
+        boolean badWeather = polen.level().isThundering() || environment.rainExposed();
         boolean shelterKnown = polen.level() instanceof ServerLevel serverLevel
                 && PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.PLAYER_HAS_SHELTER);
         boolean homeKnown = shelterKnown && PolenHomeManager.hasHomeCenter(polen);

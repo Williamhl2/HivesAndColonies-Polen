@@ -20,6 +20,11 @@ public final class HcCharactersNetwork {
                 ClientboundNpcAffinityNotificationPayload.STREAM_CODEC,
                 HcCharactersNetwork::handleAffinityNotification
         );
+        registrar.playToClient(
+                ClientboundPolenProfilePayload.TYPE,
+                ClientboundPolenProfilePayload.STREAM_CODEC,
+                HcCharactersNetwork::handlePolenProfileOpen
+        );
         registrar.playToServer(
                 ServerboundPolenUiActionPayload.TYPE,
                 ServerboundPolenUiActionPayload.STREAM_CODEC,
@@ -38,6 +43,21 @@ public final class HcCharactersNetwork {
             }
         }).exceptionally(exception -> {
             context.disconnect(Component.literal("Failed to handle NPC affinity notification: " + exception.getMessage()));
+            return null;
+        });
+    }
+
+    private static void handlePolenProfileOpen(ClientboundPolenProfilePayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> {
+            try {
+                Class<?> clientClass = Class.forName("com.hivesandcolonies.hccharacters.character.polen.client.profile.PolenClientProfileOpener");
+                Method open = clientClass.getMethod("open", ClientboundPolenProfilePayload.class);
+                open.invoke(null, payload);
+            } catch (ReflectiveOperationException exception) {
+                HcCharacters.LOGGER.warn("Could not open Polen profile on the client", exception);
+            }
+        }).exceptionally(exception -> {
+            context.disconnect(Component.literal("Failed to open Polen profile: " + exception.getMessage()));
             return null;
         });
     }

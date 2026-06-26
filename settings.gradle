@@ -1,9 +1,15 @@
 pluginManagement {
     repositories {
+        maven { url = uri(new File(rootDir, '.gradle-local/offline-plugin-repo')) }
+        mavenCentral()
         gradlePluginPortal()
     }
-}
 
-plugins {
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'net.neoforged.moddev') {
+                useModule('net.neoforged:moddev-gradle:2.0.141')
+            }
+        }
+    }
 }

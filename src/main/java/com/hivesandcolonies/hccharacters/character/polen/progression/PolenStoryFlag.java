@@ -2,6 +2,8 @@ package com.hivesandcolonies.hccharacters.character.polen.progression;
 
 public enum PolenStoryFlag {
 
+    LUCY_SOA_VILLAGE_EVENT_UNLOCKED,
+    PROLOGUE_SITE_DISCOVERED,
     NAME_REVEALED,
     CHAPTER_0_COMPLETE,
     PLAYER_HAS_SHELTER,

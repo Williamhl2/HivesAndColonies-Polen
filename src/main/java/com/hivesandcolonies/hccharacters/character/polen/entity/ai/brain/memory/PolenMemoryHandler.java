@@ -5,7 +5,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.PolenDangerMemor
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.interest.PolenInterestLocator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter.PolenShelterContextResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenBedLocator;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
 import com.hivesandcolonies.hccharacters.character.polen.story.PolenMemoryManager;
@@ -97,9 +97,9 @@ public final class PolenMemoryHandler {
         }
 
         if (polen.getAiState().getRestingPos() == null) {
-            BlockPos nearbyBed = PolenShelterContextResolver.findNearbyBeeBed(polen.level(), polen.blockPosition());
+            BlockPos nearbyBed = PolenBedLocator.findNearestBed(polen.level(), polen.blockPosition(), 4, 2, true);
             if (nearbyBed == null) {
-                nearbyBed = PolenShelterContextResolver.findNearbyBed(polen.level(), polen.blockPosition());
+                nearbyBed = PolenBedLocator.findNearestBed(polen.level(), polen.blockPosition(), 4, 2, false);
             }
 
             BlockPos preferredRestAnchor = nearbyBed != null ? nearbyBed : polen.blockPosition();

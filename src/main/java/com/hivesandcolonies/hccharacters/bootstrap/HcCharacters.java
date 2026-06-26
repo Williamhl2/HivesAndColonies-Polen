@@ -1,16 +1,23 @@
 package com.hivesandcolonies.hccharacters.bootstrap;
 
+import java.util.Objects;
+
 import org.slf4j.Logger;
 
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
 import com.hivesandcolonies.hccharacters.character.polen.command.PolenDebugCommands;
+import com.hivesandcolonies.hccharacters.character.lucy.world.LucyVillageEncounterManager;
+import com.hivesandcolonies.hccharacters.character.lucy.world.LucyVillageTavernPoolInjector;
+import com.hivesandcolonies.hccharacters.character.polen.progression.world.prologue.PolenPrologueDiscoveryManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.prologue.PolenPrologueManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.singularity.PolenSingularityManager;
 import com.hivesandcolonies.hccharacters.character.soa.world.SoaMarjorieEncounterManager;
+import com.hivesandcolonies.hccharacters.character.soa.world.SoaMarjorieCompanionEvents;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModCreativeTabs;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModEntities;
 import com.hivesandcolonies.hccharacters.bootstrap.registry.ModItems;
+import com.hivesandcolonies.hccharacters.character.polen.world.PolenHostileDetectionManager;
 import com.hivesandcolonies.hccharacters.common.network.HcCharactersNetwork;
 import com.mojang.logging.LogUtils;
 
@@ -27,18 +34,26 @@ public class HcCharacters {
 
     @SuppressWarnings("unused")
     public HcCharacters(IEventBus modEventBus, ModContainer modContainer) {
-        modContainer.registerConfig(ModConfig.Type.COMMON, HcCharactersGameplayConfig.SPEC, "hc-characters-common.toml");
+        IEventBus bus = Objects.requireNonNull(modEventBus, "modEventBus");
+        ModContainer container = Objects.requireNonNull(modContainer, "modContainer");
 
-        ModBlocks.BLOCKS.register(modEventBus);
-        ModItems.ITEMS.register(modEventBus);
-        ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
-        ModEntities.ENTITY_TYPES.register(modEventBus);
-        modEventBus.addListener(HcCharactersNetwork::register);
+        container.registerConfig(ModConfig.Type.COMMON, HcCharactersGameplayConfig.SPEC, "hc-characters-common.toml");
+
+        ModBlocks.BLOCKS.register(bus);
+        ModItems.ITEMS.register(bus);
+        ModCreativeTabs.CREATIVE_MODE_TABS.register(bus);
+        ModEntities.ENTITY_TYPES.register(bus);
+        bus.addListener(HcCharactersNetwork::register);
 
         NeoForge.EVENT_BUS.addListener(PolenDebugCommands::register);
+        NeoForge.EVENT_BUS.addListener(PolenHostileDetectionManager::onEntityJoinLevel);
         NeoForge.EVENT_BUS.addListener(PolenSingularityManager::onEntityJoinLevel);
         NeoForge.EVENT_BUS.addListener(PolenPrologueManager::onServerStarted);
-        NeoForge.EVENT_BUS.addListener(PolenPrologueManager::onPlayerLoggedIn);
+        NeoForge.EVENT_BUS.addListener(LucyVillageTavernPoolInjector::onServerAboutToStart);
+        NeoForge.EVENT_BUS.addListener(PolenPrologueDiscoveryManager::onServerTick);
+        NeoForge.EVENT_BUS.addListener(LucyVillageEncounterManager::onServerTick);
         NeoForge.EVENT_BUS.addListener(SoaMarjorieEncounterManager::onServerTick);
+        NeoForge.EVENT_BUS.addListener(SoaMarjorieCompanionEvents::onEntityInteract);
+        NeoForge.EVENT_BUS.addListener(SoaMarjorieCompanionEvents::onEntityInteractSpecific);
     }
 }

@@ -6,8 +6,6 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.need.Po
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.memory.PolenMemoryHandler;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
-import com.hivesandcolonies.hccharacters.character.polen.progression.PolenAffinityManager;
-import com.hivesandcolonies.hccharacters.character.polen.progression.PolenAffinityLevels;
 
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;

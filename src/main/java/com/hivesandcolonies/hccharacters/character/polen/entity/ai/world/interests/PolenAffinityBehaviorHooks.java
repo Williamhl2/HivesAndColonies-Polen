@@ -9,6 +9,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.comfort
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.comfort.PolenComfortSignal;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.identity.PolenWorldAffinity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -179,8 +180,8 @@ public final class PolenAffinityBehaviorHooks {
             return 0;
         }
 
-        String namespace = state.getBlock().builtInRegistryHolder().key().location().getNamespace().toLowerCase(Locale.ROOT);
-        String path = state.getBlock().builtInRegistryHolder().key().location().getPath().toLowerCase(Locale.ROOT);
+        String namespace = BuiltInRegistries.BLOCK.getKey(state.getBlock()).getNamespace().toLowerCase(Locale.ROOT);
+        String path = BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath().toLowerCase(Locale.ROOT);
 
         return switch (affinity) {
             case APIARIST -> scoreApiarist(state, namespace, path);
@@ -275,7 +276,7 @@ public final class PolenAffinityBehaviorHooks {
     }
 
     private static String contextKey(PolenWorldAffinity affinity, BlockState state) {
-        String path = state.getBlock().builtInRegistryHolder().key().location().getPath().toLowerCase(Locale.ROOT);
+        String path = BuiltInRegistries.BLOCK.getKey(state.getBlock()).getPath().toLowerCase(Locale.ROOT);
         return switch (affinity) {
             case APIARIST -> "affinity_apiarist_" + compactContext(path);
             case ARCANE -> "affinity_arcane_" + compactContext(path);

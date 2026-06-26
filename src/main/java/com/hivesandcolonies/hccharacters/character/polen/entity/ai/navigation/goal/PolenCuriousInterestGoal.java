@@ -8,10 +8,13 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.interes
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.interest.PolenInterestType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenBehaviorReadiness;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.PolenMovementHelper;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceTarget;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceType;
 import com.hivesandcolonies.hccharacters.character.polen.story.PolenWorldEventTriggers;
 
 import net.minecraft.core.BlockPos;
@@ -32,6 +35,7 @@ public class PolenCuriousInterestGoal extends Goal {
     private final PolenEntity polen;
 
     private PolenInterestTarget target;
+    private BlockPos navigationAnchorPos;
     private int observeTicks;
     private int stuckTicks;
     private int blinkCooldownTicks;
@@ -48,19 +52,17 @@ public class PolenCuriousInterestGoal extends Goal {
 
     @Override
     public boolean canUse() {
-        if (this.polen.isSleeping()
-                || this.polen.level().isNight()
-                || this.polen.level().isRaining()
-                || this.polen.isDoingQuietActivity()
-                || PolenSafetyNavigator.isInUnsafeArea(this.polen)
-                || this.polen.hasNearbyPlayer(2.5D)
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(this.polen);
+        if (!PolenBehaviorReadiness.canStartInterestInvestigation(this.polen, environment)
                 || this.polen.getCurrentTask() != PolenTaskType.INVESTIGATE_INTEREST) {
             return false;
         }
 
         PolenAffordanceTarget affordance = PolenAffordanceResolver.findBestInterest(this.polen, true);
         this.target = affordance == null ? null : mapAffordanceToInterest(affordance);
+        this.target = normalizeTarget(this.target);
         this.observeTicks = 40 + this.polen.getRandom().nextInt(60);
+        this.navigationAnchorPos = null;
         this.stuckTicks = 0;
         this.blinkCooldownTicks = 0;
         this.travelTimeoutTicks = MAX_TRAVEL_TICKS_WITHOUT_PROGRESS;
@@ -73,14 +75,12 @@ public class PolenCuriousInterestGoal extends Goal {
 
     @Override
     public boolean canContinueToUse() {
-        return !this.polen.isSleeping()
-                && !this.polen.level().isNight()
-                && !this.polen.level().isRaining()
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(this.polen);
+        return PolenBehaviorReadiness.canContinueInterestInvestigation(this.polen, environment)
                 && this.target != null
                 && this.observeTicks > 0
                 && this.totalTicks > 0
                 && !this.failedToReachTarget
-                && !this.polen.hasNearbyPlayer(2.0D)
                 && this.polen.getCurrentTask() == PolenTaskType.INVESTIGATE_INTEREST;
     }
 
@@ -187,6 +187,7 @@ public class PolenCuriousInterestGoal extends Goal {
         }
         this.polen.getNavigation().stop();
         this.target = null;
+        this.navigationAnchorPos = null;
         this.observeTicks = 0;
         this.stuckTicks = 0;
         this.blinkCooldownTicks = 0;
@@ -202,14 +203,17 @@ public class PolenCuriousInterestGoal extends Goal {
             return;
         }
 
-        boolean pathStarted = this.polen.getNavigation().moveTo(
-                this.target.observePos().getX() + 0.5D,
-                this.target.observePos().getY(),
-                this.target.observePos().getZ() + 0.5D,
-                MOVE_SPEED
+        this.navigationAnchorPos = PolenMovementHelper.startAnchoredMove(
+                this.polen,
+                this.target.observePos(),
+                this.navigationAnchorPos,
+                MOVE_SPEED,
+                true
         );
+        boolean pathStarted = this.navigationAnchorPos != null;
 
         if (!pathStarted && this.blinkCooldownTicks == 0) {
+            this.navigationAnchorPos = null;
             if (PolenSafetyNavigator.tryBlinkTowardStandableSpot(this.polen, this.target.observePos(), 6)) {
                 this.blinkCooldownTicks = 40;
                 this.stuckTicks = 0;
@@ -250,5 +254,14 @@ public class PolenCuriousInterestGoal extends Goal {
             default -> null;
         };
         return type == null ? null : new PolenInterestTarget(affordance.focusPos(), affordance.usePos(), type);
+    }
+
+    private PolenInterestTarget normalizeTarget(PolenInterestTarget target) {
+        if (target == null) {
+            return null;
+        }
+
+        BlockPos resolvedObservePos = PolenMovementHelper.resolveReachableTarget(this.polen, target.observePos(), true);
+        return resolvedObservePos == null ? null : new PolenInterestTarget(target.pos(), resolvedObservePos, target.type());
     }
 }

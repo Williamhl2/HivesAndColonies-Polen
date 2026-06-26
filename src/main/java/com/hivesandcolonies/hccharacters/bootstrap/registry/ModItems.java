@@ -6,10 +6,14 @@ import java.util.function.Supplier;
 import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.identity.PolenWorldAffinity;
 import com.hivesandcolonies.hccharacters.character.polen.item.affinity.AffinityCharmItem;
+import com.hivesandcolonies.hccharacters.character.polen.item.accessory.BasicPolenAccessoryItem;
+import com.hivesandcolonies.hccharacters.character.polen.item.accessory.PolenAccessorySlot;
+import com.hivesandcolonies.hccharacters.character.polen.item.accessory.PolenAccessoryTarget;
 import com.hivesandcolonies.hccharacters.character.polen.item.colony.ResidenceCharmItem;
 import com.hivesandcolonies.hccharacters.character.polen.item.colony.SettlementCharmItem;
 import com.hivesandcolonies.hccharacters.character.polen.item.focus.BloomFocusItem;
 import com.hivesandcolonies.hccharacters.character.polen.item.focus.HiveheartCharmItem;
+import com.hivesandcolonies.hccharacters.character.polen.item.meta.PolenProgressionStage;
 import com.hivesandcolonies.hccharacters.character.polen.item.material.ResonantWaxItem;
 import com.hivesandcolonies.hccharacters.character.polen.item.material.RoyalPollenItem;
 import com.hivesandcolonies.hccharacters.character.polen.item.material.SourceTouchedPetalItem;
@@ -17,8 +21,10 @@ import com.hivesandcolonies.hccharacters.character.polen.item.spawn.UniquePolenS
 import com.hivesandcolonies.hccharacters.character.polen.item.story.PolenJournalItem;
 import com.hivesandcolonies.hccharacters.character.polen.item.story.PrincessLetterItem;
 import com.hivesandcolonies.hccharacters.character.polen.item.story.PrincessSealItem;
+import com.hivesandcolonies.hccharacters.common.item.base.TranslatableTooltipItem;
 import com.hivesandcolonies.hccharacters.common.item.spawn.SecondaryCharacterSpawnEggItem;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.BedItem;
@@ -70,6 +76,47 @@ public class ModItems {
     public static final DeferredItem<Item> WAYFARER_CHARM =
             registerTypedItem("wayfarer_charm", properties -> new AffinityCharmItem(properties, PolenWorldAffinity.WAYFARER), new Item.Properties().stacksTo(1));
 
+    // Player accessories: craftable Curios items prepared for future relationship/progression bonuses.
+    public static final DeferredItem<Item> HONEY_SIGNET_RING =
+            registerTypedItem(
+                    "honey_signet_ring",
+                    properties -> new BasicPolenAccessoryItem(
+                            properties,
+                            PolenProgressionStage.ACT_II_DISCOVERY,
+                            PolenAccessorySlot.RING,
+                            PolenAccessoryTarget.PLAYER,
+                            new TranslatableTooltipItem.TooltipLine("tooltip.polen.honey_signet_ring.line1", ChatFormatting.GOLD),
+                            new TranslatableTooltipItem.TooltipLine("tooltip.polen.honey_signet_ring.line2", ChatFormatting.GRAY)
+                    ),
+                    new Item.Properties().stacksTo(1)
+            );
+    public static final DeferredItem<Item> SOURCE_PETAL_NECKLACE =
+            registerTypedItem(
+                    "source_petal_necklace",
+                    properties -> new BasicPolenAccessoryItem(
+                            properties,
+                            PolenProgressionStage.ACT_II_DISCOVERY,
+                            PolenAccessorySlot.NECKLACE,
+                            PolenAccessoryTarget.PLAYER,
+                            new TranslatableTooltipItem.TooltipLine("tooltip.polen.source_petal_necklace.line1", ChatFormatting.LIGHT_PURPLE),
+                            new TranslatableTooltipItem.TooltipLine("tooltip.polen.source_petal_necklace.line2", ChatFormatting.GRAY)
+                    ),
+                    new Item.Properties().stacksTo(1)
+            );
+    public static final DeferredItem<Item> WAYFINDER_BELT =
+            registerTypedItem(
+                    "wayfinder_belt",
+                    properties -> new BasicPolenAccessoryItem(
+                            properties,
+                            PolenProgressionStage.ACT_II_DISCOVERY,
+                            PolenAccessorySlot.BELT,
+                            PolenAccessoryTarget.PLAYER,
+                            new TranslatableTooltipItem.TooltipLine("tooltip.polen.wayfinder_belt.line1", ChatFormatting.AQUA),
+                            new TranslatableTooltipItem.TooltipLine("tooltip.polen.wayfinder_belt.line2", ChatFormatting.GRAY)
+                    ),
+                    new Item.Properties().stacksTo(1)
+            );
+
     // Colony items: player-facing tools for integrating Polen into safe settlement spaces.
     public static final DeferredItem<Item> SETTLEMENT_CHARM =
             registerColonyItem("settlement_charm", SettlementCharmItem::new);
@@ -103,6 +150,8 @@ public class ModItems {
             registerSpawnEgg("noris_spawn_egg", ModEntities.NORIS, 0x7E92D8, 0xD7E3FF);
     public static final DeferredItem<DeferredSpawnEggItem> SOA_MARJORIE_SPAWN_EGG =
             registerSpawnEgg("soa_marjorie_spawn_egg", ModEntities.SOA_MARJORIE, 0x4C4C4C, 0xD8A14A);
+    public static final DeferredItem<DeferredSpawnEggItem> LUCY_SPAWN_EGG =
+            registerSpawnEgg("lucy_spawn_egg", ModEntities.LUCY, 0xB56B5E, 0xEED2A7);
 
     private static DeferredItem<Item> registerStoryItem(
             String name,

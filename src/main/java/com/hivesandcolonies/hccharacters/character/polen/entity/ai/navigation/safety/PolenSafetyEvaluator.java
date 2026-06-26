@@ -1,5 +1,6 @@
 package com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety;
 
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -36,7 +37,7 @@ public final class PolenSafetyEvaluator {
             return true;
         }
 
-        if (level.getMaxLocalRawBrightness(pos) < MIN_SAFE_BRIGHTNESS) {
+        if (LevelBrightnessHelper.maxLocalRawBrightness(level, pos) < MIN_SAFE_BRIGHTNESS) {
             return false;
         }
 
@@ -50,7 +51,7 @@ public final class PolenSafetyEvaluator {
 
         Level level = entity.level();
         return canPhysicallyStandAt(level, pos)
-                && level.getMaxLocalRawBrightness(pos) < MIN_SAFE_BRIGHTNESS
+                && LevelBrightnessHelper.maxLocalRawBrightness(level, pos) < MIN_SAFE_BRIGHTNESS
                 && isUndergroundEnclosedSpot(level, pos);
     }
 
@@ -69,7 +70,7 @@ public final class PolenSafetyEvaluator {
             return true;
         }
 
-        return level.getMaxLocalRawBrightness(pos) < MIN_TRUE_DANGER_BRIGHTNESS
+        return LevelBrightnessHelper.maxLocalRawBrightness(level, pos) < MIN_TRUE_DANGER_BRIGHTNESS
                 && isUndergroundEnclosedSpot(level, pos);
     }
 
@@ -95,6 +96,35 @@ public final class PolenSafetyEvaluator {
         }
 
         return canPhysicallyStandAt(entity.level(), pos);
+    }
+
+    public static boolean isStandableSpotProxy(Level level, BlockPos pos) {
+        return level != null && pos != null && canPhysicallyStandAt(level, pos);
+    }
+
+    public static boolean isDangerousStandingSpotProxy(Level level, BlockPos pos) {
+        if (level == null || pos == null) {
+            return false;
+        }
+
+        if (!level.getFluidState(pos).isEmpty() || !level.getFluidState(pos.above()).isEmpty()) {
+            return true;
+        }
+
+        if (!level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP)) {
+            return true;
+        }
+
+        return LevelBrightnessHelper.maxLocalRawBrightness(level, pos) < MIN_TRUE_DANGER_BRIGHTNESS
+                && isUndergroundEnclosedSpot(level, pos);
+    }
+
+    public static boolean isClaustrophobicStandingSpotProxy(Level level, BlockPos pos) {
+        return level != null
+                && pos != null
+                && canPhysicallyStandAt(level, pos)
+                && LevelBrightnessHelper.maxLocalRawBrightness(level, pos) < MIN_SAFE_BRIGHTNESS
+                && isUndergroundEnclosedSpot(level, pos);
     }
 
     private static boolean canPhysicallyStandAt(Level level, BlockPos pos) {

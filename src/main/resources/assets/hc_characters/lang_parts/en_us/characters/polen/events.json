@@ -1,0 +1,15 @@
+{
+  "dialogue.polen.event.first_meeting.line1": "...",
+  "dialogue.polen.event.first_meeting.line2": "She does not seem hostile... but this silence should not be broken too quickly.",
+  "dialogue.polen.event.first_meeting.discovered": "You found an unknown girl in the clearing.",
+  "dialogue.polen.event.shelter.line1": "This place...",
+  "dialogue.polen.event.shelter.line2": "It does not look like a palace, or a royal hive...",
+  "dialogue.polen.event.shelter.line3": "But it feels peaceful.",
+  "dialogue.polen.event.shelter.line4": "Maybe... we can begin here.",
+  "dialogue.polen.event.name_reveal.line1": "Wait...",
+  "dialogue.polen.event.name_reveal.line2": "There is something I want to tell you.",
+  "dialogue.polen.event.name_reveal.line3": "I don't know why... but I feel like I can trust you.",
+  "dialogue.polen.event.name_reveal.line4": "My name is...",
+  "dialogue.polen.event.name_reveal.line5": "Polen.",
+  "dialogue.polen.event.name_reveal.discovered": "You discovered her name: Polen."
+}

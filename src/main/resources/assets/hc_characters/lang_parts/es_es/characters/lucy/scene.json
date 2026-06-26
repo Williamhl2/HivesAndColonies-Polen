@@ -1,0 +1,20 @@
+{
+  "dialogue.lucy.scene.speaker.lucy": "Lucy",
+  "dialogue.lucy.scene.speaker.soa": "SoaMarjorie",
+  "dialogue.lucy.scene.ambient.soa.1": "Lucy, despacio. Cuéntalo bien. ¿Qué viste?",
+  "dialogue.lucy.scene.ambient.lucy.1": "A una chica. En el claro de más allá. La perdía entre las flores y luego la volvía a ver.",
+  "dialogue.lucy.scene.ambient.soa.2": "Entonces no la persigas. Si alguien va, va con calma y le deja sitio.",
+  "dialogue.lucy.scene.ambient.lucy.2": "Sí. Por eso hice un croquis antes de empezar a dudar de lo que vi.",
+  "dialogue.lucy.scene.clue.line1": "Mira, vi a una chica sola en un claro cercano.",
+  "dialogue.lucy.scene.clue.line2": "No parecía herida ni perdida. Solo estaba... alerta. Como si estuviera midiendo todo.",
+  "dialogue.lucy.scene.clue.line3": "No te acerques como si fueras a salvarla. Llega despacio, observa y deja que ella marque la distancia.",
+  "dialogue.lucy.scene.clue.line4": "Toma. Aquí va el croquis. Con eso deberías encontrar el sitio.",
+  "dialogue.lucy.scene.clue.received": "Lucy te pone el croquis en la mano y SoaMarjorie remata la advertencia con una mirada seria.",
+  "dialogue.lucy.scene.replacement.line1": "¿Perdiste el croquis? Vale. Hice otro.",
+  "dialogue.lucy.scene.replacement.line2": "Y esta vez hazle caso a SoaMarjorie: nada de ruido cuando llegues.",
+  "dialogue.lucy.scene.repeat.line1": "Ya lo tienes. Ve con calma y no la asustes.",
+  "dialogue.lucy.scene.after_discovery.line1": "Bueno, pues ya está. No hace falta que siga repartiendo croquis por la aldea.",
+  "dialogue.lucy.scene.soa_intro.line1": "Si Lucy está así de inquieta, es por algo.",
+  "dialogue.lucy.scene.soa_intro.line2": "Ve si quieres, pero con cuidado. No la presiones.",
+  "dialogue.lucy.scene.soa_repeat.line1": "Ya sabes lo importante: calma, respeto y ojos abiertos."
+}

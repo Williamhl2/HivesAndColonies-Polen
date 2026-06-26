@@ -14,6 +14,8 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.afforda
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceTarget;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeSnapshot;
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 
@@ -80,7 +82,7 @@ public final class PolenRoutinePlanner {
     }
 
     public static BlockPos findHomeAnchoredSafeWanderTarget(PolenEntity polen, int radius) {
-        BlockPos homeCenter = PolenHomeManager.getHomeCenterPos(polen);
+        BlockPos homeCenter = PolenHomeManager.getHomeSnapshot(polen).homeCenterPos();
         if (homeCenter == null) {
             return PolenSafetyNavigator.findNearbySafeSurfaceSpot(polen, Math.max(DEFAULT_SAFE_SPOT_RADIUS, radius));
         }
@@ -110,15 +112,20 @@ public final class PolenRoutinePlanner {
 
         int surfaceY = polen.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos.getX(), pos.getZ());
         boolean nearSurface = pos.getY() >= surfaceY - 2;
-        boolean brightEnough = polen.level().getMaxLocalRawBrightness(pos.above()) >= MIN_INTEREST_BRIGHTNESS;
+        boolean brightEnough = LevelBrightnessHelper.maxLocalRawBrightness(polen.level(), pos.above()) >= MIN_INTEREST_BRIGHTNESS;
 
         return nearSurface && brightEnough;
     }
 
     private static BlockPos findRestTarget(PolenEntity polen) {
+        PolenHomeSnapshot homeSnapshot = PolenHomeManager.getHomeSnapshot(polen);
         if (PolenSleepController.shouldSleepNow(polen)) {
             BlockPos bedPos = PolenSleepController.findBestKnownBed(polen);
-            BlockPos bedAccessPos = PolenSleepController.findBestBedAccessPos(polen, bedPos);
+            BlockPos bedAccessPos = homeSnapshot.homeBed() != null
+                    && homeSnapshot.homeBed().bedPos() != null
+                    && homeSnapshot.homeBed().bedPos().equals(bedPos)
+                    ? homeSnapshot.homeBed().accessPos()
+                    : PolenSleepController.findBestBedAccessPos(polen, bedPos);
             if (bedAccessPos != null) {
                 return bedAccessPos;
             }
@@ -133,7 +140,7 @@ public final class PolenRoutinePlanner {
             return restTarget.usePos();
         }
 
-        BlockPos homeCenter = PolenHomeManager.getHomeCenterPos(polen);
+        BlockPos homeCenter = homeSnapshot.homeCenterPos();
         if (homeCenter != null) {
             BlockPos homeReturnSpot = findSafeSpotAroundHome(polen, homeCenter, HOME_RETURN_RADIUS, true);
             if (homeReturnSpot != null) {
@@ -145,7 +152,8 @@ public final class PolenRoutinePlanner {
     }
 
     private static BlockPos findQuietCreationTarget(PolenEntity polen) {
-        BlockPos preferredHomeTarget = findPreferredHomeRoutineTarget(polen);
+        PolenHomeSnapshot homeSnapshot = PolenHomeManager.getHomeSnapshot(polen);
+        BlockPos preferredHomeTarget = findPreferredHomeRoutineTarget(polen, homeSnapshot);
         if (preferredHomeTarget != null) {
             return preferredHomeTarget;
         }
@@ -176,7 +184,7 @@ public final class PolenRoutinePlanner {
             return normalizedRestingPos;
         }
 
-        BlockPos residenceUsePos = PolenHomeManager.getValidResidenceUsePos(polen);
+        BlockPos residenceUsePos = homeSnapshot.residenceUsePos();
         BlockPos normalizedResidencePos = normalizeQuietCreationAnchor(polen, residenceUsePos);
         if (normalizedResidencePos != null && residenceUsePos.distSqr(polen.blockPosition()) <= 18.0D * 18.0D) {
             return normalizedResidencePos;
@@ -185,12 +193,12 @@ public final class PolenRoutinePlanner {
         return findHomeAnchoredSafeWanderTarget(polen, HOME_RETURN_RADIUS);
     }
 
-    private static BlockPos findPreferredHomeRoutineTarget(PolenEntity polen) {
+    private static BlockPos findPreferredHomeRoutineTarget(PolenEntity polen, PolenHomeSnapshot homeSnapshot) {
         int maxRadius = polen.level().isNight() || polen.level().isRaining()
                 ? BAD_WEATHER_HOME_ROUTINE_RADIUS
                 : DEFAULT_HOME_ROUTINE_RADIUS;
 
-        BlockPos residenceUsePos = PolenHomeManager.getValidResidenceUsePos(polen);
+        BlockPos residenceUsePos = homeSnapshot.residenceUsePos();
         BlockPos normalizedResidencePos = normalizeQuietCreationAnchor(polen, residenceUsePos);
         if (normalizedResidencePos != null
                 && residenceUsePos != null
@@ -230,7 +238,7 @@ public final class PolenRoutinePlanner {
                     double score = preferClosestToHome
                             ? distanceToHome + distanceToPolen * 0.20D
                             : distanceToHome * 0.85D + distanceToPolen * 0.25D;
-                    score -= polen.level().getMaxLocalRawBrightness(candidate) * 0.35D;
+                    score -= LevelBrightnessHelper.maxLocalRawBrightness(polen.level(), candidate) * 0.35D;
                     if (!polen.level().isNight() && !polen.level().isRaining() && polen.level().canSeeSky(candidate)) {
                         score -= 2.5D;
                     }

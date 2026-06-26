@@ -2,7 +2,15 @@
 
 ## Premise
 
-The player discovers a quiet girl living near the wilderness of a new world.
+The opening lead should no longer come from a login gift or a detached item drop.
+
+The player should first hear a grounded rumor:
+
+- they find `SoaMarjorie` and `Lucy` talking in a village
+- Lucy explains that she saw a strange young woman in a nearby clearing
+- Lucy hands over a marked sketch so the player can approach that place carefully
+
+After that, the player discovers a quiet girl living near the wilderness of a new world.
 
 She keeps emotional distance.
 She does not remember everything.

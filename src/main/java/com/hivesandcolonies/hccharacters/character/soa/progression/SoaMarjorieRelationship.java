@@ -44,11 +44,11 @@ public final class SoaMarjorieRelationship {
 
     public static String rankName(int affinity) {
         return switch (NpcRelationshipLevels.rankIndex(affinity)) {
-            case 4 -> "Companero de mina";
-            case 3 -> "Mano confiable";
-            case 2 -> "Aprendiz tolerable";
-            case 1 -> "Aprendiz reciente";
-            default -> "Novato peligroso";
+            case 4 -> "relationship.soa.rank.4";
+            case 3 -> "relationship.soa.rank.3";
+            case 2 -> "relationship.soa.rank.2";
+            case 1 -> "relationship.soa.rank.1";
+            default -> "relationship.soa.rank.0";
         };
     }
 
@@ -63,8 +63,8 @@ public final class SoaMarjorieRelationship {
                 firstMeeting ? 2 : 1,
                 "soa_board_visit",
                 firstMeeting
-                        ? "Soa decidio que podias escuchar el tablón sin romper nada."
-                        : "Soa noto que vuelves al tablón con menos cara de perderte.",
+                        ? "relationship.soa.reason.board_visit_first"
+                        : "relationship.soa.reason.board_visit_repeat",
                 RANK_RESOLVER
         );
         if (visits == 3) {
@@ -74,7 +74,7 @@ public final class SoaMarjorieRelationship {
                     DISPLAY_NAME,
                     1,
                     "soa_repeat_board_visits",
-                    "Soa empieza a reconocer tu costumbre de aparecer donde hay trabajo.",
+                    "relationship.soa.reason.board_visit_third",
                     RANK_RESOLVER
             );
         }
@@ -90,8 +90,8 @@ public final class SoaMarjorieRelationship {
                 firstGift ? 2 : 1,
                 "soa_board_gift",
                 firstGift
-                        ? "Aceptaste una herramienta util sin preguntar si era tesoro. Bien."
-                        : "Soa aprobo que aun recuerdes el valor de las provisiones.",
+                        ? "relationship.soa.reason.board_gift_first"
+                        : "relationship.soa.reason.board_gift_repeat",
                 RANK_RESOLVER
         );
     }
@@ -107,8 +107,8 @@ public final class SoaMarjorieRelationship {
                 firstCave ? 3 : 2,
                 "soa_cave_encounter",
                 firstCave
-                        ? "Seguiste a Soa bajo tierra y no corriste en la primera sombra. Eso cuenta."
-                        : "Soa noto que tus pasos bajo piedra ya no suenan tan perdidos.",
+                        ? "relationship.soa.reason.cave_first"
+                        : "relationship.soa.reason.cave_repeat",
                 RANK_RESOLVER
         );
     }
@@ -127,8 +127,8 @@ public final class SoaMarjorieRelationship {
                 firstShare ? 2 : 1,
                 COOLDOWN_ORE_SHARE,
                 firstShare
-                        ? "Soa compartio parte de lo minado. No lo llames generosidad en voz alta."
-                        : "Soa aprobo que acompanaras sin estorbar demasiado.",
+                        ? "relationship.soa.reason.ore_share_first"
+                        : "relationship.soa.reason.ore_share_repeat",
                 ORE_SHARE_AFFINITY_COOLDOWN,
                 RANK_RESOLVER
         );
@@ -142,7 +142,7 @@ public final class SoaMarjorieRelationship {
                 DISPLAY_NAME,
                 -8,
                 COOLDOWN_ATTACK_WARNING,
-                "Soa recordara ese golpe. La piedra perdona mas rapido que ella.",
+                "relationship.soa.reason.attacked",
                 ATTACK_AFFINITY_COOLDOWN,
                 RANK_RESOLVER
         );
@@ -150,50 +150,50 @@ public final class SoaMarjorieRelationship {
 
     public static String arrivalBoardLine(ServerPlayer player) {
         return switch (NpcRelationshipLevels.rankIndex(affinity(player))) {
-            case 4 -> "Mira quien llego. Justo necesitaba a alguien que no gritara al ver grava caer.";
-            case 3 -> "Bien. Contigo cerca al menos tengo a quien culpar si algo explota.";
-            case 2 -> "Si vas a quedarte cerca del tablón, intenta parecer aprendiz y no accidente anunciado.";
-            case 1 -> "Te reconozco. Sigues vivo, lo que en mineria ya es curriculum.";
-            default -> "Tu. Novato. Si el tablón te manda bajo tierra, lee dos veces antes de cavar una tumba elegante.";
+            case 4 -> "dialogue.soa.marjorie.arrival.board.4";
+            case 3 -> "dialogue.soa.marjorie.arrival.board.3";
+            case 2 -> "dialogue.soa.marjorie.arrival.board.2";
+            case 1 -> "dialogue.soa.marjorie.arrival.board.1";
+            default -> "dialogue.soa.marjorie.arrival.board.0";
         };
     }
 
     public static String arrivalCaveLine(ServerPlayer player) {
         return switch (NpcRelationshipLevels.rankIndex(affinity(player))) {
-            case 4 -> "Vamos, companero. Si encontramos diamantes, yo los encontre. Tu estabas presente.";
-            case 3 -> "Si vas a seguirme, pisa donde piso. Y si sobrevives, quizá te deje presumirlo.";
-            case 2 -> "Te guardé una veta decente. No digas que nunca hago cosas bonitas.";
-            case 1 -> "Camina detras de mi. No por confianza, por seguridad.";
-            default -> "No te pongas delante del pico. Parece obvio, pero he conocido gente menos lista.";
+            case 4 -> "dialogue.soa.marjorie.arrival.cave.4";
+            case 3 -> "dialogue.soa.marjorie.arrival.cave.3";
+            case 2 -> "dialogue.soa.marjorie.arrival.cave.2";
+            case 1 -> "dialogue.soa.marjorie.arrival.cave.1";
+            default -> "dialogue.soa.marjorie.arrival.cave.0";
         };
     }
 
     public static String idleBoardLine(ServerPlayer player, RandomSource random) {
         String[] lines = switch (NpcRelationshipLevels.rankIndex(affinity(player))) {
             case 4 -> new String[] {
-                    "Me caes bien. No lo arruines haciendo algo heroico.",
-                    "Si alguien pregunta, tu ayudaste. Si encontramos diamantes, yo los encontre.",
-                    "Te confiaria una ruta de mina. No mi pico. No exageremos."
+                    "dialogue.soa.marjorie.idle.board.4.1",
+                    "dialogue.soa.marjorie.idle.board.4.2",
+                    "dialogue.soa.marjorie.idle.board.4.3"
             };
             case 3 -> new String[] {
-                    "Bien. Contigo cerca al menos tengo a quien culpar si algo explota.",
-                    "Buen ojo. No tan bueno como el mio, claro. Pero buen ojo.",
-                    "Trajiste suerte o trajiste problemas. En las minas suele ser lo mismo."
+                    "dialogue.soa.marjorie.idle.board.3.1",
+                    "dialogue.soa.marjorie.idle.board.3.2",
+                    "dialogue.soa.marjorie.idle.board.3.3"
             };
             case 2 -> new String[] {
-                    "Vas mejorando. Hoy casi no pareces una tragedia con botas.",
-                    "No esta mal. No bien, pero no esta mal.",
-                    "Si sobrevives a dos encargos seguidos, quiza deje de llamarlo accidente."
+                    "dialogue.soa.marjorie.idle.board.2.1",
+                    "dialogue.soa.marjorie.idle.board.2.2",
+                    "dialogue.soa.marjorie.idle.board.2.3"
             };
             case 1 -> new String[] {
-                    "Marca el camino de vuelta. Una mina no se pierde: te convence de que tu sabes mas.",
-                    "Si escuchas lava, no corras hacia ella. Si, he tenido que decirlo antes.",
-                    "El carbon humilde salva mas viajes que el diamante orgulloso. Aprende eso primero."
+                    "dialogue.soa.marjorie.idle.board.1.1",
+                    "dialogue.soa.marjorie.idle.board.1.2",
+                    "dialogue.soa.marjorie.idle.board.1.3"
             };
             default -> new String[] {
-                    "Si vas a tocar una roca, al menos asegúrate de que no sea la que sostiene el techo.",
-                    "Camina detras de mi. No por confianza, por seguridad.",
-                    "Un tablón da encargos. Yo doy advertencias. Las mias suelen doler menos si obedeces."
+                    "dialogue.soa.marjorie.idle.board.0.1",
+                    "dialogue.soa.marjorie.idle.board.0.2",
+                    "dialogue.soa.marjorie.idle.board.0.3"
             };
         };
         return lines[random.nextInt(lines.length)];
@@ -202,29 +202,29 @@ public final class SoaMarjorieRelationship {
     public static String idleCaveLine(ServerPlayer player, RandomSource random) {
         String[] lines = switch (NpcRelationshipLevels.rankIndex(affinity(player))) {
             case 4 -> new String[] {
-                    "Te guardé una veta decente. No digas que nunca hago cosas bonitas.",
-                    "Me caes bien. No lo arruines haciendo algo heroico.",
-                    "Si encuentras lava, era tu turno. Si encuentras diamante, claramente seguiste mi ruta."
+                    "dialogue.soa.marjorie.idle.cave.4.1",
+                    "dialogue.soa.marjorie.idle.cave.4.2",
+                    "dialogue.soa.marjorie.idle.cave.4.3"
             };
             case 3 -> new String[] {
-                    "Si vas a seguirme, pisa donde piso. Y si sobrevives, quizá te deje presumirlo.",
-                    "Bien. Contigo cerca al menos tengo a quien culpar si algo explota.",
-                    "Buen ritmo. Casi parece que las botas ya saben de que lado queda el suelo."
+                    "dialogue.soa.marjorie.idle.cave.3.1",
+                    "dialogue.soa.marjorie.idle.cave.3.2",
+                    "dialogue.soa.marjorie.idle.cave.3.3"
             };
             case 2 -> new String[] {
-                    "No esta mal. No bien, pero no esta mal.",
-                    "Antorcha cada pocos pasos. La oscuridad cobra intereses.",
-                    "Si el eco vuelve seco, hay cámara grande adelante. Entra con antorchas, no con orgullo."
+                    "dialogue.soa.marjorie.idle.cave.2.1",
+                    "dialogue.soa.marjorie.idle.cave.2.2",
+                    "dialogue.soa.marjorie.idle.cave.2.3"
             };
             case 1 -> new String[] {
-                    "Pisa donde piso. La cueva ya tiene suficientes ideas malas sin tus aportes.",
-                    "No caves con prisa. La prisa alimenta lagos de lava.",
-                    "Una veta expuesta es una invitacion, no una promesa. Mira alrededor antes de celebrar."
+                    "dialogue.soa.marjorie.idle.cave.1.1",
+                    "dialogue.soa.marjorie.idle.cave.1.2",
+                    "dialogue.soa.marjorie.idle.cave.1.3"
             };
             default -> new String[] {
-                    "No te pongas delante del pico. Parece obvio, pero he conocido gente menos lista.",
-                    "Si escuchas lava, no corras hacia ella. Si, he tenido que decirlo antes.",
-                    "La mina no quiere matarte. Solo acepta sugerencias muy rapido."
+                    "dialogue.soa.marjorie.idle.cave.0.1",
+                    "dialogue.soa.marjorie.idle.cave.0.2",
+                    "dialogue.soa.marjorie.idle.cave.0.3"
             };
         };
         return lines[random.nextInt(lines.length)];

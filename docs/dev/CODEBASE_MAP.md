@@ -342,24 +342,25 @@ Responsabilidad:
 
 ## Recursos
 
-### `assets/characters/lang`
+### `assets/hc_characters/lang`
 
 - `es_es.json`
 - `en_us.json`
+- generado desde `lang_base/` y `lang_parts/<locale>/characters/<id>/...`
 
-### `assets/characters/blockstates`
+### `assets/hc_characters/blockstates`
 
 - blockstates del mod
 
-### `assets/characters/models/block`
+### `assets/hc_characters/models/block`
 
 - modelos de bloques
 
-### `assets/characters/models/item`
+### `assets/hc_characters/models/item`
 
 - modelos de items
 
-### `data/characters/tags/item`
+### `data/hc_characters/tags/item`
 
 - familias de item
 - incluye `accessory_items`

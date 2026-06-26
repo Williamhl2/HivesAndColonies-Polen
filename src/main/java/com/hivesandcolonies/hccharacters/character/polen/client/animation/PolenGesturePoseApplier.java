@@ -1,7 +1,6 @@
 package com.hivesandcolonies.hccharacters.character.polen.client.animation;
 
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.expression.gesture.PolenGesture;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.util.Mth;
 

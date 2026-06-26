@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import com.hivesandcolonies.hccharacters.character.lucy.world.LucyVillageEncounterManager;
 import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
+import com.hivesandcolonies.hccharacters.character.soa.companion.SoaMartaCompanionController;
 import com.hivesandcolonies.hccharacters.character.soa.dialogue.SoaMarjorieDialogue;
 import com.hivesandcolonies.hccharacters.character.soa.progression.SoaMarjorieRelationship;
 import com.hivesandcolonies.hccharacters.common.entity.SimpleCharacterEntity;
 import com.hivesandcolonies.hccharacters.common.npc.relationship.NpcRelationshipInteraction;
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import com.hivesandcolonies.hccharacters.integration.curios.PolenCuriosBridge;
 
 import net.minecraft.core.BlockPos;
@@ -39,6 +42,7 @@ import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -53,6 +57,10 @@ import net.minecraft.world.phys.Vec3;
 
 public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private static final String SOA_KEY = "entity.hc_characters.soa_marjorie";
+    private static final String TAG_SCENE_ANCHOR = "SoaMarjorieSceneAnchor";
+    private static final String TAG_SCENE_LOOK_TARGET = "SoaMarjorieSceneLookTarget";
+    private static final String TAG_SCENE_MOVE_COOLDOWN = "SoaMarjorieSceneMoveCooldown";
+    private static final String TAG_SCENE_TURN_COOLDOWN = "SoaMarjorieSceneTurnCooldown";
     private static final int DEFENSE_DRAW_TICKS = 120;
     private static final int BOARD_RETURN_DISTANCE_SQR = 14 * 14;
     private static final int BOARD_HARD_LIMIT_DISTANCE_SQR = 28 * 28;
@@ -62,6 +70,9 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private static final int BOARD_GIFT_RANDOM_DELAY = 20 * 50;
     private static final int HOSTILE_SCAN_INTERVAL_TICKS = 30;
     private static final double HOSTILE_SCAN_RADIUS = 10.0D;
+    private static final String VILLAGE_SCENE_ACTIVE_TAG = "SoaMarjorieVillageSceneActive";
+    private static final int SCENE_RETURN_DISTANCE_SQR = 5 * 5;
+    private static final int SCENE_WANDER_RADIUS = 2;
 
     public static final String CURIOS_BACKPACK_SLOT = "backpack";
     public static final String CURIOS_TOOL_RIGHT_SLOT = "tool_right";
@@ -86,6 +97,11 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private int ambientDialogueCooldown;
     private int equipmentSyncCooldown;
     private int hostileScanCooldown;
+    private BlockPos villageSceneAnchor;
+    private BlockPos villageSceneLookTarget;
+    private int villageSceneMoveCooldown;
+    private int villageSceneTurnCooldown;
+    private final SoaMartaCompanionController martaCompanion = new SoaMartaCompanionController(this);
 
     public SoaMarjorieEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -109,7 +125,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             SoaMarjorieRelationship.recordBoardVisit(witness);
             this.sayTo(witness, SoaMarjorieRelationship.arrivalBoardLine(witness));
         } else {
-            this.sayNearby("Vi el tablon desde la entrada del pueblo. A veces las mejores vetas empiezan con un encargo.");
+            this.sayNearby("dialogue.soa.marjorie.nearby.board_spawn");
         }
     }
 
@@ -128,12 +144,28 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             SoaMarjorieRelationship.recordCaveEncounter(witness);
             this.sayTo(witness, SoaMarjorieRelationship.arrivalCaveLine(witness));
         } else {
-            this.sayNearby("Si vienes conmigo, manten la luz cerca y las manos lejos de mi pico.");
+            this.sayNearby("dialogue.soa.marjorie.nearby.cave_spawn");
         }
     }
 
     public boolean isEncounterActive() {
         return this.encounterMode != EncounterMode.NONE && this.encounterTicksLeft > 0;
+    }
+
+    public void startVillageScene(BlockPos sceneAnchor, BlockPos lookTarget) {
+        this.getPersistentData().putBoolean(VILLAGE_SCENE_ACTIVE_TAG, true);
+        this.villageSceneAnchor = sceneAnchor == null ? null : sceneAnchor.immutable();
+        this.villageSceneLookTarget = lookTarget == null ? null : lookTarget.immutable();
+        if (this.villageSceneMoveCooldown <= 0) {
+            this.villageSceneMoveCooldown = 18 + this.getRandom().nextInt(28);
+        }
+        if (this.villageSceneTurnCooldown <= 0) {
+            this.villageSceneTurnCooldown = 10 + this.getRandom().nextInt(20);
+        }
+    }
+
+    public boolean isVillageSceneActive() {
+        return this.getPersistentData().getBoolean(VILLAGE_SCENE_ACTIVE_TAG);
     }
 
     public boolean isBoardVisit() {
@@ -148,9 +180,16 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         return this.encounterAnchor;
     }
 
+    public BlockPos getVillageSceneAnchor() {
+        return this.villageSceneAnchor;
+    }
+
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         if (!this.level().isClientSide && hand == InteractionHand.MAIN_HAND) {
+            if (this.isVillageSceneActive()) {
+                return LucyVillageEncounterManager.handleSoaInteraction(this, player);
+            }
             NpcRelationshipInteraction.interact(
                     this,
                     player,
@@ -162,7 +201,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
                     SoaMarjorieDialogue.TIER_3,
                     SoaMarjorieDialogue.rewardPool(),
                     SoaMarjorieRelationship.RANK_RESOLVER,
-                    "Soa tomo nota de que sigues vivo. Buen comienzo."
+                    "relationship.soa.reason.interaction"
             );
             if (this.isBoardVisit() && !this.boardGiftGiven) {
                 this.tryGiveBoardGift(player);
@@ -225,12 +264,34 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             --this.torchDrawTicks;
         }
         if (!this.level().isClientSide) {
+            this.martaCompanion.tick();
             this.tickEncounterLifetime();
             this.tickSurvivabilityAndThreats();
             this.equipExpertMiningTools();
             this.syncMiningEquipmentToCurios();
+            this.tickVillageSceneCooldowns();
         }
         this.tickAmbientDialogue();
+    }
+
+    private void tickVillageSceneCooldowns() {
+        if (!this.isVillageSceneActive()) {
+            return;
+        }
+        if (this.villageSceneMoveCooldown > 0) {
+            --this.villageSceneMoveCooldown;
+        }
+        if (this.villageSceneTurnCooldown > 0) {
+            --this.villageSceneTurnCooldown;
+        }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        if (!this.level().isClientSide && reason != RemovalReason.UNLOADED_TO_CHUNK) {
+            this.martaCompanion.discardCompanion();
+        }
+        super.remove(reason);
     }
 
     private void tickEncounterLifetime() {
@@ -247,8 +308,8 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         }
         if (this.encounterTicksLeft <= 0) {
             this.sayNearby(this.encounterMode == EncounterMode.BOARD_VISIT
-                    ? "El tablón ya dijo suficiente por hoy. Nos veremos bajo piedra."
-                    : "La veta se está enfriando. Me muevo antes de que la cueva aprenda mi nombre.");
+                    ? "dialogue.soa.marjorie.encounter_end.board"
+                    : "dialogue.soa.marjorie.encounter_end.cave");
             this.discard();
         }
     }
@@ -315,7 +376,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         if (player instanceof ServerPlayer serverPlayer) {
             SoaMarjorieRelationship.recordBoardGift(serverPlayer);
         }
-        this.sayTo(player, "Toma. No es tesoro, pero en una mina esto vale mas de lo que parece.");
+        this.sayTo(player, "dialogue.soa.marjorie.board_gift");
     }
 
     private ItemStack createBoardGift() {
@@ -339,6 +400,9 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         if (this.level().isClientSide) {
             return;
         }
+        if (!this.isBoardVisit() && !this.isCaveMiningEncounter()) {
+            return;
+        }
         if (this.ambientDialogueCooldown > 0) {
             --this.ambientDialogueCooldown;
             return;
@@ -356,17 +420,17 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             String[] lines;
             if (this.isBoardVisit()) {
                 lines = new String[] {
-                        "Los tablones atraen aventureros. Los aventureros atraen historias. Y a veces, problemas.",
-                        "No todos los encargos se aceptan por recompensa. Algunos se aceptan por curiosidad.",
-                        "Si buscas mina, no sigas solo el brillo. Sigue el aire frio.",
-                        "Un buen trabajo empieza antes del primer golpe de pico."
+                        "dialogue.soa.marjorie.nearby.board_idle.1",
+                        "dialogue.soa.marjorie.nearby.board_idle.2",
+                        "dialogue.soa.marjorie.nearby.board_idle.3",
+                        "dialogue.soa.marjorie.nearby.board_idle.4"
                 };
             } else {
                 lines = new String[] {
-                        "Esta veta no esta sola... hay algo bueno cerca.",
-                        "Antorcha cada pocos pasos. La oscuridad cobra intereses.",
-                        "Si el eco vuelve seco, hay camara grande adelante.",
-                        "La netherita no perdona manos torpes. Por suerte, las mias no lo son."
+                        "dialogue.soa.marjorie.nearby.cave_idle.1",
+                        "dialogue.soa.marjorie.nearby.cave_idle.2",
+                        "dialogue.soa.marjorie.nearby.cave_idle.3",
+                        "dialogue.soa.marjorie.nearby.cave_idle.4"
                 };
             }
             this.sayNearby(lines[this.getRandom().nextInt(lines.length)]);
@@ -383,7 +447,23 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     }
 
     private void sayTo(Player player, String text) {
-        player.displayClientMessage(Component.literal("<SoaMarjorie> " + text), false);
+        player.displayClientMessage(
+                Component.literal("<")
+                        .append(Component.translatable(SOA_KEY))
+                        .append("> ")
+                        .append(asDialogueComponent(text)),
+                false
+        );
+    }
+
+    private static Component asDialogueComponent(String text) {
+        if (text == null || text.isBlank()) {
+            return Component.empty();
+        }
+        if (!text.contains(" ")) {
+            return Component.translatable(text);
+        }
+        return Component.literal(text);
     }
 
     private Player findNearestPlayer(double radius) {
@@ -494,7 +574,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         if (player instanceof ServerPlayer serverPlayer) {
             SoaMarjorieRelationship.recordAttack(serverPlayer);
         }
-        this.sayTo(player, "Una advertencia basta. La siguiente abre hasta bedrock.");
+        this.sayTo(player, "dialogue.soa.marjorie.attack_warning");
         this.getLookControl().setLookAt(player, 30.0F, 30.0F);
 
         double distanceSqr = this.distanceToSqr(player);
@@ -503,7 +583,10 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             return;
         }
 
-        player.hurt(this.damageSources().mobAttack(this), PLAYER_WARNING_STRIKE_DAMAGE);
+        float safeWarningDamage = Math.max(0.0F, Math.min(PLAYER_WARNING_STRIKE_DAMAGE, player.getHealth() - 1.0F));
+        if (safeWarningDamage > 0.0F) {
+            player.hurt(this.damageSources().mobAttack(this), safeWarningDamage);
+        }
         if (player.isAlive() && player.getHealth() > 1.0F) {
             player.setHealth(1.0F);
         }
@@ -556,9 +639,10 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(1, new DefensiveAxeAttackGoal(this));
-        this.goalSelector.addGoal(2, new StayNearBoardGoal(this));
-        this.goalSelector.addGoal(3, new TorchDarknessGoal(this));
-        this.goalSelector.addGoal(4, new MiningWorkGoal(this));
+        this.goalSelector.addGoal(2, new VillageScenePresenceGoal(this));
+        this.goalSelector.addGoal(3, new StayNearBoardGoal(this));
+        this.goalSelector.addGoal(4, new TorchDarknessGoal(this));
+        this.goalSelector.addGoal(5, new MiningWorkGoal(this));
         this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.75D));
         this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
@@ -574,6 +658,15 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         if (this.encounterAnchor != null) {
             compound.putLong("SoaMarjorieEncounterAnchor", this.encounterAnchor.asLong());
         }
+        if (this.villageSceneAnchor != null) {
+            compound.putLong(TAG_SCENE_ANCHOR, this.villageSceneAnchor.asLong());
+        }
+        if (this.villageSceneLookTarget != null) {
+            compound.putLong(TAG_SCENE_LOOK_TARGET, this.villageSceneLookTarget.asLong());
+        }
+        compound.putInt(TAG_SCENE_MOVE_COOLDOWN, this.villageSceneMoveCooldown);
+        compound.putInt(TAG_SCENE_TURN_COOLDOWN, this.villageSceneTurnCooldown);
+        this.martaCompanion.addAdditionalSaveData(compound);
     }
 
     @Override
@@ -592,6 +685,15 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         } else {
             this.encounterAnchor = null;
         }
+        this.villageSceneAnchor = compound.contains(TAG_SCENE_ANCHOR)
+                ? BlockPos.of(compound.getLong(TAG_SCENE_ANCHOR))
+                : null;
+        this.villageSceneLookTarget = compound.contains(TAG_SCENE_LOOK_TARGET)
+                ? BlockPos.of(compound.getLong(TAG_SCENE_LOOK_TARGET))
+                : null;
+        this.villageSceneMoveCooldown = compound.getInt(TAG_SCENE_MOVE_COOLDOWN);
+        this.villageSceneTurnCooldown = compound.getInt(TAG_SCENE_TURN_COOLDOWN);
+        this.martaCompanion.readAdditionalSaveData(compound);
     }
 
     private enum EncounterMode {
@@ -676,6 +778,81 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         }
     }
 
+    private static final class VillageScenePresenceGoal extends Goal {
+        private final SoaMarjorieEntity soa;
+
+        private VillageScenePresenceGoal(SoaMarjorieEntity soa) {
+            this.soa = soa;
+            this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            return this.soa.isVillageSceneActive() && this.soa.getVillageSceneAnchor() != null;
+        }
+
+        @Override
+        public boolean canContinueToUse() {
+            return this.canUse();
+        }
+
+        @Override
+        public void tick() {
+            BlockPos anchor = this.soa.getVillageSceneAnchor();
+            if (anchor == null) {
+                return;
+            }
+
+            if (this.soa.distanceToSqr(Vec3.atCenterOf(anchor)) > SCENE_RETURN_DISTANCE_SQR
+                    && this.soa.getNavigation().isDone()) {
+                this.soa.getNavigation().moveTo(anchor.getX() + 0.5D, anchor.getY(), anchor.getZ() + 0.5D, 0.8D);
+                this.soa.villageSceneMoveCooldown = 20 + this.soa.getRandom().nextInt(25);
+                return;
+            }
+
+            BlockPos lookTarget = this.soa.villageSceneLookTarget;
+            if (lookTarget != null && this.soa.villageSceneTurnCooldown <= 0) {
+                this.soa.getLookControl().setLookAt(
+                        lookTarget.getX() + 0.5D,
+                        lookTarget.getY() + 1.2D,
+                        lookTarget.getZ() + 0.5D,
+                        25.0F,
+                        25.0F
+                );
+                this.soa.villageSceneTurnCooldown = 10 + this.soa.getRandom().nextInt(18);
+            }
+
+            if (this.soa.villageSceneMoveCooldown <= 0 && this.soa.getNavigation().isDone()) {
+                BlockPos step = this.findSceneStep(anchor);
+                if (step != null) {
+                    this.soa.getNavigation().moveTo(step.getX() + 0.5D, step.getY(), step.getZ() + 0.5D, 0.72D);
+                }
+                this.soa.villageSceneMoveCooldown = 26 + this.soa.getRandom().nextInt(35);
+            }
+        }
+
+        private BlockPos findSceneStep(BlockPos anchor) {
+            for (int attempt = 0; attempt < 8; attempt++) {
+                int x = this.soa.getRandom().nextInt(SCENE_WANDER_RADIUS * 2 + 1) - SCENE_WANDER_RADIUS;
+                int z = this.soa.getRandom().nextInt(SCENE_WANDER_RADIUS * 2 + 1) - SCENE_WANDER_RADIUS;
+                BlockPos candidate = anchor.offset(x, 0, z);
+                if (candidate.closerToCenterThan(Vec3.atCenterOf(anchor), 0.9D)) {
+                    continue;
+                }
+                if (canStandAt(this.soa.level(), candidate)) {
+                    return candidate.immutable();
+                }
+            }
+            return null;
+        }
+
+        private static boolean canStandAt(Level level, BlockPos pos) {
+            return level.getBlockState(pos).isAir()
+                    && level.getBlockState(pos.above()).isAir()
+                    && level.getBlockState(pos.below()).isFaceSturdy(level, pos.below(), Direction.UP);
+        }
+    }
+
     private static final class TorchDarknessGoal extends Goal {
         private static final int LIGHT_THRESHOLD = 8;
         private static final int PLACE_COOLDOWN_TICKS = 100;
@@ -718,7 +895,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             if (this.targetPos != null && this.placeTorch(this.targetPos)) {
                 this.soa.drawTorchBriefly();
                 if (this.soa.getRandom().nextInt(4) == 0) {
-                    this.soa.sayNearby("Aquí faltaba luz. Los monstruos no pagan alquiler.");
+                    this.soa.sayNearby("dialogue.soa.marjorie.torch_place");
                 }
                 this.lastTorchPos = this.targetPos.immutable();
                 this.cooldown = PLACE_COOLDOWN_TICKS + this.soa.getRandom().nextInt(80);
@@ -729,7 +906,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
         }
 
         private boolean isDarkEnough() {
-            return this.soa.level().getMaxLocalRawBrightness(this.soa.blockPosition()) <= LIGHT_THRESHOLD;
+            return LevelBrightnessHelper.maxLocalRawBrightness(this.soa.level(), this.soa.blockPosition()) <= LIGHT_THRESHOLD;
         }
 
         private BlockPos findTorchPos() {
@@ -841,7 +1018,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             this.workTicks = WORK_TICKS_PER_BLOCK + this.soa.getRandom().nextInt(30);
             this.soa.drawMiningPickaxeBriefly();
             if (this.soa.getRandom().nextInt(3) == 0) {
-                this.soa.sayNearby("Esa veta está expuesta. Un golpe limpio y seguimos.");
+                this.soa.sayNearby("dialogue.soa.marjorie.mining_start");
             }
             this.moveToStandPos();
         }
@@ -907,29 +1084,39 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
             List<ItemStack> drops = Block.getDrops(state, serverLevel, this.orePos, serverLevel.getBlockEntity(this.orePos), this.soa, tool);
             serverLevel.levelEvent(2001, this.orePos, Block.getId(state));
             serverLevel.setBlock(this.orePos, Blocks.AIR.defaultBlockState(), 3);
-            this.shareCompanionReward(drops);
+            List<ItemStack> remainingDrops = this.shareCompanionReward(drops);
+            this.dropRemainingOreRewards(serverLevel, remainingDrops);
             if (this.soa.getRandom().nextInt(5) == 0) {
-                this.soa.sayNearby("Buena compañía merece una parte. Pequeña, pero justa.");
+                this.soa.sayNearby("dialogue.soa.marjorie.share_reward");
             }
             return true;
         }
 
-        private void shareCompanionReward(List<ItemStack> drops) {
+        private List<ItemStack> shareCompanionReward(List<ItemStack> drops) {
             Player companion = this.soa.findNearestPlayer(PLAYER_SHARE_RADIUS);
-            if (companion == null) {
-                return;
-            }
             List<ItemStack> rewards = new ArrayList<>();
+            List<ItemStack> remainingDrops = new ArrayList<>();
             for (ItemStack drop : drops) {
                 if (drop.isEmpty()) {
                     continue;
                 }
-                int share = drop.getCount() / 4;
-                int remainder = drop.getCount() % 4;
-                for (int i = 0; i < remainder; i++) {
-                    if (this.soa.getRandom().nextInt(4) == 0) {
-                        ++share;
+
+                int share = 0;
+                if (companion != null) {
+                    share = drop.getCount() / 4;
+                    int remainder = drop.getCount() % 4;
+                    for (int i = 0; i < remainder; i++) {
+                        if (this.soa.getRandom().nextInt(4) == 0) {
+                            ++share;
+                        }
                     }
+                }
+
+                int remaining = Math.max(0, drop.getCount() - share);
+                if (remaining > 0) {
+                    ItemStack remainingDrop = drop.copy();
+                    remainingDrop.setCount(remaining);
+                    remainingDrops.add(remainingDrop);
                 }
                 if (share <= 0) {
                     continue;
@@ -938,16 +1125,37 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
                 reward.setCount(share);
                 rewards.add(reward);
             }
+
             int totalShared = 0;
-            for (ItemStack reward : rewards) {
-                totalShared += reward.getCount();
-                ItemStack delivered = reward.copy();
-                if (!companion.addItem(delivered)) {
-                    companion.drop(delivered, false);
+            if (companion != null) {
+                for (ItemStack reward : rewards) {
+                    totalShared += reward.getCount();
+                    ItemStack delivered = reward.copy();
+                    if (!companion.addItem(delivered)) {
+                        companion.drop(delivered, false);
+                    }
+                }
+                if (totalShared > 0 && companion instanceof ServerPlayer serverPlayer) {
+                    SoaMarjorieRelationship.recordOreShared(serverPlayer, totalShared);
                 }
             }
-            if (totalShared > 0 && companion instanceof ServerPlayer serverPlayer) {
-                SoaMarjorieRelationship.recordOreShared(serverPlayer, totalShared);
+            return remainingDrops;
+        }
+
+        private void dropRemainingOreRewards(ServerLevel serverLevel, List<ItemStack> remainingDrops) {
+            if (this.orePos == null) {
+                return;
+            }
+            double x = this.orePos.getX() + 0.5D;
+            double y = this.orePos.getY() + 0.5D;
+            double z = this.orePos.getZ() + 0.5D;
+            for (ItemStack remainingDrop : remainingDrops) {
+                if (remainingDrop.isEmpty()) {
+                    continue;
+                }
+                ItemEntity itemEntity = new ItemEntity(serverLevel, x, y, z, remainingDrop.copy());
+                itemEntity.setDefaultPickUpDelay();
+                serverLevel.addFreshEntity(itemEntity);
             }
         }
 

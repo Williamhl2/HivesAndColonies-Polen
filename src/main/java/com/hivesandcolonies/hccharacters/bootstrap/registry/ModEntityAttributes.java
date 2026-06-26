@@ -2,6 +2,7 @@ package com.hivesandcolonies.hccharacters.bootstrap.registry;
 
 import com.hivesandcolonies.hccharacters.bootstrap.HcCharacters;
 import com.hivesandcolonies.hccharacters.character.befsh.entity.BefshEntity;
+import com.hivesandcolonies.hccharacters.character.lucy.entity.LucyEntity;
 import com.hivesandcolonies.hccharacters.character.luna.entity.LunaEntity;
 import com.hivesandcolonies.hccharacters.character.noia.entity.NoiaEntity;
 import com.hivesandcolonies.hccharacters.character.noris.entity.NorisEntity;
@@ -13,7 +14,7 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 
-@EventBusSubscriber(modid = HcCharacters.MODID)
+@EventBusSubscriber(modid = HcCharacters.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class ModEntityAttributes {
     private ModEntityAttributes() {}
 
@@ -26,5 +27,6 @@ public class ModEntityAttributes {
         event.put(ModEntities.NOIA.get(), NoiaEntity.createAttributes().build());
         event.put(ModEntities.NORIS.get(), NorisEntity.createAttributes().build());
         event.put(ModEntities.SOA_MARJORIE.get(), SoaMarjorieEntity.createAttributes().build());
+        event.put(ModEntities.LUCY.get(), LucyEntity.createAttributes().build());
     }
 }

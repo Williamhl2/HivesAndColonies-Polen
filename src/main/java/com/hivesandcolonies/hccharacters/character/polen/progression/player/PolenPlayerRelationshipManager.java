@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 import java.util.function.IntUnaryOperator;
 
 public final class PolenPlayerRelationshipManager {
+    public static final String DISPLAY_NAME = "Polen";
     private static final String FILE_ID = HcCharacters.MODID + "_player_relationships";
     private static final String TAG_RELATIONSHIPS = "relationships";
     private static final String TAG_PLAYER_UUID = "playerUuid";
@@ -49,6 +50,33 @@ public final class PolenPlayerRelationshipManager {
 
     public static int getAffinity(Player player) {
         return getRelationship(player).getAffinity();
+    }
+
+    public static int getInteractionCount(Player player) {
+        return getRelationship(player).getInteractionCount();
+    }
+
+    public static boolean isTrustWalkUnlocked(Player player) {
+        return getAffinity(player) >= PolenAffinityLevels.FIRST_TRUST;
+    }
+
+    public static boolean hasAnyGiftCooldown(Player player) {
+        PolenPlayerRelationshipData relationship = getRelationship(player);
+        long now = player.level().getGameTime();
+        for (Map.Entry<String, Long> entry : relationship.getCooldowns().entrySet()) {
+            if (entry.getKey().startsWith("polen.gift.") && entry.getValue() > now) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static int getNextAffinityThreshold(Player player) {
+        return getNextAffinityThreshold(getAffinity(player));
+    }
+
+    public static String getRelationshipRankText(Player player) {
+        return rankName(getAffinity(player));
     }
 
     public static void setAffinity(Player player, int value) {
@@ -181,6 +209,22 @@ public final class PolenPlayerRelationshipManager {
             return "Primer vinculo";
         }
         return "Extrana";
+    }
+
+    private static int getNextAffinityThreshold(int affinity) {
+        if (affinity < PolenAffinityLevels.FIRST_TRUST) {
+            return PolenAffinityLevels.FIRST_TRUST;
+        }
+        if (affinity < PolenAffinityLevels.NAME_REVEAL) {
+            return PolenAffinityLevels.NAME_REVEAL;
+        }
+        if (affinity < PolenAffinityLevels.FRIEND) {
+            return PolenAffinityLevels.FRIEND;
+        }
+        if (affinity < PolenAffinityLevels.CLOSE_FRIEND) {
+            return PolenAffinityLevels.CLOSE_FRIEND;
+        }
+        return PolenAffinityLevels.TRUSTED;
     }
 
     private static void mutate(Player player, Consumer<PolenPlayerRelationshipData> consumer) {

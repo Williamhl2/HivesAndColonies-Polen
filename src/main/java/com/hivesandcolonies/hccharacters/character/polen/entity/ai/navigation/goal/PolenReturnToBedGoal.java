@@ -4,6 +4,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.PolenMovementHelper;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchStatus;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchType;
@@ -18,6 +19,7 @@ public class PolenReturnToBedGoal extends Goal {
     private static final double MOVE_SPEED = 1.0D;
     private static final double BED_REACHED_DISTANCE_SQR = 5.0D * 5.0D;
     private static final double ACCESS_REACHED_DISTANCE_SQR = 2.0D * 2.0D;
+    private static final double THREAT_COMMIT_DISTANCE_SQR = 6.0D * 6.0D;
     private static final int REPATH_COOLDOWN_TICKS = 12;
     private static final int STUCK_TICKS_BEFORE_REPATH = 24;
     private static final int STUCK_TICKS_BEFORE_BLINK = 55;
@@ -28,6 +30,7 @@ public class PolenReturnToBedGoal extends Goal {
 
     private BlockPos bedPos;
     private BlockPos accessPos;
+    private BlockPos navigationAnchorPos;
     private int repathCooldownTicks;
     private int blinkCooldownTicks;
     private int stuckTicks;
@@ -47,8 +50,16 @@ public class PolenReturnToBedGoal extends Goal {
         }
 
         this.bedPos = PolenSleepController.findBestKnownBed(this.polen);
-        this.accessPos = PolenSleepController.findBestBedAccessPos(this.polen, this.bedPos);
+        this.accessPos = PolenMovementHelper.resolveReachableTarget(
+                this.polen,
+                PolenSleepController.findBestBedAccessPos(this.polen, this.bedPos),
+                false
+        );
         if (this.bedPos == null || this.accessPos == null) {
+            return false;
+        }
+
+        if (shouldYieldToImmediateThreat()) {
             return false;
         }
 
@@ -57,6 +68,7 @@ public class PolenReturnToBedGoal extends Goal {
         }
 
         resetPathState();
+        this.navigationAnchorPos = null;
         return true;
     }
 
@@ -67,6 +79,7 @@ public class PolenReturnToBedGoal extends Goal {
                 && this.accessPos != null
                 && this.failedRepathAttempts <= MAX_FAILED_REPATHS
                 && shouldReturnToBedNow()
+                && !shouldYieldToImmediateThreat()
                 && PolenSleepController.isUsableBed(this.polen.level(), this.bedPos);
     }
 
@@ -91,8 +104,21 @@ public class PolenReturnToBedGoal extends Goal {
             return;
         }
 
+        if (shouldYieldToImmediateThreat()) {
+            this.failedRepathAttempts = MAX_FAILED_REPATHS + 1;
+            this.polen.getNavigation().stop();
+            this.polen.getAiState().setSearchState(
+                    PolenSearchType.REST,
+                    PolenSearchStatus.FAILED,
+                    this.accessPos,
+                    this.bedPos,
+                    "yielding_to_immediate_threat"
+            );
+            return;
+        }
+
         Vec3 bedCenter = Vec3.atCenterOf(this.bedPos);
-        this.polen.getLookControl().setLookAt(bedCenter.x, bedCenter.y, bedCenter.z, 20.0F, 20.0F);
+        PolenMovementHelper.steerLookTowardMovement(this.polen, this.accessPos, this.navigationAnchorPos, false);
         PolenShelterContextResolver.tryOpenNearbyDoor(this.polen.level(), this.polen.blockPosition(), 2);
 
         if (PolenSleepController.tryBeginSleeping(this.polen, this.bedPos, "sleeping_after_bed_return")) {
@@ -111,6 +137,19 @@ public class PolenReturnToBedGoal extends Goal {
 
         if (this.polen.distanceToSqr(bedCenter) <= BED_REACHED_DISTANCE_SQR
                 || this.polen.distanceToSqr(Vec3.atCenterOf(this.accessPos)) <= ACCESS_REACHED_DISTANCE_SQR) {
+            if (!PolenSleepController.shouldSleepNow(this.polen) && this.polen.hasPendingReturnHomeRequest()) {
+                this.reachedBed = true;
+                this.polen.clearReturnHomeRequest();
+                this.polen.getNavigation().stop();
+                this.polen.getAiState().setSearchState(
+                        PolenSearchType.REST,
+                        PolenSearchStatus.ARRIVED,
+                        this.accessPos,
+                        this.bedPos,
+                        "requested_home_reached"
+                );
+                return;
+            }
             this.accessPos = PolenSleepController.findBestBedAccessPos(this.polen, this.bedPos);
             PolenSleepController.tryBeginSleeping(this.polen, this.bedPos, "sleeping_after_bed_return");
             return;
@@ -118,7 +157,12 @@ public class PolenReturnToBedGoal extends Goal {
 
         if (this.repathCooldownTicks == 0
                 && (this.polen.getNavigation().isDone() || this.stuckTicks >= STUCK_TICKS_BEFORE_REPATH)) {
-            this.accessPos = PolenSleepController.findBestBedAccessPos(this.polen, this.bedPos);
+            this.accessPos = PolenMovementHelper.resolveReachableTarget(
+                    this.polen,
+                    PolenSleepController.findBestBedAccessPos(this.polen, this.bedPos),
+                    false
+            );
+            this.navigationAnchorPos = null;
             if (this.accessPos == null) {
                 this.failedRepathAttempts = MAX_FAILED_REPATHS + 1;
                 return;
@@ -160,12 +204,26 @@ public class PolenReturnToBedGoal extends Goal {
 
         this.bedPos = null;
         this.accessPos = null;
+        this.navigationAnchorPos = null;
         this.polen.getNavigation().stop();
         resetPathState();
     }
 
     private boolean shouldReturnToBedNow() {
-        return PolenSleepController.shouldReturnToSafeBedNow(this.polen);
+        return this.polen.hasPendingReturnHomeRequest() || PolenSleepController.shouldReturnToSafeBedNow(this.polen);
+    }
+
+    private boolean shouldYieldToImmediateThreat() {
+        if (!PolenSleepController.hasImmediateThreat(this.polen)) {
+            return false;
+        }
+
+        if (this.bedPos == null || this.accessPos == null) {
+            return true;
+        }
+
+        return this.polen.distanceToSqr(Vec3.atCenterOf(this.bedPos)) > THREAT_COMMIT_DISTANCE_SQR
+                && this.polen.distanceToSqr(Vec3.atCenterOf(this.accessPos)) > THREAT_COMMIT_DISTANCE_SQR;
     }
 
     private void resetPathState() {
@@ -182,20 +240,25 @@ public class PolenReturnToBedGoal extends Goal {
             return false;
         }
 
-        boolean moved = this.polen.getNavigation().moveTo(
-                this.accessPos.getX() + 0.5D,
-                this.accessPos.getY(),
-                this.accessPos.getZ() + 0.5D,
-                MOVE_SPEED
+        this.navigationAnchorPos = PolenMovementHelper.startAnchoredMove(
+                this.polen,
+                this.accessPos,
+                this.navigationAnchorPos,
+                MOVE_SPEED,
+                false
         );
+        boolean moved = this.navigationAnchorPos != null;
 
         this.polen.getAiState().setSearchState(
                 PolenSearchType.REST,
                 moved ? PolenSearchStatus.PATHING : PolenSearchStatus.FAILED,
-                this.accessPos,
+                moved && this.navigationAnchorPos != null ? this.navigationAnchorPos : this.accessPos,
                 this.bedPos,
                 moved ? "following_bed_path" : "bed_path_failed"
         );
+        if (!moved) {
+            this.navigationAnchorPos = null;
+        }
         return moved;
     }
 

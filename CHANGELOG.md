@@ -2,6 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased - Polen Safety and Dialogue Integration
+
+### Added
+
+- Added contextual ambient dialogue beats for Polen:
+  - ranged danger
+  - rain pressure
+  - claustrophobic unsafe spaces
+  - open-night exposure
+  - active escape
+  - emergency light placement
+  - settled light state
+  - magic source attunement
+  - home / returning reflection
+  - hive / flower curiosity
+- Added dialogue anti-repeat state in `PolenAiState` so Polen can avoid repeating the same dialogue family and variation back to back.
+- Added dialogue policy resolvers so ambient speech cadence can differ between urgent, quiet, night, and observational situations.
+- Added build support for `hc_characters` split localization sources through `mergeHcCharactersLang`.
+
+### Changed
+
+- Reworked Polen ambient dialogue selection from a mostly linear tone-only flow into a contextual cue system with weighted beat selection.
+- Ambient dialogue broadcasts now resolve one shared dialogue key per event instead of potentially giving different lines to each nearby player.
+- Shelter-related ambient dialogue now requires confirmed shelter context before Polen talks as if she already has a roof or real refuge.
+- `processResources` now regenerates runtime language files for both `characters` and `hc_characters` namespaces.
+
+### Fixed
+
+- Fixed false-positive shelter/night dialogue where Polen could speak as if she had a bed, roof, or refuge when the surrounding space was not actually valid shelter.
+- Fixed Polen safety movement to apply lateral weaving when exposed to ranged threats during escape.
+- Fixed the previous dialogue authoring/build mismatch where `hc_characters/lang_parts` changes could be present in source but not properly represented as a dedicated merge task in the build.
+
 ## [v1.0.1] SoaMarjorie Beta - 2026-06-09
 
 ## Added

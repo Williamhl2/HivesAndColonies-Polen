@@ -71,9 +71,9 @@ The playable beginning should still stay intimate and grounded even though the l
 
 - `src/main/java/com/hivesandcolonies/characters`
   - mod entrypoint, entity, AI, progression, story, items, registries, commands
-- `src/main/resources/assets/characters`
+- `src/main/resources/assets/hc_characters`
   - lang, models, blockstates, textures
-- `src/main/resources/data/characters`
+- `src/main/resources/data/hc_characters`
   - recipes, tags, loot, advancements
 - `docs/dev`
   - technical documentation
@@ -118,6 +118,6 @@ Run tests:
 - `/characters locate` reports where the unique living Polen currently is, even if she is far away or in another dimension.
 - Early affinity charms already exist and sync through `Curios`, leaving room for future rings, necklaces, belts, and other character accessories.
 - The animation layer already uses a `PlayerModel`-based setup so future richer animation systems can hook into gestures cleanly.
-- Dialogue authoring now uses `lang_base/` plus split `lang_parts/` sources, merged automatically into runtime `lang/*.json` files during resource processing.
+- Dialogue authoring now uses `lang_base/` plus recursive `lang_parts/<locale>/characters/<id>/...` sources, merged automatically into build-generated runtime `lang/*.json` files during resource processing.
 - Dialogue runtime now uses those split sources across interaction lines, passive ambient chatter, story events, and memory unlocks.
 - Interest investigation now backs off from repeated or unreachable targets, so Polen is less likely to loop on the same flowers forever.

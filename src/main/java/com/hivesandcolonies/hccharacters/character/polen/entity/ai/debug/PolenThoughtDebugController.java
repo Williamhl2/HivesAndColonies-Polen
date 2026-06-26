@@ -28,6 +28,8 @@ public final class PolenThoughtDebugController {
         Component line = Component.literal(
                 "[thought] task=" + snapshot.task()
                         + ", status=" + snapshot.taskStatus()
+                        + ", safety=" + snapshot.shouldSeekSafety() + "/" + snapshot.unsafeArea()
+                        + ", shelter=" + snapshot.shelterKind()
                         + ", search=" + snapshot.searchType() + "/" + snapshot.searchStatus()
                         + ", note=" + snapshot.searchNote()
                         + ", obs=" + snapshot.observationFocus() + "/" + snapshot.observationDisposition()
@@ -60,6 +62,9 @@ public final class PolenThoughtDebugController {
                 + "|" + snapshot.searchType()
                 + "|" + snapshot.searchStatus()
                 + "|" + snapshot.searchNote()
+                + "|" + snapshot.shouldSeekSafety()
+                + "|" + snapshot.unsafeArea()
+                + "|" + snapshot.shelterKind()
                 + "|" + snapshot.observationFocus()
                 + "|" + snapshot.observationDisposition()
                 + "|" + snapshot.observationContext()

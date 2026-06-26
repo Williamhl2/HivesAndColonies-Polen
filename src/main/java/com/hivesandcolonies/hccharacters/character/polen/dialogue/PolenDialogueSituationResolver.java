@@ -5,10 +5,11 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.mood.Po
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.expression.activity.PolenQuietActivityController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter.PolenShelterContextResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.affordance.PolenAffordanceType;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.observation.PolenObservationFocus;
-import net.minecraft.world.level.Level;
 
 public final class PolenDialogueSituationResolver {
 
@@ -16,6 +17,10 @@ public final class PolenDialogueSituationResolver {
     }
 
     public static String resolveSituation(PolenEntity polen) {
+        return resolveSituation(polen, PolenEnvironmentResolver.inspect(polen));
+    }
+
+    public static String resolveSituation(PolenEntity polen, PolenEnvironmentSnapshot environment) {
         if (polen == null) {
             return null;
         }
@@ -25,7 +30,7 @@ public final class PolenDialogueSituationResolver {
             return quietActivitySituation;
         }
 
-        String safetySituation = resolveSafetySituation(polen);
+        String safetySituation = resolveSafetySituation(polen, environment);
         if (safetySituation != null) {
             return safetySituation;
         }
@@ -38,7 +43,7 @@ public final class PolenDialogueSituationResolver {
             return PolenDialogueManager.AMBIENT_APPROACH;
         }
 
-        String observationSituation = resolveObservationSituation(polen);
+        String observationSituation = resolveObservationSituation(polen, environment);
         if (observationSituation != null) {
             return observationSituation;
         }
@@ -78,9 +83,8 @@ public final class PolenDialogueSituationResolver {
         };
     }
 
-    private static String resolveSafetySituation(PolenEntity polen) {
-        Level level = polen.level();
-        boolean weatherPressure = level.isNight() || level.isRaining();
+    private static String resolveSafetySituation(PolenEntity polen, PolenEnvironmentSnapshot environment) {
+        boolean weatherPressure = environment.night() || environment.raining();
         boolean safetyPressure = polen.getCurrentTask() == PolenTaskType.SEEK_SAFETY
                 || polen.getAiState().getObservationFocus() == PolenObservationFocus.SHELTER
                 || weatherPressure;
@@ -88,7 +92,7 @@ public final class PolenDialogueSituationResolver {
             return null;
         }
 
-        String shelterSituation = PolenShelterContextResolver.resolveAmbientSituation(level, polen.blockPosition());
+        String shelterSituation = PolenShelterContextResolver.resolveAmbientSituation(environment);
         if (shelterSituation != null) {
             return shelterSituation;
         }
@@ -100,14 +104,14 @@ public final class PolenDialogueSituationResolver {
         return null;
     }
 
-    private static String resolveObservationSituation(PolenEntity polen) {
+    private static String resolveObservationSituation(PolenEntity polen, PolenEnvironmentSnapshot environment) {
         PolenObservationFocus focus = polen.getAiState().getObservationFocus();
         PolenAffordanceType affordanceType = polen.getAiState().getObservationAffordanceType();
         return switch (focus) {
             case LIGHT -> PolenDialogueManager.AMBIENT_ILLUMINATION;
             case REST -> PolenDialogueManager.AMBIENT_REFLECTION;
             case INTEREST -> resolveInterestSituation(polen, affordanceType);
-            case SHELTER -> resolveSafetySituation(polen);
+            case SHELTER -> resolveSafetySituation(polen, environment);
             case NONE -> null;
         };
     }

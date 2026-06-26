@@ -7,22 +7,24 @@ El flujo de dialogos de Polen ahora usa archivos fuente separados en vez de edit
 Cuando existan, usar estos archivos como fuente de autoria:
 
 ```text
-src/main/resources/assets/characters/lang_parts/<locale>/ambient.json
-src/main/resources/assets/characters/lang_parts/<locale>/chapters.json
-src/main/resources/assets/characters/lang_parts/<locale>/events.json
-src/main/resources/assets/characters/lang_parts/<locale>/memories.json
+src/main/resources/assets/hc_characters/lang_parts/<locale>/characters/polen/ambient.json
+src/main/resources/assets/hc_characters/lang_parts/<locale>/characters/polen/chapters.json
+src/main/resources/assets/hc_characters/lang_parts/<locale>/characters/polen/events.json
+src/main/resources/assets/hc_characters/lang_parts/<locale>/characters/polen/memories.json
+src/main/resources/assets/hc_characters/lang_parts/<locale>/characters/lucy/scene.json
+src/main/resources/assets/hc_characters/lang_parts/<locale>/characters/soa/interaction.json
 ```
 
 Las traducciones no dialogadas viven en:
 
 ```text
-src/main/resources/assets/characters/lang_base/<locale>.json
+src/main/resources/assets/hc_characters/lang_base/<locale>.json
 ```
 
-Los archivos finales que Minecraft usa en runtime siguen estando en:
+Los archivos runtime generados ahora quedan en:
 
 ```text
-src/main/resources/assets/characters/lang/<locale>.json
+build/generated/resources/langMerge/assets/hc_characters/lang/<locale>.json
 ```
 
 ## Estado actual
@@ -30,8 +32,9 @@ src/main/resources/assets/characters/lang/<locale>.json
 Este flujo ya quedo conectado al build:
 
 - `lang_base/*.json` guarda claves no dialogadas
-- `lang_parts/<locale>/*.json` guarda dialogos separados
-- `mergeCharactersLang` fusiona todo hacia `lang/*.json`
+- `lang_parts/<locale>/characters/<id>/*.json` guarda dialogos y textos por personaje
+- el merge es recursivo, asi que cada personaje puede tener su propia carpeta
+- `mergeHcCharactersLang` fusiona todo hacia `lang/*.json` generado en build
 - `processResources` depende de ese merge
 
 Tambien quedo conectado el lado runtime:
@@ -55,13 +58,22 @@ Ningun cambio importante de lore deberia existir solo en un idioma si ese doc o 
 Al tocar dialogos:
 
 1. editar las partes separadas si ya existen para ese locale
-2. mantener alineado el output final en `lang/*.json`
+2. regenerar y revisar el output final en `lang/*.json`
 3. verificar que el codigo realmente consuma esas lineas
 4. actualizar docs si cambian canon, recuerdos o relaciones
 
 Si se agrega una familia nueva de dialogo o un archivo situacional nuevo, tambien hay que actualizar el resolver runtime. Las partes separadas no se usan solas: el codigo tiene que mapear estados jugables a esas claves.
 
-No editar a mano `lang/*.json` salvo que estes reparando el output generado despues de cambiar las fuentes separadas.
+No editar a mano `lang/*.json` generado. Cambia `lang_base/` o `lang_parts/` y luego vuelve a correr el merge.
+
+## Fallback de locales
+
+El merge actual aplica estos fallback:
+
+- `es_cl` hereda desde `es_es`
+- todo locale distinto de `en_us` hereda desde `en_us`
+
+Eso permite que `es_cl` solo sobrescriba lo que realmente cambia, pero toda clave nueva debe existir al menos en `en_us`, y el contenido en espanol deberia tener primero una version canonica en `es_es`.
 
 ## Continuidad que debe respetarse
 

@@ -3,12 +3,16 @@ package com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.g
 import com.hivesandcolonies.hccharacters.character.polen.dialogue.PolenDialogueManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenAmbientDialogueController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.PolenEntity;
-import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.intent.PolenIntent;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.routine.PolenRoutinePlanner;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskController;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenSleepController;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.PolenMovementHelper;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenRainRestController;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter.PolenShelterContextResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchStatus;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchType;
 import net.minecraft.core.BlockPos;
@@ -28,6 +32,7 @@ public class PolenRoutineGoal extends Goal {
     private final PolenEntity polen;
 
     private BlockPos targetPos;
+    private BlockPos navigationAnchorPos;
     private int waitTicks;
     private int stuckTicks;
     private int blinkCooldownTicks;
@@ -42,16 +47,22 @@ public class PolenRoutineGoal extends Goal {
 
     @Override
     public boolean canUse() {
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(this.polen);
         if (this.polen.isSleeping()
                 || this.polen.isDoingQuietActivity()
                 || PolenRainRestController.shouldRestInRain(this.polen)
-                || PolenSafetyNavigator.isInUnsafeArea(this.polen)
+                || environment.isInUnsafeArea()
                 || getTaskType() == null) {
             return false;
         }
 
-        this.targetPos = PolenRoutinePlanner.getRoutineTarget(this.polen, this.polen.getCurrentIntent());
+        this.targetPos = PolenMovementHelper.resolveReachableTarget(
+                this.polen,
+                PolenRoutinePlanner.getRoutineTarget(this.polen, this.polen.getCurrentIntent()),
+                true
+        );
         this.waitTicks = 60 + this.polen.getRandom().nextInt(60);
+        this.navigationAnchorPos = null;
         this.stuckTicks = 0;
         this.blinkCooldownTicks = 0;
         this.lastDistanceSqr = Double.MAX_VALUE;
@@ -123,6 +134,8 @@ public class PolenRoutineGoal extends Goal {
             this.blinkCooldownTicks--;
         }
 
+        PolenMovementHelper.steerLookTowardMovement(this.polen, this.targetPos, this.navigationAnchorPos, true);
+
         updateStuckCounter(this.polen.distanceToSqr(targetCenter));
         if (this.blinkCooldownTicks == 0
                 && (this.stuckTicks >= getStuckTicksBeforeBlink() || this.polen.getNavigation().isDone())) {
@@ -150,7 +163,9 @@ public class PolenRoutineGoal extends Goal {
                 PolenTaskController.markFailed(this.polen, taskType, "routine_goal_aborted", 80L);
             } else if (this.reachedTarget && taskType == PolenTaskType.SEEK_REST) {
                 PolenTaskController.markCompleted(this.polen, taskType, "resting_spot_reached");
-                PolenAmbientDialogueController.tryPlayImmediate(this.polen, PolenDialogueManager.AMBIENT_BEDTIME);
+                if (shouldPlayBedtimeDialogue()) {
+                    PolenAmbientDialogueController.tryPlayImmediate(this.polen, PolenDialogueManager.AMBIENT_BEDTIME);
+                }
             } else if (this.reachedTarget && taskType == PolenTaskType.QUIET_CREATION) {
                 PolenTaskController.markActive(this.polen, taskType, "quiet_creation_area_ready");
             }
@@ -159,6 +174,7 @@ public class PolenRoutineGoal extends Goal {
         this.polen.getNavigation().stop();
         this.polen.getAiState().clearSearchState();
         this.targetPos = null;
+        this.navigationAnchorPos = null;
         this.waitTicks = 0;
         this.stuckTicks = 0;
         this.blinkCooldownTicks = 0;
@@ -172,14 +188,17 @@ public class PolenRoutineGoal extends Goal {
             return;
         }
 
-        boolean pathStarted = this.polen.getNavigation().moveTo(
-                this.targetPos.getX() + 0.5D,
-                this.targetPos.getY(),
-                this.targetPos.getZ() + 0.5D,
-                MOVE_SPEED
+        this.navigationAnchorPos = PolenMovementHelper.startAnchoredMove(
+                this.polen,
+                this.targetPos,
+                this.navigationAnchorPos,
+                MOVE_SPEED,
+                true
         );
+        boolean pathStarted = this.navigationAnchorPos != null;
 
         if (!pathStarted && this.blinkCooldownTicks == 0) {
+            this.navigationAnchorPos = null;
             if (PolenSafetyNavigator.tryBlinkTowardStandableSpot(this.polen, this.targetPos, getBlinkDistance())) {
                 this.polen.getAiState().setSearchState(
                         getSearchType(),
@@ -204,13 +223,13 @@ public class PolenRoutineGoal extends Goal {
                 this.waitTicks = 0;
             }
         } else if (pathStarted) {
-            this.polen.getAiState().setSearchState(
-                    getSearchType(),
-                    PolenSearchStatus.PATHING,
-                    this.targetPos,
-                    this.targetPos,
-                    "following_routine_path"
-            );
+                this.polen.getAiState().setSearchState(
+                        getSearchType(),
+                        PolenSearchStatus.PATHING,
+                        this.navigationAnchorPos == null ? this.targetPos : this.navigationAnchorPos,
+                        this.targetPos,
+                        "following_routine_path"
+                );
         }
     }
 
@@ -227,6 +246,16 @@ public class PolenRoutineGoal extends Goal {
                 && getTaskType() == PolenTaskType.QUIET_CREATION
                 && (PolenRoutinePlanner.isDarkEnoughForLightMagic(this.polen)
                 || this.targetPos.getY() >= this.polen.blockPosition().getY() + 2);
+    }
+
+    private boolean shouldPlayBedtimeDialogue() {
+        if (this.polen.isSleeping()) {
+            return true;
+        }
+
+        BlockPos referencePos = this.targetPos != null ? this.targetPos : this.polen.blockPosition();
+        return PolenSleepController.findBestKnownBed(this.polen) != null
+                && PolenShelterContextResolver.hasNearbyBed(this.polen.level(), referencePos);
     }
 
     private void updateStuckCounter(double distanceSqr) {

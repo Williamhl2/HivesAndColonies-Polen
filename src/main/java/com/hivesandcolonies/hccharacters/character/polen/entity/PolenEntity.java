@@ -2,12 +2,14 @@ package com.hivesandcolonies.hccharacters.character.polen.entity;
 
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.action.PolenAutonomousActionPlan;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.core.PolenAiFacade;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.PolenMovementHelper;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.expression.gesture.PolenGesture;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.intent.PolenIntent;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.mood.PolenMood;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.state.PolenAiState;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskStatus;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.PolenTaskType;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.identity.PolenAffinityFactory;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.identity.PolenWorldAffinity;
 import com.hivesandcolonies.hccharacters.integration.curios.PolenCuriosBridge;
@@ -34,12 +36,15 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.monster.Monster;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenThreatAssessmentHelper;
 import net.minecraft.world.entity.player.Player;
 import java.util.UUID;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 public class PolenEntity extends PathfinderMob {
     private static final String UNKNOWN_GIRL_KEY = "entity.hc_characters.unknown_girl";
@@ -56,12 +61,15 @@ public class PolenEntity extends PathfinderMob {
     private static final String TAG_DANGEROUS_SPOT_UNTIL = "DangerousSpotUntil";
     private static final String TAG_ACTIVE_LIGHT_POS = "ActiveLightPos";
     private static final String TAG_ACTIVE_LIGHT_UNTIL = "ActiveLightUntil";
+    private static final String TAG_REQUESTED_HOME_UNTIL = "RequestedHomeUntil";
     private static final String TAG_NEEDS = "NeedState";
     private static final String TAG_INTENT = "IntentState";
     private static final String TAG_TRUST_WALK_PLAYER = "TrustWalkPlayer";
     private static final String TAG_TRUST_WALK_UNTIL = "TrustWalkUntil";
     private static final String TAG_EQUIPMENT = "PolenEquipment";
     private static final double DANGEROUS_SPOT_AVOID_RADIUS = 5.0D;
+    private static final long MONSTER_EVADE_COOLDOWN_TICKS = 30L;
+    private static final long MONSTER_DAMAGE_GRACE_TICKS = 20L;
 
     private static final EntityDataAccessor<Integer> QUIET_ACTIVITY =
             SynchedEntityData.defineId(PolenEntity.class, EntityDataSerializers.INT);
@@ -94,16 +102,22 @@ public class PolenEntity extends PathfinderMob {
     private final PolenEquipmentInventory equipmentInventory = new PolenEquipmentInventory();
     private UUID trustWalkPlayerUuid;
     private long trustWalkUntilGameTime;
+    private long monsterEvadeCooldownUntilGameTime;
+    private long monsterDamageGraceUntilGameTime;
+    private int navigationStepAssistCooldownTicks;
 
     public PolenEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
         this.setCustomName(Component.translatable(UNKNOWN_GIRL_KEY));
         this.setCustomNameVisible(true);
         this.setPersistenceRequired();
-        if (this.getNavigation() instanceof GroundPathNavigation groundNavigation) {
-            groundNavigation.setCanOpenDoors(true);
-            groundNavigation.setCanPassDoors(true);
-        }
+    }
+
+    @Override
+    protected PathNavigation createNavigation(Level level) {
+        PathNavigation navigation = super.createNavigation(level);
+        PolenMovementHelper.configureNavigation(navigation);
+        return navigation;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -150,7 +164,69 @@ public class PolenEntity extends PathfinderMob {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        return false;
+        if (source.getEntity() instanceof Player) {
+            return false;
+        }
+
+        boolean projectileDamage = PolenThreatAssessmentHelper.isProjectileDamage(source);
+        boolean rangedHostileSource = source.getEntity() instanceof Monster hostileSource
+                && PolenThreatAssessmentHelper.isRangedHostile(hostileSource);
+        int evadeSearchRadius = projectileDamage || rangedHostileSource ? 12 : 8;
+        int evadeBlinkDistance = projectileDamage || rangedHostileSource ? 10 : 8;
+        long evadeCooldown = projectileDamage || rangedHostileSource ? 40L : MONSTER_EVADE_COOLDOWN_TICKS;
+        long damageGrace = projectileDamage || rangedHostileSource ? 28L : MONSTER_DAMAGE_GRACE_TICKS;
+
+        if (this.level() instanceof ServerLevel serverLevel
+                && serverLevel.getGameTime() < this.monsterDamageGraceUntilGameTime) {
+            return false;
+        }
+
+        BlockPos nearestThreatPos = projectileDamage || rangedHostileSource
+                ? PolenThreatAssessmentHelper.findNearestVisibleRangedThreatPos(this, evadeSearchRadius + 2.0D)
+                : com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator
+                .getNearestHostileThreatPos(this, 8.0D);
+        if (this.level() instanceof ServerLevel serverLevel
+                && nearestThreatPos != null
+                && serverLevel.getGameTime() >= this.monsterEvadeCooldownUntilGameTime
+                && this.getHealth() > Math.max(4.0F, amount)
+                && com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator
+                .tryImmediateHostileBlink(this, evadeSearchRadius, evadeBlinkDistance)) {
+            PolenDangerMemoryTracker.rememberDangerousSpot(this, nearestThreatPos);
+            this.stopTrustWalk();
+            this.stopQuietActivity();
+            this.getNavigation().stop();
+            this.monsterEvadeCooldownUntilGameTime = serverLevel.getGameTime() + evadeCooldown;
+            this.monsterDamageGraceUntilGameTime = serverLevel.getGameTime() + damageGrace;
+            this.invulnerableTime = projectileDamage || rangedHostileSource ? 14 : 10;
+            return false;
+        }
+
+        if (source.getEntity() instanceof Monster hostile) {
+            if (this.level() instanceof ServerLevel serverLevel
+                    && serverLevel.getGameTime() >= this.monsterEvadeCooldownUntilGameTime
+                    && this.getHealth() > Math.max(4.0F, amount)
+                    && com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyNavigator
+                    .tryImmediateHostileBlink(this, evadeSearchRadius, evadeBlinkDistance)) {
+                PolenDangerMemoryTracker.rememberDangerousSpot(this, hostile.blockPosition());
+                this.stopTrustWalk();
+                this.stopQuietActivity();
+                this.getNavigation().stop();
+                this.monsterEvadeCooldownUntilGameTime = serverLevel.getGameTime() + evadeCooldown;
+                this.monsterDamageGraceUntilGameTime = serverLevel.getGameTime() + damageGrace;
+                this.invulnerableTime = projectileDamage || rangedHostileSource ? 14 : 10;
+                return false;
+            }
+
+            PolenDangerMemoryTracker.rememberDangerousSpot(this, hostile.blockPosition());
+            this.stopTrustWalk();
+        } else if (nearestThreatPos != null) {
+            PolenDangerMemoryTracker.rememberDangerousSpot(this, nearestThreatPos);
+        } else {
+            PolenDangerMemoryTracker.rememberDangerousSpot(this, this.blockPosition());
+        }
+
+        this.stopQuietActivity();
+        return super.hurt(source, amount);
     }
 
     @Override
@@ -170,6 +246,7 @@ public class PolenEntity extends PathfinderMob {
         if (this.tickCount % 100 == 0) {
             PolenCuriosBridge.syncAffinityCharmToCurios(this);
         }
+        tickNavigationMobilityAssist();
         this.tickPolenFunctionalState();
         PolenAiFacade.tickServer(this);
     }
@@ -217,6 +294,7 @@ public class PolenEntity extends PathfinderMob {
                 TAG_DANGEROUS_SPOT_UNTIL,
                 TAG_ACTIVE_LIGHT_POS,
                 TAG_ACTIVE_LIGHT_UNTIL,
+                TAG_REQUESTED_HOME_UNTIL,
                 TAG_NEEDS,
                 TAG_INTENT
         );
@@ -249,6 +327,7 @@ public class PolenEntity extends PathfinderMob {
                 TAG_DANGEROUS_SPOT_UNTIL,
                 TAG_ACTIVE_LIGHT_POS,
                 TAG_ACTIVE_LIGHT_UNTIL,
+                TAG_REQUESTED_HOME_UNTIL,
                 TAG_NEEDS,
                 TAG_INTENT
         );
@@ -440,7 +519,7 @@ public class PolenEntity extends PathfinderMob {
     }
 
     public void syncProfileState() {
-        this.entityData.set(HAS_ASSIGNED_HOME, this.aiState.getResidenceUsePos() != null);
+        this.entityData.set(HAS_ASSIGNED_HOME, PolenHomeManager.hasValidRememberedResidence(this));
         this.entityData.set(TRUST_WALK_ACTIVE, this.trustWalkPlayerUuid != null && this.level().getGameTime() < this.trustWalkUntilGameTime);
         this.entityData.set(NEED_SAFETY, this.aiState.getNeedState().safety());
         this.entityData.set(NEED_SOCIAL, this.aiState.getNeedState().social());
@@ -451,6 +530,30 @@ public class PolenEntity extends PathfinderMob {
 
     public boolean isTrustWalkActive() {
         return this.trustWalkPlayerUuid != null && this.level().getGameTime() < this.trustWalkUntilGameTime;
+    }
+
+    public boolean hasPendingReturnHomeRequest() {
+        return this.aiState.hasPendingHomeRequest(this.level().getGameTime());
+    }
+
+    public void requestReturnHome(int durationTicks) {
+        if (durationTicks <= 0) {
+            return;
+        }
+        this.aiState.requestReturnHomeUntil(this.level().getGameTime() + durationTicks);
+        this.stopQuietActivity();
+        this.stopTrustWalk();
+    }
+
+    public void clearReturnHomeRequest() {
+        this.aiState.clearReturnHomeRequest();
+    }
+
+    public void performNavigationStepAssist(Vec3 pushVector) {
+        this.jumpFromGround();
+        if (pushVector != null && pushVector.lengthSqr() > 0.0001D) {
+            this.setDeltaMovement(this.getDeltaMovement().add(pushVector.x, 0.0D, pushVector.z));
+        }
     }
 
     public ServerPlayer getTrustWalkPlayer() {
@@ -479,6 +582,14 @@ public class PolenEntity extends PathfinderMob {
 
     private void tickPolenFunctionalState() {
         if (this.tickCount % 20 == 0) {
+            PolenHomeManager.clearInvalidResidence(this);
+            if (this.tickCount % 40 == 0 && !this.isSleeping()) {
+                PolenHomeManager.tryAutoAssignNearbyBeeBed(this);
+            }
+            if (this.hasPendingReturnHomeRequest()
+                    && (!PolenHomeManager.hasHomeCenter(this) || PolenHomeManager.isNearHomeCenter(this, 3.0D))) {
+                this.clearReturnHomeRequest();
+            }
             this.syncProfileState();
         }
         if (this.tickCount % 200 == 0 && this.level() instanceof ServerLevel serverLevel) {
@@ -487,6 +598,17 @@ public class PolenEntity extends PathfinderMob {
 
         if (this.trustWalkPlayerUuid != null && this.level().getGameTime() >= this.trustWalkUntilGameTime) {
             this.stopTrustWalk();
+        }
+    }
+
+    private void tickNavigationMobilityAssist() {
+        if (this.navigationStepAssistCooldownTicks > 0) {
+            this.navigationStepAssistCooldownTicks--;
+            return;
+        }
+
+        if (PolenMovementHelper.tryAssistStepUp(this)) {
+            this.navigationStepAssistCooldownTicks = 8;
         }
     }
 

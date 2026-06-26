@@ -15,9 +15,13 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.sa
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.comfort.PolenComfortEvaluator;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.comfort.PolenComfortProfile;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeManager;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenHomeSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenResidenceTarget;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.interests.PolenInterest;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.interests.PolenAffinityBehaviorHooks;
+import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStateManager;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 
 public final class PolenAffordanceResolver {
     private static final int DEFAULT_REST_TRAVEL_RADIUS = 64;
@@ -38,8 +42,9 @@ public final class PolenAffordanceResolver {
         BlockPos origin = polen.blockPosition();
         PolenAffordanceTarget bestTarget = null;
         double bestScore = Double.MAX_VALUE;
+        PolenHomeSnapshot homeSnapshot = PolenHomeManager.getHomeSnapshot(polen);
 
-        PolenResidenceTarget rememberedResidence = PolenHomeManager.getRememberedResidence(polen);
+        PolenResidenceTarget rememberedResidence = homeSnapshot.residence();
         if (rememberedResidence != null
                 && shouldConsiderResidenceForShelter(polen, origin, rememberedResidence.usePos(), radius)) {
             PolenAffordanceTarget target = new PolenAffordanceTarget(
@@ -84,7 +89,6 @@ public final class PolenAffordanceResolver {
             PolenAffordanceTarget candidate = shelterAffordance(generalShelter, generalShelter, kind);
             double candidateScore = scoreShelterCandidate(polen, origin, candidate.usePos());
             if (candidateScore < bestScore) {
-                bestScore = candidateScore;
                 bestTarget = candidate;
             }
         }
@@ -132,8 +136,9 @@ public final class PolenAffordanceResolver {
         PolenAffordanceTarget bestTarget = null;
         double bestScore = Double.MAX_VALUE;
         boolean prioritizeKnownHome = shouldPrioritizeKnownHome(polen);
+        PolenHomeSnapshot homeSnapshot = PolenHomeManager.getHomeSnapshot(polen);
 
-        PolenResidenceTarget rememberedResidence = PolenHomeManager.getRememberedResidence(polen);
+        PolenResidenceTarget rememberedResidence = homeSnapshot.residence();
         if (rememberedResidence != null && shouldConsiderResidenceForRest(polen, origin, rememberedResidence.usePos(), safeRadius)) {
             PolenAffordanceTarget target = new PolenAffordanceTarget(
                     rememberedResidence.anchorPos().immutable(),
@@ -176,7 +181,6 @@ public final class PolenAffordanceResolver {
             );
             double candidateScore = scoreLocalRestCandidate(polen, origin, target.usePos());
             if (candidateScore < bestScore) {
-                bestScore = candidateScore;
                 bestTarget = target;
             }
         }
@@ -185,13 +189,44 @@ public final class PolenAffordanceResolver {
     }
 
     public static PolenAffordanceTarget findBestInterest(PolenEntity polen, boolean includeSource) {
-        PolenAffordanceTarget affinityTarget = PolenAffinityBehaviorHooks.findAffinityInterestTarget(polen);
-        if (affinityTarget != null && isAllowedInterestTarget(polen, affinityTarget)) {
-            return affinityTarget;
+        if (polen == null) {
+            return null;
         }
 
-        PolenInterestTarget target = PolenInterestLocator.findPreferredInterest(polen, includeSource);
-        PolenAffordanceTarget affordance = target == null ? null : fromInterestTarget(target);
+        PolenAffordanceTarget best = null;
+
+        best = pickBetterInterestCandidate(polen, best, PolenAffinityBehaviorHooks.findAffinityInterestTarget(polen));
+
+        best = pickBetterInterestCandidate(
+                polen,
+                best,
+                fromInterestTarget(PolenInterestLocator.findPreferredInterestOfType(polen, PolenInterestType.FLOWER))
+        );
+        best = pickBetterInterestCandidate(
+                polen,
+                best,
+                fromInterestTarget(PolenInterestLocator.findPreferredInterestOfType(polen, PolenInterestType.HIVE))
+        );
+        if (includeSource) {
+            best = pickBetterInterestCandidate(
+                    polen,
+                    best,
+                    fromInterestTarget(PolenInterestLocator.findPreferredInterestOfType(polen, PolenInterestType.SOURCE))
+            );
+        }
+
+        best = pickBetterInterestCandidate(
+                polen,
+                best,
+                fromInterestTarget(PolenInterestLocator.findPreferredInterestOfType(polen, PolenInterestType.LIGHT))
+        );
+
+        if (best != null) {
+            return best;
+        }
+
+        PolenInterestTarget fallback = PolenInterestLocator.findPreferredInterest(polen, includeSource);
+        PolenAffordanceTarget affordance = fallback == null ? null : fromInterestTarget(fallback);
         return isAllowedInterestTarget(polen, affordance) ? affordance : null;
     }
 
@@ -223,6 +258,9 @@ public final class PolenAffordanceResolver {
     }
 
     private static PolenAffordanceTarget fromInterestTarget(PolenInterestTarget target) {
+        if (target == null) {
+            return null;
+        }
         PolenAffordanceType type = switch (target.type()) {
             case FLOWER -> PolenAffordanceType.INTEREST_FLOWER;
             case HIVE -> PolenAffordanceType.INTEREST_HIVE;
@@ -243,6 +281,88 @@ public final class PolenAffordanceResolver {
                 type,
                 contextKey
         );
+    }
+
+    private static PolenAffordanceTarget pickBetterInterestCandidate(
+            PolenEntity polen,
+            PolenAffordanceTarget currentBest,
+            PolenAffordanceTarget candidate
+    ) {
+        double candidateScore = scoreInterestCandidate(polen, candidate);
+        if (candidateScore == Double.MAX_VALUE) {
+            return currentBest;
+        }
+        if (currentBest == null) {
+            return candidate;
+        }
+
+        double currentScore = scoreInterestCandidate(polen, currentBest);
+        return candidateScore < currentScore ? candidate : currentBest;
+    }
+
+    private static double scoreInterestCandidate(PolenEntity polen, PolenAffordanceTarget target) {
+        if (!isAllowedInterestTarget(polen, target)) {
+            return Double.MAX_VALUE;
+        }
+
+        BlockPos origin = polen.blockPosition();
+        double score = target.usePos().distSqr(origin) + target.focusPos().distSqr(target.usePos()) * 0.35D;
+
+        PolenInterest worldInterest = worldInterestFor(target.type());
+        if (polen.level() instanceof ServerLevel serverLevel && worldInterest != null) {
+            int interestScore = PolenWorldStateManager.interest(serverLevel, worldInterest);
+            score -= (interestScore - 50) * 1.35D;
+        }
+
+        if (isAffinityAligned(polen, target.type())) {
+            score -= 18.0D;
+        }
+
+        if (target.type() == PolenAffordanceType.INTEREST_SOURCE
+                || target.type() == PolenAffordanceType.INTEREST_MAGIC
+                || target.type() == PolenAffordanceType.EXISTING_LIGHT) {
+            score -= polen.getAiState().getNeedState().magic() * 0.45D;
+        } else {
+            score -= polen.getAiState().getNeedState().curiosity() * 0.22D;
+        }
+
+        return score;
+    }
+
+    private static PolenInterest worldInterestFor(PolenAffordanceType type) {
+        if (type == null) {
+            return null;
+        }
+
+        return switch (type) {
+            case INTEREST_HIVE -> PolenInterest.BEES;
+            case INTEREST_FLOWER, INTEREST_EXPLORATION -> PolenInterest.EXPLORATION;
+            case INTEREST_SOURCE, INTEREST_MAGIC, EXISTING_LIGHT, MAGIC_LIGHT -> PolenInterest.MAGIC;
+            case INTEREST_COLONY -> PolenInterest.COLONIES;
+            case INTEREST_FOOD -> PolenInterest.FOOD;
+            case INTEREST_DECORATION -> PolenInterest.DECORATION;
+            default -> null;
+        };
+    }
+
+    private static boolean isAffinityAligned(PolenEntity polen, PolenAffordanceType type) {
+        if (polen == null || type == null) {
+            return false;
+        }
+
+        return switch (polen.getEquippedAffinityCharm()) {
+            case APIARIST -> type == PolenAffordanceType.INTEREST_HIVE;
+            case ARCANE -> type == PolenAffordanceType.INTEREST_MAGIC
+                    || type == PolenAffordanceType.INTEREST_SOURCE
+                    || type == PolenAffordanceType.EXISTING_LIGHT
+                    || type == PolenAffordanceType.MAGIC_LIGHT;
+            case COLONIAL -> type == PolenAffordanceType.INTEREST_COLONY;
+            case HARVEST -> type == PolenAffordanceType.INTEREST_FOOD;
+            case ARTISAN -> type == PolenAffordanceType.INTEREST_DECORATION;
+            case WAYFARER -> type == PolenAffordanceType.INTEREST_EXPLORATION
+                    || type == PolenAffordanceType.INTEREST_FLOWER;
+            case NONE -> false;
+        };
     }
 
     private static PolenAffordanceTarget shelterAffordance(BlockPos focusPos, BlockPos usePos, PolenShelterKind kind) {

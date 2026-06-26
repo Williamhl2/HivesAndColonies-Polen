@@ -27,8 +27,8 @@ sourceSets.main.resources {
     // Exclude common development only resources from finalized outputs
     exclude("**/*.bbmodel") // BlockBench project files
     exclude("src/generated/**/.cache") // datagen cache files
-    exclude("assets/characters/lang_base/**")
-    exclude("assets/characters/lang_parts/**")
+    exclude("assets/hc_characters/lang_base/**")
+    exclude("assets/hc_characters/lang_parts/**")
 }
 
 repositories {
@@ -169,11 +169,6 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
     into "build/generated/sources/modMetadata"
 }
 
-def charactersLangRoot = file('src/main/resources/assets/characters')
-def charactersLangDir = file("${charactersLangRoot}/lang")
-def charactersLangBaseDir = file("${charactersLangRoot}/lang_base")
-def charactersLangPartsDir = file("${charactersLangRoot}/lang_parts")
-
 def readJsonMap = { File source ->
     if (!source.exists()) {
         return [:]
@@ -191,7 +186,14 @@ def writeSortedJson = { File target, Map<String, Object> content ->
     target.parentFile.mkdirs()
     def sorted = new TreeMap<String, Object>()
     sorted.putAll(content)
-    target.setText(JsonOutput.prettyPrint(JsonOutput.toJson(sorted)) + System.lineSeparator(), 'UTF-8')
+    java.nio.file.Files.writeString(
+            target.toPath(),
+            JsonOutput.prettyPrint(JsonOutput.toJson(sorted)) + System.lineSeparator(),
+            java.nio.charset.StandardCharsets.UTF_8,
+            java.nio.file.StandardOpenOption.CREATE,
+            java.nio.file.StandardOpenOption.TRUNCATE_EXISTING,
+            java.nio.file.StandardOpenOption.WRITE
+    )
 }
 
 def fallbackLocalesFor = { String locale, Set<String> availableLocales ->
@@ -205,99 +207,136 @@ def fallbackLocalesFor = { String locale, Set<String> availableLocales ->
     return fallbacks.unique().findAll { it != locale }
 }
 
-tasks.register('mergeCharactersLang') {
-    description = 'Merge lang_base and lang_parts into runtime lang JSON files.'
-    group = 'build'
+def sortedJsonFilesUnder = { File root ->
+    if (root == null || !root.exists()) {
+        return []
+    }
 
-    inputs.files(fileTree(charactersLangBaseDir) { include('*.json') })
-    inputs.files(fileTree(charactersLangPartsDir) { include('**/*.json') })
-    outputs.dir(charactersLangDir)
-
-    doLast {
-        def locales = new TreeSet<String>()
-
-        if (charactersLangBaseDir.exists()) {
-            charactersLangBaseDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.json') }?.each { file ->
-                locales.add(file.name.replaceFirst(/\.json$/, ''))
+    def files = []
+    def stream = java.nio.file.Files.walk(root.toPath())
+    try {
+        stream.forEach { path ->
+            if (java.nio.file.Files.isRegularFile(path) && path.fileName.toString().endsWith('.json')) {
+                files << path.toFile()
             }
         }
+    } finally {
+        stream.close()
+    }
 
-        if (charactersLangPartsDir.exists()) {
-            charactersLangPartsDir.eachDir { dir ->
-                locales.add(dir.name)
-            }
-        }
-
-        if (locales.isEmpty()) {
-            logger.lifecycle('mergeCharactersLang: no locale sources found.')
-            return
-        }
-
-        def mergedByLocale = new LinkedHashMap<String, Map<String, Object>>()
-
-        locales.each { locale ->
-            def merged = new LinkedHashMap<String, Object>()
-            def seenSources = []
-
-            File baseFile = new File(charactersLangBaseDir, "${locale}.json")
-            if (baseFile.exists()) {
-                seenSources << baseFile
-            }
-
-            File partsDir = new File(charactersLangPartsDir, locale)
-            if (partsDir.exists()) {
-                seenSources.addAll(
-                        partsDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.json') }?.sort { it.name } ?: []
-                )
-            }
-
-            if (seenSources.isEmpty()) {
-                throw new GradleException("mergeCharactersLang: locale '${locale}' has no source files.")
-            }
-
-            seenSources.each { source ->
-                def data = readJsonMap(source)
-                def overlap = merged.keySet().intersect(data.keySet())
-                if (!overlap.isEmpty()) {
-                    throw new GradleException("mergeCharactersLang: duplicate keys for ${locale} in ${source.name}: ${overlap.take(20)}")
-                }
-                merged.putAll(data)
-            }
-
-            mergedByLocale.put(locale, merged)
-        }
-
-        def finalByLocale = new LinkedHashMap<String, Map<String, Object>>()
-        def availableLocales = mergedByLocale.keySet() as Set<String>
-
-        mergedByLocale.each { locale, entries ->
-            def finalEntries = new LinkedHashMap<String, Object>()
-            fallbackLocalesFor(locale, availableLocales).each { fallbackLocale ->
-                finalEntries.putAll(mergedByLocale.get(fallbackLocale))
-            }
-            finalEntries.putAll(entries)
-            finalByLocale.put(locale, finalEntries)
-        }
-
-        String baselineLocale = finalByLocale.containsKey('en_us') ? 'en_us' : finalByLocale.keySet().first()
-        def baselineKeys = finalByLocale.get(baselineLocale).keySet()
-
-        finalByLocale.each { locale, entries ->
-            def missing = baselineKeys.findAll { !entries.containsKey(it) }
-            if (!missing.isEmpty()) {
-                throw new GradleException(
-                        "mergeCharactersLang: locale '${locale}' is missing ${missing.size()} keys required by '${baselineLocale}': ${missing.take(20)}"
-                )
-            }
-        }
-
-        finalByLocale.each { locale, entries ->
-            writeSortedJson(new File(charactersLangDir, "${locale}.json"), entries)
-        }
-
-        logger.lifecycle("mergeCharactersLang: wrote ${finalByLocale.size()} locale files to ${charactersLangDir}")
+    return files.sort { File left, File right ->
+        root.toPath().relativize(left.toPath()).toString() <=> root.toPath().relativize(right.toPath()).toString()
     }
 }
+
+def localePartFilesFor = { File langPartsDir, String locale ->
+    return sortedJsonFilesUnder(new File(langPartsDir, locale))
+}
+
+def registerLangMergeTask = { String taskName, String assetNamespace ->
+    def langRoot = file("src/main/resources/assets/${assetNamespace}")
+    def langBaseDir = file("${langRoot}/lang_base")
+    def langPartsDir = file("${langRoot}/lang_parts")
+    def generatedLangDir = file("${langRoot}/lang")
+
+    tasks.register(taskName) {
+        description = "Merge ${assetNamespace} lang_base and lang_parts into runtime lang JSON files."
+        group = 'build'
+
+        inputs.files(fileTree(langBaseDir) { include('*.json') })
+        inputs.files(fileTree(langPartsDir) { include('**/*.json') })
+        outputs.dir(generatedLangDir)
+
+        doLast {
+            def locales = new TreeSet<String>()
+
+            if (langBaseDir.exists()) {
+                langBaseDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.json') }?.each { file ->
+                    locales.add(file.name.replaceFirst(/\.json$/, ''))
+                }
+            }
+
+            if (langPartsDir.exists()) {
+                langPartsDir.eachDir { dir ->
+                    locales.add(dir.name)
+                }
+            }
+
+            if (locales.isEmpty()) {
+                logger.lifecycle("${taskName}: no locale sources found.")
+                return
+            }
+
+            def mergedByLocale = new LinkedHashMap<String, Map<String, Object>>()
+
+            locales.each { locale ->
+                def merged = new LinkedHashMap<String, Object>()
+                def seenSources = []
+
+                File baseFile = new File(langBaseDir, "${locale}.json")
+                if (baseFile.exists()) {
+                    seenSources << baseFile
+                }
+
+                seenSources.addAll(localePartFilesFor(langPartsDir, locale))
+
+                if (seenSources.isEmpty()) {
+                    throw new GradleException("${taskName}: locale '${locale}' has no source files.")
+                }
+
+                seenSources.each { source ->
+                    def data = readJsonMap(source)
+                    def overlap = merged.keySet().intersect(data.keySet())
+                    if (!overlap.isEmpty()) {
+                        throw new GradleException("${taskName}: duplicate keys for ${locale} in ${source.name}: ${overlap.take(20)}")
+                    }
+                    merged.putAll(data)
+                }
+
+                mergedByLocale.put(locale, merged)
+            }
+
+            def finalByLocale = new LinkedHashMap<String, Map<String, Object>>()
+            def availableLocales = mergedByLocale.keySet() as Set<String>
+
+            mergedByLocale.each { locale, entries ->
+                def finalEntries = new LinkedHashMap<String, Object>()
+                fallbackLocalesFor(locale, availableLocales).each { fallbackLocale ->
+                    finalEntries.putAll(mergedByLocale.get(fallbackLocale))
+                }
+                finalEntries.putAll(entries)
+                finalByLocale.put(locale, finalEntries)
+            }
+
+            String baselineLocale = finalByLocale.containsKey('en_us') ? 'en_us' : finalByLocale.keySet().first()
+            def baselineKeys = finalByLocale.get(baselineLocale).keySet()
+
+            finalByLocale.each { locale, entries ->
+                def missing = baselineKeys.findAll { !entries.containsKey(it) }
+                if (!missing.isEmpty()) {
+                    throw new GradleException(
+                            "${taskName}: locale '${locale}' is missing ${missing.size()} keys required by '${baselineLocale}': ${missing.take(20)}"
+                    )
+                }
+            }
+
+            finalByLocale.each { locale, entries ->
+                writeSortedJson(new File(generatedLangDir, "${locale}.json"), entries)
+            }
+
+            def generatedFiles = finalByLocale.keySet().collect { "${it}.json" } as Set<String>
+            generatedLangDir.listFiles()?.findAll { it.isFile() && it.name.endsWith('.json') }?.each { staleFile ->
+                if (!generatedFiles.contains(staleFile.name)) {
+                    staleFile.delete()
+                }
+            }
+
+            logger.lifecycle("${taskName}: wrote ${finalByLocale.size()} locale files to ${generatedLangDir}")
+        }
+    }
+}
+
+registerLangMergeTask('mergeHcCharactersLang', 'hc_characters')
 // Include the output of "generateModMetadata" as an input directory for the build
 // this works with both building through Gradle and the IDE.
 sourceSets.main.resources.srcDir generateModMetadata
@@ -305,7 +344,7 @@ sourceSets.main.resources.srcDir generateModMetadata
 neoForge.ideSyncTask generateModMetadata
 
 tasks.named('processResources', ProcessResources).configure {
-    dependsOn(tasks.named('mergeCharactersLang'))
+    dependsOn(tasks.named('mergeHcCharactersLang'))
 }
 
 // Example configuration to allow publishing using the maven-publish plugin
@@ -317,13 +356,16 @@ publishing {
     }
     repositories {
         maven {
-            url "file://${project.projectDir}/repo"
+            url = project.layout.projectDirectory.dir("repo").asFile.toURI()
         }
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
+    if (project.hasProperty('xlintDeprecation')) {
+        options.compilerArgs.add('-Xlint:deprecation')
+    }
 }
 
 tasks.named('test', Test).configure {

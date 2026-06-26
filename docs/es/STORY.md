@@ -21,7 +21,15 @@ Solo que no debe aparecer antes que la cercania emocional.
 
 ## Premisa jugable
 
-El jugador encuentra a una joven viviendo sola cerca del borde salvaje.
+La primera pista ya no aparece por login ni por item regalado.
+
+El jugador debe empezar oyendo un rumor diegetico:
+
+- encuentra a `SoaMarjorie` y `Lucy` conversando en una aldea
+- Lucy cuenta que vio a una joven extrana en un claro cercano
+- Lucy entrega un croquis para localizar ese lugar con calma
+
+Despues de eso, el jugador encuentra a una joven viviendo sola cerca del borde salvaje.
 
 No aparece en cualquier parte.
 

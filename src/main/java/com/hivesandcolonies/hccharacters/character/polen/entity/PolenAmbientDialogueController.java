@@ -1,7 +1,11 @@
 package com.hivesandcolonies.hccharacters.character.polen.entity;
 
 import com.hivesandcolonies.hccharacters.character.polen.dialogue.PolenDialogueManager;
+import com.hivesandcolonies.hccharacters.character.polen.dialogue.PolenDialoguePolicy;
+import com.hivesandcolonies.hccharacters.character.polen.dialogue.PolenDialoguePolicyResolver;
 import com.hivesandcolonies.hccharacters.character.polen.dialogue.PolenDialogueSituationResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -21,29 +25,63 @@ public final class PolenAmbientDialogueController {
             return;
         }
 
-        String situation = PolenDialogueSituationResolver.resolveSituation(polen);
-        if (situation == null || !shouldSpeakPassivelyThisTick(polen, situation)) {
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
+        String situation = PolenDialogueSituationResolver.resolveSituation(polen, environment);
+        PolenDialoguePolicy policy = PolenDialoguePolicyResolver.resolveAmbientPolicy(polen, situation, environment);
+        if (situation == null || !shouldSpeakPassivelyThisTick(polen, policy)) {
             return;
         }
 
-        tryPlay(polen, situation);
+        tryPlay(polen, situation, environment, policy, false);
     }
 
     public static void tryPlay(PolenEntity polen, String situation) {
-        tryPlay(polen, situation, false);
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
+        tryPlay(
+                polen,
+                situation,
+                environment,
+                PolenDialoguePolicyResolver.resolveAmbientPolicy(polen, situation, environment),
+                false
+        );
     }
 
     public static void tryPlayImmediate(PolenEntity polen, String situation) {
-        tryPlay(polen, situation, true);
+        PolenEnvironmentSnapshot environment = PolenEnvironmentResolver.inspect(polen);
+        tryPlay(
+                polen,
+                situation,
+                environment,
+                PolenDialoguePolicyResolver.resolveAmbientPolicy(polen, situation, environment),
+                true
+        );
     }
 
-    private static void tryPlay(PolenEntity polen, String situation, boolean ignoreCooldown) {
+    private static void tryPlay(
+            PolenEntity polen,
+            String situation,
+            PolenEnvironmentSnapshot environment,
+            PolenDialoguePolicy policy,
+            boolean ignoreCooldown
+    ) {
         if (!(polen.level() instanceof ServerLevel serverLevel)) {
             return;
         }
 
         long gameTime = serverLevel.getGameTime();
-        if (!ignoreCooldown && gameTime - polen.getAiState().getLastAmbientDialogueGameTime() < AMBIENT_DIALOGUE_COOLDOWN) {
+        long effectiveCooldown = policy.normalizedCooldownTicks() > 0L
+                ? policy.normalizedCooldownTicks()
+                : AMBIENT_DIALOGUE_COOLDOWN;
+        if (!ignoreCooldown
+                && gameTime - polen.getAiState().getLastAmbientDialogueGameTime() < effectiveCooldown) {
+            return;
+        }
+
+        if (!ignoreCooldown && polen.getAiState().hasRecentAmbientDialogue(
+                situation,
+                gameTime,
+                policy.normalizedRepeatSituationCooldownTicks()
+        )) {
             return;
         }
 
@@ -55,31 +93,49 @@ public final class PolenAmbientDialogueController {
             return;
         }
 
+        ServerPlayer referencePlayer = resolveReferencePlayer(polen, nearbyPlayers);
+        String dialogueKey = PolenDialogueManager.resolveAmbientDialogueKey(
+                referencePlayer,
+                polen,
+                situation,
+                environment,
+                polen.getRandom()
+        );
         boolean sentAny = false;
         for (ServerPlayer player : nearbyPlayers) {
             player.displayClientMessage(
-                    PolenDialogueManager.getAmbientDialogue(player, situation, polen.getRandom()),
+                    PolenDialogueManager.formatDialogueForPlayer(player, dialogueKey),
                     false
             );
             sentAny = true;
         }
 
         if (sentAny) {
-            polen.getAiState().setLastAmbientDialogueGameTime(gameTime);
+            polen.getAiState().rememberAmbientDialogueBroadcast(situation, gameTime);
         }
     }
 
-    private static boolean shouldSpeakPassivelyThisTick(PolenEntity polen, String situation) {
-        if (PolenDialogueManager.AMBIENT_UNSAFE.equals(situation)
-                || situation.startsWith("ambient_rain")
-                || situation.startsWith("ambient_night")) {
-            return polen.getRandom().nextInt(2) == 0;
+    private static boolean shouldSpeakPassivelyThisTick(PolenEntity polen, PolenDialoguePolicy policy) {
+        return polen.getRandom().nextInt(policy.normalizedPassiveChanceDivisor()) == 0;
+    }
+
+    private static ServerPlayer resolveReferencePlayer(PolenEntity polen, List<ServerPlayer> nearbyPlayers) {
+        ServerPlayer preferred = null;
+        double bestDistanceSqr = Double.MAX_VALUE;
+        for (ServerPlayer player : nearbyPlayers) {
+            double distanceSqr = player.distanceToSqr(polen);
+            if (polen.isComfortableWith(player) && distanceSqr < bestDistanceSqr) {
+                preferred = player;
+                bestDistanceSqr = distanceSqr;
+            }
         }
 
-        if (polen.isDoingQuietActivity()) {
-            return polen.getRandom().nextInt(3) == 0;
+        if (preferred != null) {
+            return preferred;
         }
 
-        return polen.getRandom().nextInt(4) == 0;
+        return nearbyPlayers.stream()
+                .min((left, right) -> Double.compare(left.distanceToSqr(polen), right.distanceToSqr(polen)))
+                .orElse(nearbyPlayers.get(0));
     }
 }

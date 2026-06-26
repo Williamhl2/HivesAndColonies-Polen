@@ -7,6 +7,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.se
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchPlanner;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.PolenSearchProfile;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
+import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
@@ -43,7 +44,7 @@ public final class PolenLightSpotHelper {
     }
 
     public static boolean isDarkEnoughForLightMagic(PolenEntity polen) {
-        return polen.level().getMaxLocalRawBrightness(polen.blockPosition()) <= getDarkThreshold(polen);
+        return LevelBrightnessHelper.maxLocalRawBrightness(polen.level(), polen.blockPosition()) <= getDarkThreshold(polen);
     }
 
     public static boolean isReadyToIlluminateHere(PolenEntity polen) {
@@ -114,7 +115,7 @@ public final class PolenLightSpotHelper {
                 }
 
                 double score = center.distSqr(candidate)
-                        + level.getMaxLocalRawBrightness(candidate) * 0.8D
+                        + LevelBrightnessHelper.maxLocalRawBrightness(level, candidate) * 0.8D
                         + (placement.hanging() ? 0.35D : 0.0D);
                 if (PolenSafetyEvaluator.hasOverheadCover(level, candidate)) {
                     score -= 0.75D;
@@ -151,7 +152,7 @@ public final class PolenLightSpotHelper {
 
                     double score = center.distSqr(origin)
                             + placement.pos().distSqr(origin) * 0.35D
-                            + polen.level().getMaxLocalRawBrightness(center) * 0.35D;
+                            + LevelBrightnessHelper.maxLocalRawBrightness(polen.level(), center) * 0.35D;
                     if (profile.preferSheltered() && PolenSafetyEvaluator.isRainShelteredStandingSpot(polen.level(), center)) {
                         score -= 2.0D;
                     }
@@ -198,7 +199,7 @@ public final class PolenLightSpotHelper {
         }
 
         Level level = polen.level();
-        double score = candidate.distSqr(origin) + level.getMaxLocalRawBrightness(candidate) * 0.55D;
+        double score = candidate.distSqr(origin) + LevelBrightnessHelper.maxLocalRawBrightness(level, candidate) * 0.55D;
         if (candidate.getY() > origin.getY()) {
             score -= (candidate.getY() - origin.getY()) * 3.5D;
         }
@@ -221,7 +222,7 @@ public final class PolenLightSpotHelper {
         Level level = polen.level();
         if (!PolenSafetyEvaluator.isSafeStandingSpot(polen, center)
                 || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, center)
-                || level.getMaxLocalRawBrightness(center) > profile.maxBrightness()) {
+                || LevelBrightnessHelper.maxLocalRawBrightness(level, center) > profile.maxBrightness()) {
             return false;
         }
 
@@ -277,7 +278,7 @@ public final class PolenLightSpotHelper {
 
         Level level = polen.level();
         double score = candidate.distSqr(origin);
-        score += level.getMaxLocalRawBrightness(candidate) * 0.4D;
+        score += LevelBrightnessHelper.maxLocalRawBrightness(level, candidate) * 0.4D;
         if (profile.preferSheltered() && PolenSafetyEvaluator.isRainShelteredStandingSpot(level, candidate)) {
             score -= 2.5D;
         }
@@ -324,7 +325,7 @@ public final class PolenLightSpotHelper {
         Level level = polen.level();
         if (!PolenSafetyEvaluator.isStandableSpot(polen, center)
                 || PolenDangerMemoryTracker.isDangerousMemorySpot(polen, center)
-                || level.getMaxLocalRawBrightness(center) > profile.maxBrightness()) {
+                || LevelBrightnessHelper.maxLocalRawBrightness(level, center) > profile.maxBrightness()) {
             return null;
         }
 
@@ -347,7 +348,7 @@ public final class PolenLightSpotHelper {
             for (int dx = -radius; dx <= radius; dx++) {
                 for (int dz = -radius; dz <= radius; dz++) {
                     BlockPos candidate = origin.offset(dx, dy, dz);
-                    if (candidate.equals(origin) || level.getMaxLocalRawBrightness(candidate) > profile.maxBrightness()) {
+                    if (candidate.equals(origin) || LevelBrightnessHelper.maxLocalRawBrightness(level, candidate) > profile.maxBrightness()) {
                         continue;
                     }
 
@@ -361,7 +362,7 @@ public final class PolenLightSpotHelper {
                     }
 
                     double score = placement.pos().distSqr(origin)
-                            + level.getMaxLocalRawBrightness(placement.pos()) * 0.45D
+                            + LevelBrightnessHelper.maxLocalRawBrightness(level, placement.pos()) * 0.45D
                             + (placement.hanging() ? 0.25D : 0.0D);
                     if (profile.preferSheltered() && PolenSafetyEvaluator.hasOverheadCover(level, placement.pos())) {
                         score -= 1.5D;

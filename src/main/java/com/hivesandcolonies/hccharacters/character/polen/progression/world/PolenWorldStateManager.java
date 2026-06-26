@@ -9,6 +9,7 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.interes
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.story.PolenStoryStage;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.story.PolenWorldMemory;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.identity.PolenWorldAffinity;
+import com.hivesandcolonies.hccharacters.character.polen.world.PolenSingletonManager;
 
 import net.minecraft.server.level.ServerLevel;
 
@@ -65,15 +66,13 @@ public final class PolenWorldStateManager {
             return false;
         }
 
-        // Polen's introduction is now intentionally simple: the Hiveheart Charm
-        // finds a nearby cherry grove and spawns Polen there. The world state must
-        // remember that first meeting point, but it must never infer, rebuild, or
-        // relocate an artificial prologue shelter later.
+        // The first Hiveheart use now creates a one-shot prologue clearing with
+        // Polen's improvised starter shelter. World state remembers that origin,
+        // but it must still never infer, relocate, or regenerate the site later.
         //
-        // This prevents duplicated starter houses when Polen is unloaded/reloaded,
-        // moved away from the original biome with Carry On, or loaded again after a
-        // player returns from far away. Shelter and bed discovery belong to her
-        // normal AI/residence systems, not to prologue world generation.
+        // This keeps the prologue aligned with the narrative docs while still
+        // preventing duplicated shelters when Polen is unloaded/reloaded, moved
+        // away from the original grove, or revisited after chunk reloads.
         if (data.getPrologueClearingCenter() == null) {
             data.setPrologueClearingCenter(polen.blockPosition());
             return true;
@@ -108,6 +107,7 @@ public final class PolenWorldStateManager {
         PolenWorldStorySavedData savedData = PolenWorldStorySavedData.get(level);
         savedData.getData().adjustInterest(interest, amount);
         savedData.setDirty();
+        syncEquippedAffinity(level);
     }
 
     public static PolenStoryStage storyStage(ServerLevel level) {
@@ -147,6 +147,19 @@ public final class PolenWorldStateManager {
         PolenWorldStorySavedData savedData = PolenWorldStorySavedData.get(level);
         savedData.getData().setPrologueBeeBedPos(bedPos);
         savedData.setDirty();
+    }
+
+    private static void syncEquippedAffinity(ServerLevel level) {
+        if (level == null) {
+            return;
+        }
+
+        PolenEntity polen = PolenSingletonManager.findLivingPolen(level);
+        if (polen == null) {
+            return;
+        }
+
+        polen.equipAffinityCharm(PolenAffinityFactory.fromProfile(get(level).getInterestProfile()));
     }
 
 }

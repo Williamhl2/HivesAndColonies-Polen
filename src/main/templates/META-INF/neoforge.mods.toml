@@ -49,3 +49,10 @@ earning their trust, and rebuilding the future of a lost kingdom.
     versionRange="[3,)"
     ordering="AFTER"
     side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="domum_ornamentum"
+    type="required"
+    versionRange="[1.0,)"
+    ordering="AFTER"
+    side="BOTH"

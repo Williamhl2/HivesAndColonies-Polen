@@ -1,5 +1,38 @@
 # Development Log
 
+## 2026-06-22 (Polen Safety/Dialogue Consolidation)
+
+### Added
+
+- `PolenDialoguePolicy`
+- `PolenDialoguePolicyResolver`
+- contextual ambient beats for:
+  - ranged danger
+  - rain pressure
+  - claustrophobic spaces
+  - exposed night movement
+  - active escape
+  - emergency light placement
+  - settled light state
+  - source-attuning magic
+  - home / returning reflection
+  - hive / flower curiosity
+- `mergeHcCharactersLang` in the build so `assets/hc_characters/lang_base` + `lang_parts` become authoritative authoring sources.
+
+### Changed
+
+- `PolenAmbientDialogueController` ahora usa una sola resolucion contextual por evento y la comparte con todos los jugadores cercanos.
+- `PolenAmbientDialogueResolver` ya no depende solo de tono + variacion; ahora selecciona cues por beat, evita repeticiones inmediatas y recuerda la ultima familia usada.
+- `PolenDialogueSituationResolver` y `PolenShelterContextResolver` ahora trabajan con snapshots de entorno y refugio confirmado en vez de cadenas de chequeos sueltas.
+- `PolenSeekSafetyGoal` ahora aplica weaving lateral durante huida cuando hay amenaza a distancia visible.
+- El build ahora genera `lang/*.json` para `hc_characters` durante `processResources`, no solo para el namespace viejo `characters`.
+
+### Fixed
+
+- Polen ya no deberia hablar de cama, techo o refugio si el contexto cercano no valida realmente esa lectura.
+- El dialogo ambiental deja de sentirse tan lineal y repetitivo porque ya no recicla solo una familia tone-based.
+- La pipeline de localizacion de `hc_characters` ya no queda implÃ­cita o desalineada respecto al build real.
+
 ## 2026-06-06 (Foundation Shelter Trigger Cleanup)
 
 ### Added

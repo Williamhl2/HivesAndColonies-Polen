@@ -1,7 +1,10 @@
 package com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.search.shelter;
 
-import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
 import com.hivesandcolonies.hccharacters.character.polen.dialogue.PolenDialogueManager;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.navigation.safety.PolenSafetyEvaluator;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
+import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.home.PolenBedLocator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -21,23 +24,7 @@ public final class PolenShelterContextResolver {
     }
 
     public static PolenShelterKind resolveShelterKind(Level level, BlockPos pos) {
-        if (level == null || pos == null) {
-            return PolenShelterKind.NONE;
-        }
-
-        if (isTreeShelter(level, pos)) {
-            return PolenShelterKind.TREE;
-        }
-
-        if (isHouseInterior(level, pos)) {
-            return PolenShelterKind.HOUSE;
-        }
-
-        if (isRoofShelter(level, pos)) {
-            return PolenShelterKind.ROOF;
-        }
-
-        return PolenShelterKind.NONE;
+        return PolenEnvironmentResolver.inspect(level, pos).shelterKind();
     }
 
     public static String appendShelterContext(String note, Level level, BlockPos pos) {
@@ -51,8 +38,23 @@ public final class PolenShelterContextResolver {
     }
 
     public static String resolveAmbientSituation(Level level, BlockPos pos) {
-        PolenShelterKind kind = resolveShelterKind(level, pos);
-        if (level != null && level.isRaining()) {
+        return resolveAmbientSituation(PolenEnvironmentResolver.inspect(level, pos));
+    }
+
+    public static String resolveAmbientSituation(PolenEnvironmentSnapshot environment) {
+        if (environment == null) {
+            return null;
+        }
+
+        PolenShelterKind kind = environment.shelterKind();
+        if (!hasConfirmedShelterContext(environment)) {
+            if (environment.raining() || environment.night()) {
+                return PolenDialogueManager.AMBIENT_UNSAFE;
+            }
+            return null;
+        }
+
+        if (environment.raining()) {
             return switch (kind) {
                 case TREE -> PolenDialogueManager.AMBIENT_RAIN_TREE;
                 case HOUSE -> PolenDialogueManager.AMBIENT_RAIN_HOUSE;
@@ -61,16 +63,28 @@ public final class PolenShelterContextResolver {
             };
         }
 
-        if (level != null && level.isNight()) {
+        if (environment.night()) {
             return switch (kind) {
                 case TREE -> PolenDialogueManager.AMBIENT_NIGHT_TREE;
                 case HOUSE -> PolenDialogueManager.AMBIENT_NIGHT_HOUSE;
                 case ROOF -> PolenDialogueManager.AMBIENT_NIGHT_ROOF;
-                case NONE -> PolenDialogueManager.AMBIENT_ILLUMINATION;
+                case NONE -> PolenDialogueManager.AMBIENT_UNSAFE;
             };
         }
 
         return null;
+    }
+
+    public static boolean hasConfirmedShelterContext(PolenEnvironmentSnapshot environment) {
+        if (environment == null || environment.shelterKind() == PolenShelterKind.NONE) {
+            return false;
+        }
+
+        if (!environment.safeStandingSpot()) {
+            return false;
+        }
+
+        return environment.rainSheltered() || environment.overheadCover();
     }
 
     public static boolean isHouseInterior(Level level, BlockPos pos) {
@@ -139,7 +153,15 @@ public final class PolenShelterContextResolver {
     }
 
     public static boolean isRoofShelter(Level level, BlockPos pos) {
-        return !isTreeShelter(level, pos) && !isCaveLikeShelter(level, pos);
+        if (level == null || pos == null) {
+            return false;
+        }
+
+        return !isTreeShelter(level, pos)
+                && !isCaveLikeShelter(level, pos)
+                && PolenSafetyEvaluator.hasOverheadCover(level, pos)
+                && (PolenSafetyEvaluator.isShelteredStandingSpot(level, pos)
+                || PolenSafetyEvaluator.isRainShelteredStandingSpot(level, pos));
     }
 
     public static boolean hasNearbyDoor(Level level, BlockPos origin) {
@@ -186,7 +208,8 @@ public final class PolenShelterContextResolver {
         for (int dx = -LIGHT_RADIUS; dx <= LIGHT_RADIUS; dx++) {
             for (int dz = -LIGHT_RADIUS; dz <= LIGHT_RADIUS; dz++) {
                 for (int dy = -1; dy <= 2; dy++) {
-                    if (level.getBlockState(origin.offset(dx, dy, dz)).getLightEmission() >= 10) {
+                    BlockPos candidate = origin.offset(dx, dy, dz);
+                    if (level.getBlockState(candidate).getLightEmission(level, candidate) >= 10) {
                         return true;
                     }
                 }
@@ -200,55 +223,15 @@ public final class PolenShelterContextResolver {
     }
 
     public static BlockPos findNearbyBeeBed(Level level, BlockPos origin) {
-        if (level == null || origin == null) {
-            return null;
-        }
-
-        BlockPos bestPos = null;
-        double bestScore = Double.MAX_VALUE;
-        for (int dx = -BED_RADIUS; dx <= BED_RADIUS; dx++) {
-            for (int dz = -BED_RADIUS; dz <= BED_RADIUS; dz++) {
-                for (int dy = -1; dy <= 2; dy++) {
-                    BlockPos candidate = origin.offset(dx, dy, dz);
-                    if (!level.getBlockState(candidate).is(ModBlocks.POLEN_BEE_BED.get())) {
-                        continue;
-                    }
-
-                    double score = candidate.distSqr(origin);
-                    if (score < bestScore) {
-                        bestScore = score;
-                        bestPos = candidate.immutable();
-                    }
-                }
-            }
-        }
-        return bestPos;
+        return PolenBedLocator.findNearestBed(level, origin, BED_RADIUS, 2, true);
     }
 
     public static BlockPos findNearbyBed(Level level, BlockPos origin) {
-        if (level == null || origin == null) {
-            return null;
+        BlockPos beeBed = findNearbyBeeBed(level, origin);
+        if (beeBed != null) {
+            return beeBed;
         }
-
-        BlockPos bestPos = null;
-        double bestScore = Double.MAX_VALUE;
-        for (int dx = -BED_RADIUS; dx <= BED_RADIUS; dx++) {
-            for (int dz = -BED_RADIUS; dz <= BED_RADIUS; dz++) {
-                for (int dy = -1; dy <= 2; dy++) {
-                    BlockPos candidate = origin.offset(dx, dy, dz);
-                    if (!level.getBlockState(candidate).is(BlockTags.BEDS)) {
-                        continue;
-                    }
-
-                    double score = candidate.distSqr(origin);
-                    if (score < bestScore) {
-                        bestScore = score;
-                        bestPos = candidate.immutable();
-                    }
-                }
-            }
-        }
-        return bestPos;
+        return PolenBedLocator.findNearestBed(level, origin, BED_RADIUS, 2, false);
     }
 
     private static boolean hasNearbyNaturalTreeContext(Level level, BlockPos pos) {
