@@ -42,3 +42,5 @@ repo/
 src/main.zip
 src/**.old.zip
 **.patch
+scratch/**
+.codex/**

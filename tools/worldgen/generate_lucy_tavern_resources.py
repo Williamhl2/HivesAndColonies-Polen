@@ -4,13 +4,11 @@ import gzip
 import io
 import json
 import struct
-import zipfile
 from dataclasses import dataclass
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[2]
-MINECRAFT_JAR = Path.home() / ".gradle" / "caches" / "neoformruntime" / "artifacts" / "minecraft_1.21.1_client.jar"
 TARGET_ROOT = ROOT / "src" / "main" / "resources"
 BIOMES = ("plains", "desert", "savanna", "snowy", "taiga")
 DATA_VERSION = 3955
@@ -152,14 +150,14 @@ def build_tavern_structure(biome: str) -> dict:
 
     post_x = {0, 3, 9, 12}
     post_z = {0, 3, 7, 10}
-    for y in range(1, 5):
+    for y in range(1, 6):
         for x in range(size_x):
             for z in (0, size_z - 1):
                 if x in post_x:
                     block = support
                 elif y == 1:
                     block = trim
-                elif y == 4:
+                elif y == 5:
                     block = accent
                 else:
                     block = plaster
@@ -170,7 +168,7 @@ def build_tavern_structure(biome: str) -> dict:
                     block = support
                 elif y == 1:
                     block = trim
-                elif y == 4:
+                elif y == 5:
                     block = accent
                 else:
                     block = plaster
@@ -183,18 +181,18 @@ def build_tavern_structure(biome: str) -> dict:
     place(1, 1, 5, "minecraft:dark_oak_slab", {"type": "bottom", "waterlogged": "false"})
 
     for x in (4, 6, 8):
-        for y in (2, 3):
+        for y in (3, 4):
             place(x, y, 0, "minecraft:glass_pane")
             place(x, y, 10, "minecraft:glass_pane")
     for z in (2, 8):
-        for y in (2, 3):
+        for y in (3, 4):
             place(12, y, z, "minecraft:glass_pane")
             place(0, y, z, "minecraft:glass_pane")
 
     place(2, 1, 4, barrel, {"facing": "east"})
     place(2, 1, 6, barrel, {"facing": "east"})
 
-    roof_layers = ((0, 5), (1, 6), (2, 7))
+    roof_layers = ((0, 6), (1, 7), (2, 8))
     for inset, y in roof_layers:
         x_min = inset
         x_max = size_x - 1 - inset
@@ -212,9 +210,9 @@ def build_tavern_structure(biome: str) -> dict:
         for z in range(3, 8):
             place(x, 9, z, roof_slab, {"type": "top", "waterlogged": "false"})
 
-    for chimney_y in range(1, 8):
+    for chimney_y in range(1, 9):
         place(10, chimney_y, 2, chimney)
-    place(10, 8, 2, roof_slab, {"type": "bottom", "waterlogged": "false"})
+    place(10, 9, 2, roof_slab, {"type": "bottom", "waterlogged": "false"})
 
     fill_box(9, 1, 2, 11, 1, 3, barrel, {"facing": "north"})
     fill_box(9, 1, 7, 11, 1, 8, barrel, {"facing": "south"})
@@ -323,28 +321,6 @@ def build_tavern_structure(biome: str) -> dict:
     }
 
 
-def read_json_from_jar(path: str) -> dict:
-    with zipfile.ZipFile(MINECRAFT_JAR) as jar:
-        return json.loads(jar.read(path).decode("utf-8"))
-
-
-def build_house_pool_override(biome: str) -> dict:
-    source = read_json_from_jar(f"data/minecraft/worldgen/template_pool/village/{biome}/houses.json")
-    source["elements"].insert(
-        max(0, len(source["elements"]) - 1),
-        {
-            "element": {
-                "element_type": "minecraft:legacy_single_pool_element",
-                "location": f"hc_characters:village/taverns/{biome}/lucy_soa_tavern",
-                "processors": {"processors": []},
-                "projection": "rigid",
-            },
-            "weight": 35,
-        },
-    )
-    return source
-
-
 def write_nbt(path: Path, root: dict) -> None:
     payload = io.BytesIO()
     write_named_tag(payload, TAG_COMPOUND, "", root)
@@ -354,20 +330,12 @@ def write_nbt(path: Path, root: dict) -> None:
 
 
 def main() -> None:
-    if not MINECRAFT_JAR.exists():
-        raise SystemExit(f"Missing Minecraft jar at {MINECRAFT_JAR}")
-
     for biome in BIOMES:
         structure = build_tavern_structure(biome)
         structure_path = TARGET_ROOT / "data" / "hc_characters" / "structure" / "village" / "taverns" / biome / "lucy_soa_tavern.nbt"
         write_nbt(structure_path, structure)
 
-        houses_override = build_house_pool_override(biome)
-        houses_path = TARGET_ROOT / "data" / "minecraft" / "worldgen" / "template_pool" / "village" / biome / "houses.json"
-        houses_path.parent.mkdir(parents=True, exist_ok=True)
-        houses_path.write_text(json.dumps(houses_override, indent=2) + "\n", encoding="utf-8")
-
-    print("Generated Lucy tavern structures and village pool overrides.")
+    print("Generated Lucy tavern structures.")
 
 
 if __name__ == "__main__":

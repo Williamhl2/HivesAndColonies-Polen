@@ -24,7 +24,7 @@ import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
  * if another mod also edits the same vanilla pool, both additions can coexist.
  */
 public final class LucyVillageTavernPoolInjector {
-    private static final int TAVERN_WEIGHT = 90;
+    private static final int TAVERN_WEIGHT = 35;
     private static final ResourceKey<StructureProcessorList> EMPTY_PROCESSORS = ResourceKey.create(
             Registries.PROCESSOR_LIST,
             ResourceLocation.fromNamespaceAndPath("minecraft", "empty")
@@ -36,7 +36,7 @@ public final class LucyVillageTavernPoolInjector {
 
     public static void onServerAboutToStart(ServerAboutToStartEvent event) {
         HcCharacters.LOGGER.info(
-                "Lucy/Soa tavern template-pool injection is disabled; using the single-tavern runtime placer instead."
+                "Lucy/Soa tavern template-pool injection is disabled to avoid interfering with vanilla and modded village generation."
         );
     }
 
