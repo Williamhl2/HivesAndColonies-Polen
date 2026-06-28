@@ -109,7 +109,7 @@ final class LucyVillageTavernStructurePlacer {
                     anchorPos
             );
             return null;
-        }|
+        }
 
         HcCharacters.LOGGER.info(
                 "Placed Lucy/Soa tavern fallback {} near village bell {} at {}",

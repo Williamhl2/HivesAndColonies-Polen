@@ -87,6 +87,8 @@ def infer_tag_type(value) -> int:
         return TAG_STRING
     if isinstance(value, dict):
         return TAG_COMPOUND
+    if isinstance(value, tuple):
+        return TAG_LIST
     if isinstance(value, list):
         if value and all(isinstance(item, int) for item in value):
             return TAG_INT_ARRAY
@@ -307,13 +309,13 @@ def build_tavern_structure(biome: str) -> dict:
                 if key not in palette_lookup:
                     palette_lookup[key] = len(palette)
                     palette.append(state)
-                entry = {"pos": [x, y, z], "state": palette_lookup[key]}
+                entry = {"pos": (TAG_INT, [x, y, z]), "state": palette_lookup[key]}
                 if nbt:
                     entry["nbt"] = nbt
                 block_entries.append(entry)
 
     return {
-        "size": [size_x, size_y, size_z],
+        "size": (TAG_INT, [size_x, size_y, size_z]),
         "entities": [],
         "blocks": block_entries,
         "palette": palette,
