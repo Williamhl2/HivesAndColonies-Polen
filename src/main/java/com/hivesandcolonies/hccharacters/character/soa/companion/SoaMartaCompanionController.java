@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.hivesandcolonies.hccharacters.bootstrap.config.HcCharactersGameplayConfig;
 import com.hivesandcolonies.hccharacters.character.soa.entity.SoaMarjorieEntity;
+import com.hivesandcolonies.hccharacters.common.util.LocalizedText;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
@@ -178,7 +179,7 @@ public final class SoaMartaCompanionController {
         marta.addTag(MARTA_TAG);
         marta.getPersistentData().putString(MARTA_OWNER_TAG, this.soa.getStringUUID());
         boolean goldenVariant = HcCharactersGameplayConfig.soaMarjorieMartaGoldenVariant();
-        Component displayName = Component.translatable("entity.hc_characters.marta");
+        Component displayName = LocalizedText.literal("entity.hc_characters.marta");
         marta.setCustomName(goldenVariant ? displayName.copy().withStyle(ChatFormatting.GOLD) : displayName);
         marta.setCustomNameVisible(true);
         marta.setPersistenceRequired();

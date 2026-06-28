@@ -3,6 +3,8 @@ package com.hivesandcolonies.hccharacters.common.npc.relationship;
 import java.util.List;
 import java.util.function.IntFunction;
 
+import com.hivesandcolonies.hccharacters.common.util.LocalizedText;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -116,19 +118,9 @@ public final class NpcRelationshipInteraction {
 
     private static Component formatSpeech(String speakerName, String textOrKey) {
         return Component.literal("<")
-                .append(componentFromTextOrKey(speakerName))
+                .append(LocalizedText.literal(speakerName))
                 .append("> ")
-                .append(componentFromTextOrKey(textOrKey));
-    }
-
-    private static Component componentFromTextOrKey(String textOrKey) {
-        if (textOrKey == null || textOrKey.isBlank()) {
-            return Component.empty();
-        }
-        if (!textOrKey.contains(" ")) {
-            return Component.translatable(textOrKey);
-        }
-        return Component.literal(textOrKey);
+                .append(LocalizedText.literal(textOrKey));
     }
 
     private static void give(Player player, ItemStack stack) {

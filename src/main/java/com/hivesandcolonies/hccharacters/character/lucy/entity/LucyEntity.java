@@ -4,10 +4,10 @@ import java.util.EnumSet;
 
 import com.hivesandcolonies.hccharacters.character.lucy.world.LucyVillageEncounterManager;
 import com.hivesandcolonies.hccharacters.common.entity.SimpleCharacterEntity;
+import com.hivesandcolonies.hccharacters.common.util.LocalizedText;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -36,7 +36,7 @@ public class LucyEntity extends SimpleCharacterEntity {
 
     public LucyEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
-        this.setCustomName(Component.translatable(LUCY_KEY));
+        this.setCustomName(LocalizedText.literal(LUCY_KEY));
         this.setCustomNameVisible(true);
     }
 

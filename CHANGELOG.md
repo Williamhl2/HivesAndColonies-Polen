@@ -2,6 +2,95 @@
 
 All notable changes to this project will be documented in this file.
 
+## Unreleased - `feature/soa-entity` branch delta vs `main`
+
+### Added
+
+- Added `LucyEntity` and a full Lucy village encounter flow.
+- Added a Lucy + SoaMarjorie village scene system:
+  - village tavern runtime placement
+  - tavern board helper
+  - village encounter saved data
+  - tavern saved data
+  - ambient scene dialogue
+  - tavern scene detection and placement scoring
+- Added Lucy tavern structure resources for:
+  - plains
+  - desert
+  - savanna
+  - snowy
+  - taiga
+- Added a broader SoaMarjorie feature set:
+  - relationship and encounter dialogue updates
+  - companion controller support through Marta
+  - companion interaction event hooks
+  - golden Marta renderer/layer support
+- Added major Polen home, safety, and environment systems:
+  - `PolenMovementHelper`
+  - `PolenBehaviorReadiness`
+  - `PolenThreatAssessmentHelper`
+  - `PolenEnvironmentResolver`
+  - `PolenEnvironmentSnapshot`
+  - `PolenBedLocator`
+  - `PolenBedTarget`
+  - `PolenHomeSnapshot`
+  - `PolenNightSafetyPlan`
+- Added a rebuilt Polen prologue runtime stack:
+  - `PolenPrologueDiscoveryManager`
+  - `PolenPrologueRuntime`
+  - `PolenPrologueSiteBuilder`
+  - `PolenPrologueSiteLayout`
+  - `PolenPrologueSiteLocator`
+  - `PolenProloguePalette`
+- Added new Polen profile and interaction systems:
+  - client profile action/help state
+  - profile sync payloads
+  - UI action payloads and handlers
+  - companion/social interaction handlers
+  - focused item interaction handlers for gifts, residence, and accessories
+- Added common NPC relationship and player-facing feedback improvements:
+  - affinity overlay updates
+  - extra player relationship helpers
+  - additional debug commands
+- Added split localization authoring and merge tooling for `hc_characters`.
+- Added new Lucy and Soa localization entries in English and Spanish.
+- Added new docs for character architecture, localization workflow, and updated project/codebase mapping.
+
+### Changed
+
+- Repositioned the project around a wider cast and the public title `Hives & Colonies: Characters`.
+- Reworked the codebase from a Polen-only direction toward multi-character support across docs, registries, assets, and gameplay hooks.
+- Refactored large parts of Polen AI to rely more on:
+  - explicit environment snapshots
+  - home/residence resolution
+  - safer navigation planning
+  - clearer dialogue policy and beat selection
+  - cleaner item interaction routing
+- Reworked Polen profile UI and client presentation to support richer synced character data.
+- Reworked SoaMarjorie systems around encounter flow, companion support, and relationship-driven interactions.
+- Expanded the build/localization pipeline so runtime language files are generated from `lang_base/` plus recursive `lang_parts/` sources.
+- Updated resources, docs, and metadata to reflect the `hc_characters` namespace and the broader character scope.
+- Adjusted the Lucy tavern approach away from permanent vanilla village pool overrides to avoid interfering with normal village generation.
+
+### Fixed
+
+- Fixed multiple Polen shelter and safety false positives so dialogue and movement better reflect actual nearby refuge.
+- Fixed several Polen movement and intent deadlock cases by improving navigation, recovery, and safety planning.
+- Fixed localization/build drift by making merged runtime language generation explicit in the build.
+- Fixed several SoaMarjorie encounter and interaction issues, including cooldown persistence and relationship progression edge cases.
+- Fixed older resource and naming inconsistencies tied to the SoaMarjorie migration.
+- Fixed village generation regressions caused by replacing vanilla village house pools during Lucy tavern experiments; the branch now avoids that override path.
+
+### Technical Notes
+
+- This branch introduces substantial unmerged work across:
+  - Lucy village encounter systems
+  - SoaMarjorie companion/encounter systems
+  - Polen AI, home, safety, and profile systems
+  - localization/build tooling
+  - project documentation and naming
+- The Lucy tavern is currently handled through runtime placement logic instead of stable vanilla village pool replacement.
+
 ## Unreleased - Polen Safety and Dialogue Integration
 
 ### Added

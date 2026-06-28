@@ -2,41 +2,43 @@ package com.hivesandcolonies.hccharacters.character.lucy.world;
 
 import java.util.List;
 
+import com.hivesandcolonies.hccharacters.common.util.LocalizedText;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 public final class LucyVillageSceneDialogue {
-    private static final Component LUCY_NAME = Component.translatable("dialogue.lucy.scene.speaker.lucy").withStyle(ChatFormatting.AQUA);
-    private static final Component SOA_NAME = Component.translatable("dialogue.lucy.scene.speaker.soa").withStyle(ChatFormatting.GOLD);
+    private static final String LUCY_SPEAKER_KEY = "dialogue.lucy.scene.speaker.lucy";
+    private static final String SOA_SPEAKER_KEY = "dialogue.lucy.scene.speaker.soa";
 
     private static final List<DialogueLine> AMBIENT_LINES = List.of(
-            new DialogueLine(SOA_NAME, "dialogue.lucy.scene.ambient.soa.1"),
-            new DialogueLine(LUCY_NAME, "dialogue.lucy.scene.ambient.lucy.1"),
-            new DialogueLine(SOA_NAME, "dialogue.lucy.scene.ambient.soa.2"),
-            new DialogueLine(LUCY_NAME, "dialogue.lucy.scene.ambient.lucy.2")
+            new DialogueLine(SOA_SPEAKER_KEY, ChatFormatting.GOLD, "dialogue.lucy.scene.ambient.soa.1"),
+            new DialogueLine(LUCY_SPEAKER_KEY, ChatFormatting.AQUA, "dialogue.lucy.scene.ambient.lucy.1"),
+            new DialogueLine(SOA_SPEAKER_KEY, ChatFormatting.GOLD, "dialogue.lucy.scene.ambient.soa.2"),
+            new DialogueLine(LUCY_SPEAKER_KEY, ChatFormatting.AQUA, "dialogue.lucy.scene.ambient.lucy.2")
     );
 
     private static final List<DialogueLine> FIRST_CLUE_LINES = List.of(
-            new DialogueLine(LUCY_NAME, "dialogue.lucy.scene.clue.line1"),
-            new DialogueLine(LUCY_NAME, "dialogue.lucy.scene.clue.line2"),
-            new DialogueLine(SOA_NAME, "dialogue.lucy.scene.clue.line3"),
-            new DialogueLine(LUCY_NAME, "dialogue.lucy.scene.clue.line4")
+            new DialogueLine(LUCY_SPEAKER_KEY, ChatFormatting.AQUA, "dialogue.lucy.scene.clue.line1"),
+            new DialogueLine(LUCY_SPEAKER_KEY, ChatFormatting.AQUA, "dialogue.lucy.scene.clue.line2"),
+            new DialogueLine(SOA_SPEAKER_KEY, ChatFormatting.GOLD, "dialogue.lucy.scene.clue.line3"),
+            new DialogueLine(LUCY_SPEAKER_KEY, ChatFormatting.AQUA, "dialogue.lucy.scene.clue.line4")
     );
 
     private static final List<DialogueLine> REPLACEMENT_CLUE_LINES = List.of(
-            new DialogueLine(LUCY_NAME, "dialogue.lucy.scene.replacement.line1"),
-            new DialogueLine(LUCY_NAME, "dialogue.lucy.scene.replacement.line2")
+            new DialogueLine(LUCY_SPEAKER_KEY, ChatFormatting.AQUA, "dialogue.lucy.scene.replacement.line1"),
+            new DialogueLine(LUCY_SPEAKER_KEY, ChatFormatting.AQUA, "dialogue.lucy.scene.replacement.line2")
     );
 
     private static final List<DialogueLine> SOA_INTRO_LINES = List.of(
-            new DialogueLine(SOA_NAME, "dialogue.lucy.scene.soa_intro.line1"),
-            new DialogueLine(SOA_NAME, "dialogue.lucy.scene.soa_intro.line2")
+            new DialogueLine(SOA_SPEAKER_KEY, ChatFormatting.GOLD, "dialogue.lucy.scene.soa_intro.line1"),
+            new DialogueLine(SOA_SPEAKER_KEY, ChatFormatting.GOLD, "dialogue.lucy.scene.soa_intro.line2")
     );
 
     private static final List<DialogueLine> SOA_REPEAT_LINES = List.of(
-            new DialogueLine(SOA_NAME, "dialogue.lucy.scene.soa_repeat.line1")
+            new DialogueLine(SOA_SPEAKER_KEY, ChatFormatting.GOLD, "dialogue.lucy.scene.soa_repeat.line1")
     );
 
     private LucyVillageSceneDialogue() {
@@ -46,17 +48,21 @@ public final class LucyVillageSceneDialogue {
         return AMBIENT_LINES.size();
     }
 
+    public static boolean hasAmbientLine(int step) {
+        return step >= 0 && step < AMBIENT_LINES.size();
+    }
+
     public static void sendAmbientLine(ServerPlayer player, int step) {
-        if (player == null || AMBIENT_LINES.isEmpty()) {
+        if (player == null || !hasAmbientLine(step)) {
             return;
         }
-        sendLine(player, AMBIENT_LINES.get(Math.floorMod(step, AMBIENT_LINES.size())));
+        sendLine(player, AMBIENT_LINES.get(step));
     }
 
     public static void playFirstClue(Player player) {
         sendDialogueSequence(player, FIRST_CLUE_LINES);
         player.displayClientMessage(
-                Component.translatable("dialogue.lucy.scene.clue.received").withStyle(ChatFormatting.GOLD),
+                LocalizedText.literal("dialogue.lucy.scene.clue.received").withStyle(ChatFormatting.GOLD),
                 false
         );
     }
@@ -66,11 +72,11 @@ public final class LucyVillageSceneDialogue {
     }
 
     public static void playAlreadyHoldingClue(Player player) {
-        sendLine(player, new DialogueLine(LUCY_NAME, "dialogue.lucy.scene.repeat.line1"));
+        sendLine(player, new DialogueLine(LUCY_SPEAKER_KEY, ChatFormatting.AQUA, "dialogue.lucy.scene.repeat.line1"));
     }
 
     public static void playDormant(Player player) {
-        sendLine(player, new DialogueLine(LUCY_NAME, "dialogue.lucy.scene.after_discovery.line1"));
+        sendLine(player, new DialogueLine(LUCY_SPEAKER_KEY, ChatFormatting.AQUA, "dialogue.lucy.scene.after_discovery.line1"));
     }
 
     public static void playSoaIntroduction(Player player) {
@@ -93,13 +99,11 @@ public final class LucyVillageSceneDialogue {
         }
 
         player.displayClientMessage(
-                line.speaker().copy()
-                        .append(Component.literal(": ").withStyle(ChatFormatting.WHITE))
-                        .append(Component.translatable(line.dialogueKey()).withStyle(ChatFormatting.WHITE)),
+                LocalizedText.dialogue(line.speakerKey(), line.speakerStyle(), line.dialogueKey()),
                 false
         );
     }
 
-    private record DialogueLine(Component speaker, String dialogueKey) {
+    private record DialogueLine(String speakerKey, ChatFormatting speakerStyle, String dialogueKey) {
     }
 }

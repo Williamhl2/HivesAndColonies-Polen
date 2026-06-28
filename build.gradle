@@ -342,8 +342,13 @@ registerLangMergeTask('mergeHcCharactersLang', 'hc_characters')
 sourceSets.main.resources.srcDir generateModMetadata
 // To avoid having to run "generateModMetadata" manually, make it run on every project reload
 neoForge.ideSyncTask generateModMetadata
+neoForge.ideSyncTask tasks.named('mergeHcCharactersLang')
 
 tasks.named('processResources', ProcessResources).configure {
+    dependsOn(tasks.named('mergeHcCharactersLang'))
+}
+
+tasks.matching { it.name in ['runClient', 'runServer', 'runGameTestServer', 'runData'] }.configureEach {
     dependsOn(tasks.named('mergeHcCharactersLang'))
 }
 
