@@ -7,7 +7,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 
 public final class LucyVillageTavernManager {
-    private static final int TAVERN_MARKER_SCAN_RADIUS = 160;
     private static final int SAME_VILLAGE_TAVERN_RADIUS = 160;
 
     private LucyVillageTavernManager() {
@@ -43,30 +42,13 @@ public final class LucyVillageTavernManager {
             return nearbySavedScene;
         }
 
-        ExistingTavern existingTavern = findExistingTavern(level, bellPos);
-        if (existingTavern != null) {
-            if (existingTavern.scene() != null) {
-                LucyVillageSceneLocator.SceneLocation existingScene = existingTavern.scene();
-                savedData.putTavern(new LucyVillageTavernSavedData.TavernSite(
-                        bellPos.immutable(),
-                        existingScene.anchorPos(),
-                        existingScene.lucyPos(),
-                        existingScene.soaPos()
-                ));
-                LucyVillageBoardHelper.ensureBoardNearAnchor(level, existingScene.anchorPos());
-                return existingScene;
-            }
-
-            HcCharacters.LOGGER.warn(
-                    "Found an existing Lucy/Soa tavern marker near village bell {} at {}, but no valid scene positions were found. Skipping fallback placement to avoid duplicate taverns.",
-                    bellPos,
-                    existingTavern.markerPos()
-            );
-            return null;
-        }
-
         if (savedSite != null && !isPhysicallyPresent(level, savedSite)) {
             savedData.removeTavern(bellPos);
+        }
+        if (nearbySavedSite != null
+                && (savedSite == null || nearbySavedSite.bellPos().asLong() != savedSite.bellPos().asLong())
+                && !isPhysicallyPresent(level, nearbySavedSite)) {
+            savedData.removeTavern(nearbySavedSite.bellPos());
         }
 
         LucyVillageSceneLocator.SceneLocation generatedScene = LucyVillageTavernStructurePlacer.tryPlaceNearVillage(level, bellPos);
@@ -81,7 +63,7 @@ public final class LucyVillageTavernManager {
             return generatedScene;
         }
 
-        return null;
+        return LucyVillageSceneLocator.findScene(level, bellPos);
     }
 
     private static LucyVillageSceneLocator.SceneLocation resolveSavedSite(
@@ -107,19 +89,6 @@ public final class LucyVillageTavernManager {
         return null;
     }
 
-    private static ExistingTavern findExistingTavern(ServerLevel level, BlockPos bellPos) {
-        BlockPos markerPos = LucyVillageBoardHelper.findMarkerLanternNearby(level, bellPos, TAVERN_MARKER_SCAN_RADIUS);
-        if (markerPos == null) {
-            return null;
-        }
-
-        LucyVillageSceneLocator.SceneLocation tavernScene = LucyVillageSceneLocator.findTavernScene(level, markerPos, bellPos);
-        if (tavernScene == null) {
-            tavernScene = LucyVillageSceneLocator.findScene(level, markerPos);
-        }
-        return new ExistingTavern(markerPos.immutable(), tavernScene);
-    }
-
     private static boolean isUsable(ServerLevel level, LucyVillageTavernSavedData.TavernSite site) {
         return canStandAt(level, site.anchorPos())
                 && canStandAt(level, site.lucyPos())
@@ -135,8 +104,7 @@ public final class LucyVillageTavernManager {
 
     private static boolean isPhysicallyPresent(ServerLevel level, LucyVillageTavernSavedData.TavernSite site) {
         return site != null
-                && (LucyVillageBoardHelper.hasMarkerLanternNearby(level, site.anchorPos(), 24)
-                || countDomumBlocksNearby(level, site.anchorPos()) >= 16);
+                && countDomumBlocksNearby(level, site.anchorPos()) >= 16;
     }
 
     private static int countDomumBlocksNearby(ServerLevel level, BlockPos center) {
@@ -152,9 +120,6 @@ public final class LucyVillageTavernManager {
             }
         }
         return count;
-    }
-
-    private record ExistingTavern(BlockPos markerPos, LucyVillageSceneLocator.SceneLocation scene) {
     }
 }
 

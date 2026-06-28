@@ -39,10 +39,9 @@ final class LucyVillageTavernStructurePlacer {
     private static final int PLACE_FLAGS = 3;
 
     private static final BlockPos ENTRANCE_LOCAL_POS = new BlockPos(0, 0, 5);
-    private static final BlockPos MARKER_LOCAL_POS = new BlockPos(3, 3, 5);
-    private static final BlockPos ANCHOR_LOCAL_POS = new BlockPos(6, 2, 5);
-    private static final BlockPos LUCY_LOCAL_POS = new BlockPos(5, 2, 5);
-    private static final BlockPos SOA_LOCAL_POS = new BlockPos(6, 2, 4);
+    private static final BlockPos ANCHOR_LOCAL_POS = new BlockPos(6, 1, 5);
+    private static final BlockPos LUCY_LOCAL_POS = new BlockPos(5, 1, 5);
+    private static final BlockPos SOA_LOCAL_POS = new BlockPos(6, 1, 4);
 
     private LucyVillageTavernStructurePlacer() {
     }
@@ -95,22 +94,22 @@ final class LucyVillageTavernStructurePlacer {
             return null;
         }
 
-        BlockPos markerPos = candidate.localToWorld(MARKER_LOCAL_POS);
-        LucyVillageBoardHelper.ensureBoardNearAnchor(level, markerPos);
+        BlockPos anchorPos = candidate.localToWorld(ANCHOR_LOCAL_POS);
+        LucyVillageBoardHelper.ensureBoardNearAnchor(level, anchorPos);
         LucyVillageSceneLocator.SceneLocation scene = directSceneLocation(level, bellPos, candidate);
         if (scene == null) {
-            scene = LucyVillageSceneLocator.findTavernScene(level, markerPos, bellPos);
+            scene = LucyVillageSceneLocator.findTavernScene(level, anchorPos, bellPos);
         }
 
         if (scene == null) {
             HcCharacters.LOGGER.warn(
-                    "Lucy/Soa tavern fallback placed {} at {}, but no valid scene positions were found around marker {}",
+                    "Lucy/Soa tavern fallback placed {} at {}, but no valid scene positions were found around {}",
                     templateId,
                     candidate.origin(),
-                    markerPos
+                    anchorPos
             );
             return null;
-        }
+        }|
 
         HcCharacters.LOGGER.info(
                 "Placed Lucy/Soa tavern fallback {} near village bell {} at {}",

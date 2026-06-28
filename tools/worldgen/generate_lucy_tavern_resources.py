@@ -252,7 +252,7 @@ def build_tavern_structure(biome: str) -> dict:
     place(2, 3, 3, "minecraft:lantern", {"hanging": "true", "waterlogged": "false"})
     place(6, 3, 5, "minecraft:lantern", {"hanging": "true", "waterlogged": "false"})
     place(10, 3, 6, "minecraft:lantern", {"hanging": "true", "waterlogged": "false"})
-    place(3, 3, 5, "hc_characters:polen_lantern", {"hanging": "true", "waterlogged": "false"})
+    place(3, 3, 5, "minecraft:lantern", {"hanging": "true", "waterlogged": "false"})
 
     place(1, 1, 1, barrel, {"facing": "south"})
     place(1, 2, 1, "minecraft:potted_fern")

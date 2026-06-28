@@ -1,7 +1,5 @@
 package com.hivesandcolonies.hccharacters.character.lucy.world;
 
-import com.hivesandcolonies.hccharacters.bootstrap.registry.ModBlocks;
-
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -45,38 +43,6 @@ final class LucyVillageBoardHelper {
 
     static void ensureBoardNearBell(ServerLevel level, BlockPos bellPos) {
         ensureBoard(level, bellPos, 8);
-    }
-
-    static boolean hasMarkerLanternNearby(ServerLevel level, BlockPos center, int radius) {
-        return findMarkerLanternNearby(level, center, radius) != null;
-    }
-
-    static BlockPos findMarkerLanternNearby(ServerLevel level, BlockPos center, int radius) {
-        if (level == null || center == null) {
-            return null;
-        }
-
-        BlockPos best = null;
-        double bestDistance = Double.MAX_VALUE;
-        for (int x = -radius; x <= radius; x++) {
-            for (int y = -8; y <= 8; y++) {
-                for (int z = -radius; z <= radius; z++) {
-                    BlockPos candidate = center.offset(x, y, z);
-                    if (!level.getBlockState(candidate).is(ModBlocks.POLEN_LANTERN.get())) {
-                        continue;
-                    }
-                    double dx = candidate.getX() - center.getX();
-                    double dy = candidate.getY() - center.getY();
-                    double dz = candidate.getZ() - center.getZ();
-                    double distance = dx * dx + dy * dy + dz * dz;
-                    if (distance < bestDistance) {
-                        bestDistance = distance;
-                        best = candidate.immutable();
-                    }
-                }
-            }
-        }
-        return best;
     }
 
     private static boolean hasBoardNearby(ServerLevel level, BlockPos center, int radius) {
