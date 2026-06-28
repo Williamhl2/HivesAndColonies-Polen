@@ -5,9 +5,10 @@ import com.hivesandcolonies.hccharacters.character.polen.entity.ai.brain.task.Po
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentResolver;
 import com.hivesandcolonies.hccharacters.character.polen.entity.ai.world.environment.PolenEnvironmentSnapshot;
 import com.hivesandcolonies.hccharacters.character.polen.story.PolenMemoryType;
-import net.minecraft.network.chat.Component;
+import com.hivesandcolonies.hccharacters.common.util.LocalizedText;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.network.chat.Component;
 
 public final class PolenDialogueManager {
     public static final String AMBIENT_SINGING = "ambient_singing";
@@ -95,9 +96,11 @@ public final class PolenDialogueManager {
     }
 
     public static Component formatDialogueForPlayer(Player player, String key) {
-        return Component.translatable(PolenSpeakerResolver.resolveSpeakerKey(player))
-                .append(Component.literal(": "))
-                .append(Component.translatable(key));
+        return LocalizedText.dialogue(
+                PolenSpeakerResolver.resolveSpeakerKey(player),
+                net.minecraft.ChatFormatting.LIGHT_PURPLE,
+                key
+        );
     }
 
     private static boolean shouldPreferContextualDialogue(PolenEntity polen, RandomSource random) {

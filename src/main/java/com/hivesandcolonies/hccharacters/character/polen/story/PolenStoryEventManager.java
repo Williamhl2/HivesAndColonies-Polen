@@ -4,6 +4,7 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.PolenAdvanc
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenChapterManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlag;
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
+import com.hivesandcolonies.hccharacters.common.util.LocalizedText;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -41,7 +42,7 @@ public final class PolenStoryEventManager {
     public static void playFirstMeeting(Player player) {
         sendDialogueSequence(player, UNKNOWN_GIRL_KEY, ChatFormatting.GRAY, FIRST_MEETING_LINES);
         player.displayClientMessage(
-                Component.translatable("dialogue.polen.event.first_meeting.discovered")
+                LocalizedText.literal("dialogue.polen.event.first_meeting.discovered")
                         .withStyle(ChatFormatting.GOLD),
                 false
         );
@@ -73,7 +74,7 @@ public final class PolenStoryEventManager {
                 "dialogue.polen.event.name_reveal.line5"
         );
         player.displayClientMessage(
-                Component.translatable("dialogue.polen.event.name_reveal.discovered")
+                LocalizedText.literal("dialogue.polen.event.name_reveal.discovered")
                         .withStyle(ChatFormatting.GOLD),
                 false
         );
@@ -112,10 +113,7 @@ public final class PolenStoryEventManager {
             String dialogueKey
     ) {
         player.displayClientMessage(
-                Component.translatable(speakerKey)
-                        .withStyle(speakerStyle)
-                        .append(Component.literal(": ").withStyle(ChatFormatting.WHITE))
-                        .append(Component.translatable(dialogueKey).withStyle(ChatFormatting.WHITE)),
+                LocalizedText.dialogue(speakerKey, speakerStyle, dialogueKey),
                 false
         );
     }

@@ -12,6 +12,7 @@ import com.hivesandcolonies.hccharacters.character.soa.dialogue.SoaMarjorieDialo
 import com.hivesandcolonies.hccharacters.character.soa.progression.SoaMarjorieRelationship;
 import com.hivesandcolonies.hccharacters.common.entity.SimpleCharacterEntity;
 import com.hivesandcolonies.hccharacters.common.npc.relationship.NpcRelationshipInteraction;
+import com.hivesandcolonies.hccharacters.common.util.LocalizedText;
 import com.hivesandcolonies.hccharacters.common.util.LevelBrightnessHelper;
 import com.hivesandcolonies.hccharacters.integration.curios.PolenCuriosBridge;
 
@@ -105,7 +106,7 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
 
     public SoaMarjorieEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
-        this.setCustomName(Component.translatable(SOA_KEY));
+        this.setCustomName(LocalizedText.literal(SOA_KEY));
         this.setCustomNameVisible(true);
         this.equipExpertMiningTools();
     }
@@ -449,21 +450,11 @@ public class SoaMarjorieEntity extends SimpleCharacterEntity {
     private void sayTo(Player player, String text) {
         player.displayClientMessage(
                 Component.literal("<")
-                        .append(Component.translatable(SOA_KEY))
+                        .append(LocalizedText.literal(SOA_KEY))
                         .append("> ")
-                        .append(asDialogueComponent(text)),
+                        .append(LocalizedText.literal(text)),
                 false
         );
-    }
-
-    private static Component asDialogueComponent(String text) {
-        if (text == null || text.isBlank()) {
-            return Component.empty();
-        }
-        if (!text.contains(" ")) {
-            return Component.translatable(text);
-        }
-        return Component.literal(text);
     }
 
     private Player findNearestPlayer(double radius) {

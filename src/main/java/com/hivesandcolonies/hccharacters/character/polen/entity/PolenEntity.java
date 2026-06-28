@@ -20,10 +20,10 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryF
 import com.hivesandcolonies.hccharacters.character.polen.progression.PolenStoryFlagsManager;
 import com.hivesandcolonies.hccharacters.character.polen.progression.world.PolenWorldStateManager;
 import com.hivesandcolonies.hccharacters.character.polen.world.PolenSingletonManager;
+import com.hivesandcolonies.hccharacters.common.util.LocalizedText;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -108,7 +108,7 @@ public class PolenEntity extends PathfinderMob {
 
     public PolenEntity(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
-        this.setCustomName(Component.translatable(UNKNOWN_GIRL_KEY));
+        this.setCustomName(LocalizedText.literal(UNKNOWN_GIRL_KEY));
         this.setCustomNameVisible(true);
         this.setPersistenceRequired();
     }
@@ -149,9 +149,9 @@ public class PolenEntity extends PathfinderMob {
     public void refreshDisplayName() {
         if (this.level() instanceof ServerLevel serverLevel
                 && PolenStoryFlagsManager.hasFlag(serverLevel, PolenStoryFlag.NAME_REVEALED)) {
-            this.setCustomName(Component.translatable(POLEN_KEY));
+            this.setCustomName(LocalizedText.literal(POLEN_KEY));
         } else {
-            this.setCustomName(Component.translatable(UNKNOWN_GIRL_KEY));
+            this.setCustomName(LocalizedText.literal(UNKNOWN_GIRL_KEY));
         }
 
         this.setCustomNameVisible(true);

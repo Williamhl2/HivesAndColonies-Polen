@@ -11,9 +11,9 @@ import com.hivesandcolonies.hccharacters.character.polen.progression.world.prolo
 import com.hivesandcolonies.hccharacters.character.soa.dialogue.SoaMarjorieDialogue;
 import com.hivesandcolonies.hccharacters.character.soa.entity.SoaMarjorieEntity;
 import com.hivesandcolonies.hccharacters.common.npc.relationship.NpcRelationshipManager;
+import com.hivesandcolonies.hccharacters.common.util.LocalizedText;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -162,13 +162,13 @@ public final class LucyVillageEncounterManager {
         }
 
         lucy.moveTo(scene.lucyPos().getX() + 0.5D, scene.lucyPos().getY(), scene.lucyPos().getZ() + 0.5D, 180.0F, 0.0F);
-        lucy.setCustomName(Component.translatable("dialogue.lucy.scene.speaker.lucy"));
+        lucy.setCustomName(LocalizedText.literal("dialogue.lucy.scene.speaker.lucy"));
         lucy.startVillageScene(scene.anchorPos());
         lucy.setInvulnerable(true);
         lucy.setPersistenceRequired();
 
         soa.moveTo(scene.soaPos().getX() + 0.5D, scene.soaPos().getY(), scene.soaPos().getZ() + 0.5D, 0.0F, 0.0F);
-        soa.setCustomName(Component.translatable("dialogue.lucy.scene.speaker.soa"));
+        soa.setCustomName(LocalizedText.literal("dialogue.lucy.scene.speaker.soa"));
         soa.setCustomNameVisible(true);
         soa.startVillageScene(scene.soaPos(), scene.lucyPos());
         soa.setInvulnerable(true);
@@ -225,6 +225,11 @@ public final class LucyVillageEncounterManager {
         }
 
         int step = savedData.getAmbientStep();
+        if (!LucyVillageSceneDialogue.hasAmbientLine(step)) {
+            savedData.advanceAmbient(savedData.getActiveUntil() + 1L, step);
+            return;
+        }
+
         for (ServerPlayer player : audience) {
             LucyVillageSceneDialogue.sendAmbientLine(player, step);
         }

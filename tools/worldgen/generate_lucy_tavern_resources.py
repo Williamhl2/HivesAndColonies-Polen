@@ -109,7 +109,7 @@ def make_jigsaw_state(orientation: str) -> dict:
 
 
 def build_tavern_structure(biome: str) -> dict:
-    size_x, size_y, size_z = 13, 10, 11
+    size_x, size_y, size_z = 13, 11, 11
     blocks: dict[tuple[int, int, int], tuple[dict, dict | None]] = {}
 
     def place(x: int, y: int, z: int, name: str, properties: dict | None = None, nbt: dict | None = None) -> None:
@@ -128,140 +128,157 @@ def build_tavern_structure(biome: str) -> dict:
                 for z in range(z1, z2 + 1):
                     place(x, y, z, name, properties)
 
-    foundation = "domum_ornamentum:brown_stone_bricks"
+    wall = "domum_ornamentum:paper_extra"
+    frame = "domum_ornamentum:framed"
+    frame_props = {"facing": "up"}
+    base = "domum_ornamentum:dark_brick"
     floor = "domum_ornamentum:cream_bricks"
-    plaster = "domum_ornamentum:paper_extra"
-    trim = "domum_ornamentum:red_brick_extra"
-    accent = "domum_ornamentum:sand_bricks"
+    sill = "domum_ornamentum:sand_stone_bricks"
+    beam = "domum_ornamentum:cream_stone_bricks"
     chimney = "domum_ornamentum:roan_bricks"
     barrel = "domum_ornamentum:blockbarreldeco_standing"
     laying_barrel = "domum_ornamentum:blockbarreldeco_onside"
     board = "bountiful:bountyboard"
-    support = "minecraft:stripped_oak_log"
-    roof_stairs = "minecraft:dark_oak_stairs"
-    roof_slab = "minecraft:dark_oak_slab"
+    counter = "domum_ornamentum:plain"
+    counter_props = {"facing": "north"}
+    roof_steep = "domum_ornamentum:shingle_steep"
+    roof_slab = "domum_ornamentum:shingle_slab"
+
+    if biome in ("desert", "savanna"):
+        door = "minecraft:acacia_door"
+        step = "minecraft:acacia_stairs"
+    elif biome in ("snowy", "taiga"):
+        door = "minecraft:spruce_door"
+        step = "minecraft:spruce_stairs"
+    else:
+        door = "minecraft:dark_oak_door"
+        step = "minecraft:dark_oak_stairs"
+
+    def frame_column(x: int, z: int, from_y: int = 1, to_y: int = 5) -> None:
+        for y in range(from_y, to_y + 1):
+            place(x, y, z, frame, frame_props)
 
     for x in range(size_x):
         for z in range(size_z):
             border = x in (0, size_x - 1) or z in (0, size_z - 1)
-            place(x, 0, z, foundation if border else floor)
-            fill_air_column(x, z, 1, 8)
+            place(x, 0, z, base if border else floor)
+            fill_air_column(x, z, 1, 10)
 
-    fill_box(0, 0, 4, 1, 0, 6, foundation)
-    fill_box(1, 0, 4, 2, 0, 6, floor)
+    fill_box(0, 0, 4, 1, 0, 6, floor)
+    fill_box(1, 0, 3, 2, 0, 7, floor)
 
-    post_x = {0, 3, 9, 12}
-    post_z = {0, 3, 7, 10}
-    for y in range(1, 6):
-        for x in range(size_x):
-            for z in (0, size_z - 1):
-                if x in post_x:
-                    block = support
-                elif y == 1:
-                    block = trim
-                elif y == 5:
-                    block = accent
+    for x, z in ((1, 1), (1, 9), (11, 1), (11, 9), (1, 4), (1, 6), (11, 5), (4, 1), (8, 1), (4, 9), (8, 9)):
+        frame_column(x, z)
+    frame_column(0, 4, 1, 3)
+    frame_column(0, 6, 1, 3)
+
+    for z in range(1, 10):
+        if z != 5:
+            place(1, 1, z, sill)
+        place(11, 1, z, sill)
+    for x in range(2, 11):
+        place(x, 1, 1, sill)
+        place(x, 1, 9, sill)
+
+    for y in range(2, 5):
+        for z in range(1, 10):
+            if (1, z) in {(1, 1), (1, 4), (1, 6), (1, 9)} or z == 5:
+                continue
+            if z in (2, 8) and y in (2, 3):
+                place(1, y, z, "minecraft:glass_pane")
+            else:
+                place(1, y, z, wall)
+
+        for z in range(1, 10):
+            if (11, z) in {(11, 1), (11, 5), (11, 9)}:
+                continue
+            if z in (3, 7) and y in (2, 3):
+                place(11, y, z, "minecraft:glass_pane")
+            else:
+                place(11, y, z, wall)
+
+        for x in range(2, 11):
+            if x in (4, 8):
+                continue
+            if x in (3, 6, 9) and y in (2, 3):
+                place(x, y, 1, "minecraft:glass_pane")
+                place(x, y, 9, "minecraft:glass_pane")
+            else:
+                place(x, y, 1, wall)
+                place(x, y, 9, wall)
+
+    for x in range(1, 12):
+        place(x, 5, 1, beam)
+        place(x, 5, 9, beam)
+    for z in range(1, 10):
+        place(1, 5, z, beam)
+        place(11, 5, z, beam)
+
+    for x in (1, 11):
+        for y, z1, z2 in ((5, 2, 8), (6, 3, 7), (7, 4, 6), (8, 5, 5)):
+            for z in range(z1, z2 + 1):
+                if z == 5:
+                    place(x, y, z, frame, frame_props)
                 else:
-                    block = plaster
-                place(x, y, z, block)
-        for z in range(1, size_z - 1):
-            for x in (0, size_x - 1):
-                if z in post_z:
-                    block = support
-                elif y == 1:
-                    block = trim
-                elif y == 5:
-                    block = accent
-                else:
-                    block = plaster
-                place(x, y, z, block)
+                    place(x, y, z, wall)
 
-    for z in (4, 5, 6):
-        for y in (1, 2):
-            place(0, y, z, "minecraft:air")
-    place(0, 3, 5, support)
-    place(1, 1, 5, "minecraft:dark_oak_slab", {"type": "bottom", "waterlogged": "false"})
+    place(1, 1, 5, door, {"facing": "west", "half": "lower", "hinge": "left", "open": "false", "powered": "false"})
+    place(1, 2, 5, door, {"facing": "west", "half": "upper", "hinge": "left", "open": "false", "powered": "false"})
+    place(0, 0, 5, step, {"facing": "west", "half": "bottom", "shape": "straight", "waterlogged": "false"})
+    place(0, 0, 4, floor)
+    place(0, 0, 6, floor)
 
-    for x in (4, 6, 8):
-        for y in (3, 4):
-            place(x, y, 0, "minecraft:glass_pane")
-            place(x, y, 10, "minecraft:glass_pane")
-    for z in (2, 8):
-        for y in (3, 4):
-            place(12, y, z, "minecraft:glass_pane")
-            place(0, y, z, "minecraft:glass_pane")
+    for x in range(size_x):
+        place(x, 5, 0, roof_steep, {"facing": "north", "half": "bottom", "shape": "straight"})
+        place(x, 5, 10, roof_steep, {"facing": "south", "half": "bottom", "shape": "straight"})
+        place(x, 6, 1, roof_steep, {"facing": "north", "half": "bottom", "shape": "straight"})
+        place(x, 6, 9, roof_steep, {"facing": "south", "half": "bottom", "shape": "straight"})
+        place(x, 7, 2, roof_steep, {"facing": "north", "half": "bottom", "shape": "straight"})
+        place(x, 7, 8, roof_steep, {"facing": "south", "half": "bottom", "shape": "straight"})
+        place(x, 8, 3, roof_steep, {"facing": "north", "half": "bottom", "shape": "straight"})
+        place(x, 8, 7, roof_steep, {"facing": "south", "half": "bottom", "shape": "straight"})
+        place(x, 9, 4, roof_steep, {"facing": "north", "half": "bottom", "shape": "straight"})
+        place(x, 9, 6, roof_steep, {"facing": "south", "half": "bottom", "shape": "straight"})
+        place(x, 10, 5, roof_slab, {"facing": "east", "shape": "top"})
 
-    place(2, 1, 4, barrel, {"facing": "east"})
-    place(2, 1, 6, barrel, {"facing": "east"})
+    for chimney_y in range(1, 10):
+        place(9, chimney_y, 8, chimney)
+    place(9, 10, 8, roof_slab, {"facing": "north", "shape": "top"})
 
-    roof_layers = ((0, 6), (1, 7), (2, 8))
-    for inset, y in roof_layers:
-        x_min = inset
-        x_max = size_x - 1 - inset
-        z_min = inset
-        z_max = size_z - 1 - inset
+    fill_box(8, 1, 2, 10, 1, 7, counter, counter_props)
+    place(9, 2, 2, "minecraft:smoker", {"facing": "west", "lit": "false"})
+    place(9, 2, 7, "minecraft:cauldron")
+    place(10, 2, 4, barrel, {"facing": "west"})
+    place(10, 2, 6, barrel, {"facing": "west"})
+    place(9, 1, 8, "minecraft:bookshelf")
+    place(10, 1, 8, laying_barrel, {"facing": "north"})
+    place(8, 2, 8, "minecraft:potted_fern")
 
-        for x in range(x_min, x_max + 1):
-            place(x, y, z_min, roof_stairs, {"facing": "north", "half": "bottom", "shape": "straight", "waterlogged": "false"})
-            place(x, y, z_max, roof_stairs, {"facing": "south", "half": "bottom", "shape": "straight", "waterlogged": "false"})
-        for z in range(z_min + 1, z_max):
-            place(x_min, y, z, roof_stairs, {"facing": "west", "half": "bottom", "shape": "straight", "waterlogged": "false"})
-            place(x_max, y, z, roof_stairs, {"facing": "east", "half": "bottom", "shape": "straight", "waterlogged": "false"})
+    place(2, 1, 2, board)
+    place(3, 1, 2, laying_barrel, {"facing": "south"})
+    place(4, 2, 2, "minecraft:potted_red_tulip")
+    place(3, 1, 8, laying_barrel, {"facing": "north"})
+    place(4, 2, 8, "minecraft:potted_dandelion")
 
-    for x in range(3, 10):
-        for z in range(3, 8):
-            place(x, 9, z, roof_slab, {"type": "top", "waterlogged": "false"})
-
-    for chimney_y in range(1, 9):
-        place(10, chimney_y, 2, chimney)
-    place(10, 9, 2, roof_slab, {"type": "bottom", "waterlogged": "false"})
-
-    fill_box(9, 1, 2, 11, 1, 3, barrel, {"facing": "north"})
-    fill_box(9, 1, 7, 11, 1, 8, barrel, {"facing": "south"})
-    place(11, 1, 4, laying_barrel, {"facing": "west"})
-    place(11, 1, 5, barrel, {"facing": "west"})
-    place(11, 1, 6, laying_barrel, {"facing": "west"})
-    place(10, 1, 2, "minecraft:cauldron")
-    place(11, 2, 3, "minecraft:smoker", {"facing": "west", "lit": "false"})
-    place(9, 2, 8, "minecraft:potted_fern")
-
-    place(1, 1, 2, board)
-    place(2, 1, 2, laying_barrel, {"facing": "south"})
-    place(3, 2, 2, "minecraft:potted_red_tulip")
-    place(2, 1, 8, laying_barrel, {"facing": "north"})
-    place(3, 2, 8, "minecraft:potted_dandelion")
-
-    place(3, 1, 4, "minecraft:dark_oak_stairs", {"facing": "east", "half": "bottom", "shape": "straight", "waterlogged": "false"})
-    place(5, 1, 4, "minecraft:dark_oak_stairs", {"facing": "west", "half": "bottom", "shape": "straight", "waterlogged": "false"})
+    place(3, 1, 4, step, {"facing": "east", "half": "bottom", "shape": "straight", "waterlogged": "false"})
+    place(5, 1, 4, step, {"facing": "west", "half": "bottom", "shape": "straight", "waterlogged": "false"})
     place(4, 1, 4, "minecraft:oak_fence")
     place(4, 2, 4, "minecraft:dark_oak_pressure_plate", {"powered": "false"})
-
-    place(3, 1, 7, "minecraft:dark_oak_stairs", {"facing": "east", "half": "bottom", "shape": "straight", "waterlogged": "false"})
-    place(5, 1, 7, "minecraft:dark_oak_stairs", {"facing": "west", "half": "bottom", "shape": "straight", "waterlogged": "false"})
+    place(3, 1, 7, step, {"facing": "east", "half": "bottom", "shape": "straight", "waterlogged": "false"})
+    place(5, 1, 7, step, {"facing": "west", "half": "bottom", "shape": "straight", "waterlogged": "false"})
     place(4, 1, 7, "minecraft:oak_fence")
     place(4, 2, 7, "minecraft:dark_oak_pressure_plate", {"powered": "false"})
 
-    place(7, 1, 5, "minecraft:dark_oak_stairs", {"facing": "east", "half": "bottom", "shape": "straight", "waterlogged": "false"})
-    place(9, 1, 5, "minecraft:dark_oak_stairs", {"facing": "west", "half": "bottom", "shape": "straight", "waterlogged": "false"})
-    place(8, 1, 5, "minecraft:oak_fence")
-    place(8, 2, 5, "minecraft:dark_oak_pressure_plate", {"powered": "false"})
-
-    place(7, 1, 8, "minecraft:bookshelf")
-    place(8, 1, 8, "minecraft:bookshelf")
-    place(7, 2, 8, "minecraft:dark_oak_trapdoor", {"facing": "south", "half": "bottom", "open": "true", "powered": "false", "waterlogged": "false"})
-    place(8, 2, 8, "minecraft:dark_oak_trapdoor", {"facing": "south", "half": "bottom", "open": "true", "powered": "false", "waterlogged": "false"})
-
-    place(2, 3, 3, "minecraft:lantern", {"hanging": "true", "waterlogged": "false"})
-    place(6, 3, 5, "minecraft:lantern", {"hanging": "true", "waterlogged": "false"})
-    place(10, 3, 6, "minecraft:lantern", {"hanging": "true", "waterlogged": "false"})
-    place(3, 3, 5, "minecraft:lantern", {"hanging": "true", "waterlogged": "false"})
+    place(3, 4, 5, "minecraft:lantern", {"hanging": "true", "waterlogged": "false"})
+    place(6, 4, 3, "minecraft:lantern", {"hanging": "true", "waterlogged": "false"})
+    place(8, 4, 7, "minecraft:lantern", {"hanging": "true", "waterlogged": "false"})
 
     place(1, 1, 1, barrel, {"facing": "south"})
     place(1, 2, 1, "minecraft:potted_fern")
-    place(11, 1, 9, barrel, {"facing": "north"})
-    place(11, 2, 9, "minecraft:potted_red_mushroom")
     place(1, 1, 9, laying_barrel, {"facing": "east"})
     place(11, 1, 1, laying_barrel, {"facing": "west"})
+    place(11, 1, 9, barrel, {"facing": "north"})
+    place(11, 2, 9, "minecraft:potted_red_mushroom")
 
     place(
         0,
